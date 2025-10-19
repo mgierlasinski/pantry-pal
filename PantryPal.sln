@@ -1,0 +1,32 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36401.2
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PantryPal.Mobile", "src\PantryPal.Mobile\PantryPal.Mobile.csproj", "{97F3C7D6-765E-44EC-AFE5-E6685E09C8B4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PantryPal.Api", "src\PantryPal.Api\PantryPal.Api.csproj", "{27F7E2AA-F5DA-4929-B3B1-390370B2117B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{97F3C7D6-765E-44EC-AFE5-E6685E09C8B4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{97F3C7D6-765E-44EC-AFE5-E6685E09C8B4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{97F3C7D6-765E-44EC-AFE5-E6685E09C8B4}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{97F3C7D6-765E-44EC-AFE5-E6685E09C8B4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{97F3C7D6-765E-44EC-AFE5-E6685E09C8B4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{27F7E2AA-F5DA-4929-B3B1-390370B2117B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{27F7E2AA-F5DA-4929-B3B1-390370B2117B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{27F7E2AA-F5DA-4929-B3B1-390370B2117B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{27F7E2AA-F5DA-4929-B3B1-390370B2117B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {260CFB82-9DB3-429E-A4E4-F906F782CDAB}
+	EndGlobalSection
+EndGlobal
