@@ -1,0 +1,16 @@
+---
+globs: *.cs
+alwaysApply: false
+---
+
+### Code Style and Naming Conventions
+
+- Follow .NET conventions and best practices.
+- Prefer LINQ and lambda expressions for collection operations.
+- Use descriptive variable and method names (e.g., 'IsUserSignedIn', 'CalculateTotal').
+- Use PascalCase for class names, method names, public members and constants.
+- Use camelCase for local variables and private fields.
+- Prefix interface names with "I" (e.g., 'IUserService').
+- Use C# 10+ features when appropriate (e.g., record types, pattern matching, null-coalescing assignment).
+- Use C#'s expressive syntax (e.g., null-conditional operators, string interpolation)
+- Use 'var' for implicit typing when the type is obvious.

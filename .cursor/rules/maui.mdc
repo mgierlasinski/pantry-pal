@@ -1,0 +1,52 @@
+---
+globs: src/PantryPal.Mobile/**/*.cs,*.xaml
+alwaysApply: false
+---
+
+## MAUI
+
+### XAML formatting guidelines
+
+When editing or formatting XAML files (`.xaml`), adhere to the following rules.
+
+#### General Formatting
+- Use 4 spaces for indentation (no tabs).
+- Use UTF-8 encoding without BOM.
+- Use self-closing tags (`<ElementName />`) for elements that have no child content.
+- Preserve XML declaration (`<?xml version="1.0" encoding="utf-8"?>`).
+- Keep consistent line endings (LF preferred).
+
+#### Element and Attribute Rules
+- Order elements hierarchically — parent controls first, children below.
+- Keep attributes in a consistent order, using these priorities:
+  1. `x:Class`
+  2. `xmlns`, `xmlns:x`, and other namespace declarations
+  3. `x:Key`, `x:Name`, `x:Uid`
+  4. Layout attributes (`Grid.Row`, `Grid.Column`, `Margin`, `HorizontalAlignment`, `VerticalAlignment`, `Width`, `Height`)
+  5. Appearance attributes (`Background`, `Foreground`, `FontSize`, `FontWeight`, `Padding`, `BorderBrush`, `BorderThickness`)
+  6. Behavior and binding attributes (`Command`, `CommandParameter`, `Click`, `Tapped`)
+  7. Data-related attributes (`Binding`, `DataContext`, `ItemsSource`, `Content`, `Text`)
+  8. Automation properties and others (`AutomationProperties.Name`, `Style`, `Resources`)
+- Sort namespace declarations alphabetically by prefix.
+
+#### Line Wrapping and Spacing
+- Place one attribute per line if a tag has more than two attributes.
+- Align attribute indentation to one level deeper than the element start.
+- No trailing spaces.
+- Keep one blank line between top-level elements.
+- Do not insert blank lines between child elements inside the same container.
+
+#### Naming Conventions
+- Use PascalCase for control names: `MainGrid`, `SubmitButton`.
+- Use camelCase for resource keys: `primaryBrush`, `accentColor`.
+
+#### Content Rules
+- Prefer `{Binding PropertyName}` syntax without `Path=`.
+- Use `x:Static` for constant bindings when appropriate.
+- Use resource references (`{StaticResource}` or `{DynamicResource}`) instead of hardcoded colors, if possible.
+- Avoid inline styles unless specifically required.
+- Use `Content` property implicitly (no explicit `Content="..."` for `Button`, `Label`, etc. if unnecessary).
+
+#### Layout Rules
+- Prefer `VerticalStackLayout` and `HorizontalStackLayout` over `StackLayout`.
+- Use `Grid` for structured layout instead of nested stacks.
