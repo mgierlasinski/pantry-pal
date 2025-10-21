@@ -11,9 +11,10 @@
 - **updated_at** TIMESTAMPTZ NOT NULL DEFAULT now()
 
 **Constraints & Indexes:**
-- UNIQUE(user_id, lower(name))
-- GIN index on unaccent(lower(name)) for fast searches:  
-  `CREATE INDEX idx_pantry_unaccent_name ON pantry_items USING GIN (unaccent(lower(name)));`
+- Unique index for case-insensitive unique names per user:  
+  `CREATE UNIQUE INDEX uq_pantry_user_name ON pantry_items(user_id, lower(name));`
+- GIN index for fast case-insensitive trigram-based search:  
+  `CREATE INDEX idx_pantry_name_trgm ON pantry_items USING GIN (lower(name) gin_trgm_ops);`
 - B-Tree index for pagination:  
   `CREATE INDEX idx_pantry_user_created ON pantry_items(user_id, created_at);`
 
@@ -34,7 +35,7 @@
 - **model** VARCHAR(100) NOT NULL
 - **duration_ms** INTEGER NOT NULL
 - **generated_recipe_id** UUID REFERENCES recipes(id) ON DELETE CASCADE
-- **reason** recipe_reject_reason
+- **reject_reason_id** SMALLINT REFERENCES recipe_reject_reasons(id)
 - **error_code** TEXT
 - **error_message** TEXT
 - **created_at** TIMESTAMPTZ NOT NULL DEFAULT now()
@@ -47,17 +48,13 @@
 - **user_id** UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE
 - **diet_type_id** SMALLINT NOT NULL REFERENCES diet_types(id)
 - **preferred_cuisine_id** SMALLINT NOT NULL REFERENCES preferred_cuisines(id)
-- **disliked_ingredients** TEXT[] NOT NULL DEFAULT '{}'
+- **disliked_ingredients** TEXT
 - **created_at** TIMESTAMPTZ NOT NULL DEFAULT now()
 - **updated_at** TIMESTAMPTZ NOT NULL DEFAULT now()
 
 **Constraints & Indexes:**
-- CHECK length of array:  
-  `CHECK (array_length(disliked_ingredients, 1) <= 20)`
 - CHECK element length:  
-  `CHECK ( (SELECT bool_and(char_length(elem) BETWEEN 1 AND 50) FROM unnest(disliked_ingredients) AS elem) )`
-- GIN index on array:  
-  `CREATE INDEX idx_prefs_disliked_ing ON user_preferences USING GIN (disliked_ingredients);`
+  `CHECK (disliked_ingredients IS NULL OR char_length(disliked_ingredients) <= 1000)`
 
 ## 2. Dictionary Tables
 
@@ -93,7 +90,7 @@ INSERT INTO preferred_cuisines (name) VALUES
   ('Asian'),
   ('Mexican'),
   ('Indian'),
-  ('none');
+  ('None');
 
 -- Recipe reject reasons
 INSERT INTO recipe_reject_reasons (description) VALUES
@@ -107,14 +104,13 @@ INSERT INTO recipe_reject_reasons (description) VALUES
 - **auth.users (1)** → **(N) recipes**
 - **auth.users (1)** → **(N) recipes_generations**
 - **auth.users (1)** → **(1) user_preferences**
-- **recipes (1)** → **(N) recipes_generations**
+- **recipes (1)** → **(1) recipes_generations**
 
 ## 4. Indexes Summary
-- GIN on `pantry_items.unaccent(lower(name))`
+- GIN trigram index on `pantry_items.lower(name)` for fast search
 - B-Tree on `(pantry_items.user_id, created_at)`
 - B-Tree on `(recipes.user_id, created_at)`
 - B-Tree on `(recipes_generations.user_id, created_at)`
-- GIN on `user_preferences.disliked_ingredients`
 
 ## 5. Row-Level Security (RLS)
 For each application table (`pantry_items`, `recipes`, `recipes_generations`, `user_preferences`):
@@ -136,6 +132,8 @@ Replace `<table>` with each of: `pantry_items`, `recipes`, `recipes_generations`
 ## 6. Additional Notes
 - Requires `pgcrypto` extension for `gen_random_uuid()`:  
   `CREATE EXTENSION IF NOT EXISTS pgcrypto;`
+- Requires `pg_trgm` extension for trigram-based text search:  
+  `CREATE EXTENSION IF NOT EXISTS pg_trgm;`
 - `updated_at` timestamps should be maintained via trigger on each table:
   ```sql
   CREATE OR REPLACE FUNCTION set_updated_at()
