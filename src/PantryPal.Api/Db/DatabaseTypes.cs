@@ -1,14 +1,12 @@
 ﻿using Supabase.Postgrest.Attributes;
 using Supabase.Postgrest.Models;
-using System.ComponentModel.DataAnnotations;
 
 namespace PantryPal.Api.Db;
 
 [Table("diet_types")]
 public class DietTypesSelect : BaseModel
 {
-    [Key]
-    [Column("id")]
+    [PrimaryKey("id")]
     public short Id { get; set; }
 
     [Column("name")]
@@ -18,7 +16,6 @@ public class DietTypesSelect : BaseModel
 [Table("diet_types")]
 public class DietTypesInsert : BaseModel
 {
-    [Key]
     [Column("id")]
     public short? Id { get; set; }
 
@@ -29,7 +26,6 @@ public class DietTypesInsert : BaseModel
 [Table("diet_types")]
 public class DietTypesUpdate : BaseModel
 {
-    [Key]
     [Column("id")]
     public short? Id { get; set; }
 
@@ -40,8 +36,7 @@ public class DietTypesUpdate : BaseModel
 [Table("preferred_cuisines")]
 public class PreferredCuisinesSelect : BaseModel
 {
-    [Key]
-    [Column("id")]
+    [PrimaryKey("id")]
     public short Id { get; set; }
 
     [Column("name")]
@@ -51,7 +46,6 @@ public class PreferredCuisinesSelect : BaseModel
 [Table("preferred_cuisines")]
 public class PreferredCuisinesInsert : BaseModel
 {
-    [Key]
     [Column("id")]
     public short? Id { get; set; }
 
@@ -62,7 +56,6 @@ public class PreferredCuisinesInsert : BaseModel
 [Table("preferred_cuisines")]
 public class PreferredCuisinesUpdate : BaseModel
 {
-    [Key]
     [Column("id")]
     public short? Id { get; set; }
 
@@ -76,8 +69,7 @@ public class RecipeRejectReasonsSelect : BaseModel
     [Column("description")]
     public string Description { get; set; }
 
-    [Key]
-    [Column("id")]
+    [PrimaryKey("id")]
     public short Id { get; set; }
 }
 
@@ -87,7 +79,6 @@ public class RecipeRejectReasonsInsert : BaseModel
     [Column("description")]
     public string Description { get; set; }
 
-    [Key]
     [Column("id")]
     public short? Id { get; set; }
 }
@@ -98,7 +89,6 @@ public class RecipeRejectReasonsUpdate : BaseModel
     [Column("description")]
     public string? Description { get; set; }
 
-    [Key]
     [Column("id")]
     public short? Id { get; set; }
 }
@@ -109,8 +99,7 @@ public class PantryItemsSelect : BaseModel
     [Column("created_at")]
     public string CreatedAt { get; set; }
 
-    [Key]
-    [Column("id")]
+    [PrimaryKey("id")]
     public string Id { get; set; }
 
     [Column("is_favorite")]
@@ -132,7 +121,6 @@ public class PantryItemsInsert : BaseModel
     [Column("created_at")]
     public string? CreatedAt { get; set; }
 
-    [Key]
     [Column("id")]
     public string? Id { get; set; }
 
@@ -155,7 +143,6 @@ public class PantryItemsUpdate : BaseModel
     [Column("created_at")]
     public string? CreatedAt { get; set; }
 
-    [Key]
     [Column("id")]
     public string? Id { get; set; }
 
@@ -178,8 +165,7 @@ public class RecipesSelect : BaseModel
     [Column("created_at")]
     public string CreatedAt { get; set; }
 
-    [Key]
-    [Column("id")]
+    [PrimaryKey("id")]
     public string Id { get; set; }
 
     [Column("recipe_text")]
@@ -198,7 +184,6 @@ public class RecipesInsert : BaseModel
     [Column("created_at")]
     public string? CreatedAt { get; set; }
 
-    [Key]
     [Column("id")]
     public string? Id { get; set; }
 
@@ -218,7 +203,6 @@ public class RecipesUpdate : BaseModel
     [Column("created_at")]
     public string? CreatedAt { get; set; }
 
-    [Key]
     [Column("id")]
     public string? Id { get; set; }
 
@@ -250,8 +234,7 @@ public class RecipesGenerationsSelect : BaseModel
     [Column("generated_recipe_id")]
     public string? GeneratedRecipeId { get; set; }
 
-    [Key]
-    [Column("id")]
+    [PrimaryKey("id")]
     public string Id { get; set; }
 
     [Column("model")]
@@ -282,7 +265,6 @@ public class RecipesGenerationsInsert : BaseModel
     [Column("generated_recipe_id")]
     public string? GeneratedRecipeId { get; set; }
 
-    [Key]
     [Column("id")]
     public string? Id { get; set; }
 
@@ -314,7 +296,6 @@ public class RecipesGenerationsUpdate : BaseModel
     [Column("generated_recipe_id")]
     public string? GeneratedRecipeId { get; set; }
 
-    [Key]
     [Column("id")]
     public string? Id { get; set; }
 
@@ -346,8 +327,7 @@ public class UserPreferencesSelect : BaseModel
     [Column("updated_at")]
     public string UpdatedAt { get; set; }
 
-    [Key]
-    [Column("user_id")]
+    [PrimaryKey("user_id")]
     public string UserId { get; set; }
 }
 
@@ -369,7 +349,6 @@ public class UserPreferencesInsert : BaseModel
     [Column("updated_at")]
     public string? UpdatedAt { get; set; }
 
-    [Key]
     [Column("user_id")]
     public string UserId { get; set; }
 }
@@ -392,7 +371,6 @@ public class UserPreferencesUpdate : BaseModel
     [Column("updated_at")]
     public string? UpdatedAt { get; set; }
 
-    [Key]
     [Column("user_id")]
     public string? UserId { get; set; }
 }

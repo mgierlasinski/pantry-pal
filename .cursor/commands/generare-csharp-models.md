@@ -9,7 +9,7 @@ Complete the task in two steps:
 - Omit the word "Public" from the class name
 - The class should have the [Table("table_name")] attribute
 - Each property should have the [Column("column_name")] attribute
-- For properties that are primary keys, add the [Key] attribute before [Column]
+- For properties that are primary keys, add the [PrimaryKey("column_name")] attribute instead of [Column("column_name")]
 
 Example GO model:
 ```GO
@@ -23,8 +23,7 @@ Generated C# class:
 [Table("diet_types")]
 public class DietTypesSelect : BaseModel
 {
-    [Key]
-    [Column("id")]
+    [PrimaryKey("id")]
     public short Id { get; set; }
 
     [Column("name")]
