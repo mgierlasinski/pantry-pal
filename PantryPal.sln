@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PantryPal.Mobile", "src\Pan
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PantryPal.Api", "src\PantryPal.Api\PantryPal.Api.csproj", "{27F7E2AA-F5DA-4929-B3B1-390370B2117B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PantryPal.Data", "src\PantryPal.Data\PantryPal.Data.csproj", "{6AA77B95-98F0-45DF-98FA-313B0A444993}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -22,6 +24,10 @@ Global
 		{27F7E2AA-F5DA-4929-B3B1-390370B2117B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{27F7E2AA-F5DA-4929-B3B1-390370B2117B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{27F7E2AA-F5DA-4929-B3B1-390370B2117B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6AA77B95-98F0-45DF-98FA-313B0A444993}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6AA77B95-98F0-45DF-98FA-313B0A444993}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6AA77B95-98F0-45DF-98FA-313B0A444993}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6AA77B95-98F0-45DF-98FA-313B0A444993}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
