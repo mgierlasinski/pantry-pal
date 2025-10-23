@@ -7,9 +7,11 @@ alwaysApply: false
 
 ### Guidelines for ASP_NET
 
-- Use minimal APIs for simple endpoints in .NET 6+ applications to reduce boilerplate code
-- Implement the mediator pattern with MediatR for decoupling request handling and simplifying cross-cutting concerns
-- Use API controllers with model binding and validation attributes for {{complex_data_models}}
-- Apply proper response caching with cache profiles and ETags for improved performance on {{high_traffic_endpoints}}
-- Implement proper exception handling with ExceptionFilter or middleware to provide consistent error responses
+- Use minimal APIs for endpoints to reduce boilerplate code
 - Use dependency injection with scoped lifetime for request-specific services and singleton for stateless services
+- Implement repository pattern or use Supabase client directly, depending on the complexity
+- Implement proper exception handling to provide consistent error responses
+
+### Database
+- Use Supabase for backend services, including authentication and database interactions
+- Follow Supabase guideline for security and performance
