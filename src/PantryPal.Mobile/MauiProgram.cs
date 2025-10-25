@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Maui;
 using Microsoft.Extensions.Logging;
 using PantryPal.Mobile.ViewModels;
+using UraniumUI;
 
 namespace PantryPal.Mobile;
 
@@ -12,10 +13,13 @@ public static class MauiProgram
         builder
             .UseMauiApp<App>()
             .UseMauiCommunityToolkit()
+            .UseUraniumUI()
+            .UseUraniumUIMaterial()
             .ConfigureFonts(fonts =>
             {
                 fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
                 fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
+                fonts.AddMaterialSymbolsFonts();
             });
 
 #if DEBUG
