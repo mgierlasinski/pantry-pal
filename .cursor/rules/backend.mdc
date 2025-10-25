@@ -9,7 +9,7 @@ alwaysApply: false
 
 - Use minimal APIs for endpoints to reduce boilerplate code
 - Use dependency injection with scoped lifetime for request-specific services and singleton for stateless services
-- Implement repository pattern or use Supabase client directly, depending on the complexity
+- Implement repository pattern with Supabase client injected
 - Implement proper exception handling to provide consistent error responses
 
 ### Database
