@@ -3,7 +3,6 @@ using Moq;
 using PantryPal.Api.Db;
 using PantryPal.Api.Repositories;
 using PantryPal.Api.Services;
-using PantryPal.Data;
 
 namespace PantryPal.Api.UnitTests.Services;
 
@@ -30,7 +29,6 @@ public class PantryServiceTests
         var userId = Guid.NewGuid();
         var page = 1;
         var pageSize = 20;
-        var favorite = (bool?)null;
         var sortField = "created_at";
 
         var mockItems = new List<PantryItemsSelect>
@@ -40,11 +38,11 @@ public class PantryServiceTests
         };
 
         _mockRepository
-            .Setup(r => r.GetPantryItemsAsync(userId, page, pageSize, favorite, sortField))
+            .Setup(r => r.GetPantryItemsAsync(userId, page, pageSize, sortField))
             .ReturnsAsync((mockItems, 2));
 
         // Act
-        var result = await _service.GetPantryItemsAsync(userId, page, pageSize, favorite, sortField);
+        var result = await _service.GetPantryItemsAsync(userId, page, pageSize, sortField);
 
         // Assert
         Assert.NotNull(result);
@@ -58,17 +56,16 @@ public class PantryServiceTests
         Assert.Equal("Apples", firstItem.Name);
         Assert.True(firstItem.IsFavorite);
         
-        _mockRepository.Verify(r => r.GetPantryItemsAsync(userId, page, pageSize, favorite, sortField), Times.Once);
+        _mockRepository.Verify(r => r.GetPantryItemsAsync(userId, page, pageSize, sortField), Times.Once);
     }
 
     [Fact]
-    public async Task GetPantryItemsAsync_WithFavoriteFilter_ReturnsOnlyFavorites()
+    public async Task GetPantryItemsAsync_WithNameSort_ReturnsSortedItems()
     {
         // Arrange
         var userId = Guid.NewGuid();
         var page = 1;
         var pageSize = 20;
-        var favorite = true;
         var sortField = "name";
 
         var mockItems = new List<PantryItemsSelect>
@@ -77,19 +74,18 @@ public class PantryServiceTests
         };
 
         _mockRepository
-            .Setup(r => r.GetPantryItemsAsync(userId, page, pageSize, favorite, sortField))
+            .Setup(r => r.GetPantryItemsAsync(userId, page, pageSize, sortField))
             .ReturnsAsync((mockItems, 1));
 
         // Act
-        var result = await _service.GetPantryItemsAsync(userId, page, pageSize, favorite, sortField);
+        var result = await _service.GetPantryItemsAsync(userId, page, pageSize, sortField);
 
         // Assert
         Assert.NotNull(result);
         Assert.Single(result.Items);
         Assert.Equal(1, result.Total);
-        Assert.All(result.Items, item => Assert.True(item.IsFavorite));
         
-        _mockRepository.Verify(r => r.GetPantryItemsAsync(userId, page, pageSize, favorite, sortField), Times.Once);
+        _mockRepository.Verify(r => r.GetPantryItemsAsync(userId, page, pageSize, sortField), Times.Once);
     }
 
     [Fact]
@@ -99,17 +95,16 @@ public class PantryServiceTests
         var userId = Guid.NewGuid();
         var page = 1;
         var pageSize = 20;
-        var favorite = (bool?)null;
         var sortField = "created_at";
 
         var mockItems = new List<PantryItemsSelect>();
 
         _mockRepository
-            .Setup(r => r.GetPantryItemsAsync(userId, page, pageSize, favorite, sortField))
+            .Setup(r => r.GetPantryItemsAsync(userId, page, pageSize, sortField))
             .ReturnsAsync((mockItems, 0));
 
         // Act
-        var result = await _service.GetPantryItemsAsync(userId, page, pageSize, favorite, sortField);
+        var result = await _service.GetPantryItemsAsync(userId, page, pageSize, sortField);
 
         // Assert
         Assert.NotNull(result);
@@ -118,7 +113,7 @@ public class PantryServiceTests
         Assert.Equal(1, result.Page);
         Assert.Equal(20, result.PageSize);
         
-        _mockRepository.Verify(r => r.GetPantryItemsAsync(userId, page, pageSize, favorite, sortField), Times.Once);
+        _mockRepository.Verify(r => r.GetPantryItemsAsync(userId, page, pageSize, sortField), Times.Once);
     }
 
     [Fact]
@@ -128,7 +123,6 @@ public class PantryServiceTests
         var userId = Guid.NewGuid();
         var page = 2;
         var pageSize = 10;
-        var favorite = (bool?)null;
         var sortField = "name";
 
         var mockItems = new List<PantryItemsSelect>
@@ -138,11 +132,11 @@ public class PantryServiceTests
         };
 
         _mockRepository
-            .Setup(r => r.GetPantryItemsAsync(userId, page, pageSize, favorite, sortField))
+            .Setup(r => r.GetPantryItemsAsync(userId, page, pageSize, sortField))
             .ReturnsAsync((mockItems, 25)); // Total of 25 items
 
         // Act
-        var result = await _service.GetPantryItemsAsync(userId, page, pageSize, favorite, sortField);
+        var result = await _service.GetPantryItemsAsync(userId, page, pageSize, sortField);
 
         // Assert
         Assert.NotNull(result);
@@ -151,7 +145,7 @@ public class PantryServiceTests
         Assert.Equal(10, result.PageSize);
         Assert.Equal(25, result.Total);
         
-        _mockRepository.Verify(r => r.GetPantryItemsAsync(userId, page, pageSize, favorite, sortField), Times.Once);
+        _mockRepository.Verify(r => r.GetPantryItemsAsync(userId, page, pageSize, sortField), Times.Once);
     }
 
     [Fact]
@@ -161,18 +155,17 @@ public class PantryServiceTests
         var userId = Guid.NewGuid();
         var page = 1;
         var pageSize = 20;
-        var favorite = (bool?)null;
         var sortField = "created_at";
 
         _mockRepository
-            .Setup(r => r.GetPantryItemsAsync(userId, page, pageSize, favorite, sortField))
+            .Setup(r => r.GetPantryItemsAsync(userId, page, pageSize, sortField))
             .ThrowsAsync(new Exception("Database connection failed"));
 
         // Act & Assert
         await Assert.ThrowsAsync<Exception>(() => 
-            _service.GetPantryItemsAsync(userId, page, pageSize, favorite, sortField));
+            _service.GetPantryItemsAsync(userId, page, pageSize, sortField));
         
-        _mockRepository.Verify(r => r.GetPantryItemsAsync(userId, page, pageSize, favorite, sortField), Times.Once);
+        _mockRepository.Verify(r => r.GetPantryItemsAsync(userId, page, pageSize, sortField), Times.Once);
     }
 
     [Fact]
@@ -182,7 +175,6 @@ public class PantryServiceTests
         var userId = Guid.NewGuid();
         var page = 1;
         var pageSize = 20;
-        var favorite = (bool?)null;
         var sortField = "created_at";
 
         var mockItems = new List<PantryItemsSelect>
@@ -199,11 +191,11 @@ public class PantryServiceTests
         };
 
         _mockRepository
-            .Setup(r => r.GetPantryItemsAsync(userId, page, pageSize, favorite, sortField))
+            .Setup(r => r.GetPantryItemsAsync(userId, page, pageSize, sortField))
             .ReturnsAsync((mockItems, 1));
 
         // Act
-        var result = await _service.GetPantryItemsAsync(userId, page, pageSize, favorite, sortField);
+        var result = await _service.GetPantryItemsAsync(userId, page, pageSize, sortField);
 
         // Assert
         var item = result.Items.First();
@@ -221,7 +213,6 @@ public class PantryServiceTests
         var userId = Guid.NewGuid();
         var page = 1;
         var pageSize = 20;
-        var favorite = false;
         var sortField = "name";
 
         var mockItems = new List<PantryItemsSelect>
@@ -230,15 +221,15 @@ public class PantryServiceTests
         };
 
         _mockRepository
-            .Setup(r => r.GetPantryItemsAsync(userId, page, pageSize, favorite, sortField))
+            .Setup(r => r.GetPantryItemsAsync(userId, page, pageSize, sortField))
             .ReturnsAsync((mockItems, 1));
 
         // Act
-        var result = await _service.GetPantryItemsAsync(userId, page, pageSize, favorite, sortField);
+        var result = await _service.GetPantryItemsAsync(userId, page, pageSize, sortField);
 
         // Assert
         Assert.NotNull(result);
-        _mockRepository.Verify(r => r.GetPantryItemsAsync(userId, page, pageSize, favorite, "name"), Times.Once);
+        _mockRepository.Verify(r => r.GetPantryItemsAsync(userId, page, pageSize, "name"), Times.Once);
     }
 
     [Fact]
@@ -248,7 +239,6 @@ public class PantryServiceTests
         var userId = Guid.NewGuid();
         var page = 1;
         var pageSize = 100;
-        var favorite = (bool?)null;
         var sortField = "created_at";
 
         var mockItems = Enumerable.Range(1, 100).Select(i => new PantryItemsSelect
@@ -262,11 +252,11 @@ public class PantryServiceTests
         }).ToList();
 
         _mockRepository
-            .Setup(r => r.GetPantryItemsAsync(userId, page, pageSize, favorite, sortField))
+            .Setup(r => r.GetPantryItemsAsync(userId, page, pageSize, sortField))
             .ReturnsAsync((mockItems, 1000)); // 1000 total items
 
         // Act
-        var result = await _service.GetPantryItemsAsync(userId, page, pageSize, favorite, sortField);
+        var result = await _service.GetPantryItemsAsync(userId, page, pageSize, sortField);
 
         // Assert
         Assert.NotNull(result);

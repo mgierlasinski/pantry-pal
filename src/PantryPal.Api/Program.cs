@@ -49,7 +49,6 @@ app.MapGet("/", () => "Hello World!");
 app.MapGet("/pantry-items", async (
     int? page,
     int? pageSize,
-    bool? favorite,
     string? sort,
     IPantryService pantryService,
     ILogger<Program> logger) =>
@@ -99,7 +98,6 @@ app.MapGet("/pantry-items", async (
             userId,
             validatedPage,
             validatedPageSize,
-            favorite,
             validatedSort);
 
         return Results.Ok(result);

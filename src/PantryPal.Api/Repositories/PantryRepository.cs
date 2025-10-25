@@ -22,7 +22,6 @@ public class PantryRepository : IPantryRepository
         Guid userId,
         int page,
         int pageSize,
-        bool? favorite,
         string sortField)
     {
         try
@@ -31,12 +30,6 @@ public class PantryRepository : IPantryRepository
             var query = _supabaseClient
                 .From<PantryItemsSelect>()
                 .Filter("user_id", Supabase.Postgrest.Constants.Operator.Equals, userId.ToString());
-
-            // Apply optional favorite filter
-            if (favorite.HasValue)
-            {
-                query = query.Filter("is_favorite", Supabase.Postgrest.Constants.Operator.Equals, favorite.Value);
-            }
 
             // Apply sorting
             var ascending = sortField == "name"; // Sort name ascending, created_at descending
@@ -48,11 +41,6 @@ public class PantryRepository : IPantryRepository
             var countQuery = _supabaseClient
                 .From<PantryItemsSelect>()
                 .Filter("user_id", Supabase.Postgrest.Constants.Operator.Equals, userId.ToString());
-
-            if (favorite.HasValue)
-            {
-                countQuery = countQuery.Filter("is_favorite", Supabase.Postgrest.Constants.Operator.Equals, favorite.Value);
-            }
 
             // Execute count query
             var total = await countQuery.Count(Supabase.Postgrest.Constants.CountType.Exact);

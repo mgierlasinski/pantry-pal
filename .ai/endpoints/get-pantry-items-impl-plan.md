@@ -1,7 +1,7 @@
 # API Endpoint Implementation Plan: GET /pantry-items
 
 ## 1. Endpoint Overview
-Retrieves a paginated, optionally filtered and sorted list of pantry items for the authenticated user.
+Retrieves a paginated and sorted list of pantry items for the authenticated user.
 
 ## 2. Request Details
 - HTTP Method: GET
@@ -11,7 +11,6 @@ Retrieves a paginated, optionally filtered and sorted list of pantry items for t
     - `page` (integer, default = 1): page index (must be ≥ 1)
     - `pageSize` (integer, default = 20): items per page (must be ≥ 1, max 100)
   - Optional:
-    - `favorite` (boolean): filter items marked as favorite
     - `sort` (string): sort field, allowed values `created_at`, `name` (default = `created_at`)
 - Request Body: none
 
@@ -39,8 +38,8 @@ Retrieves a paginated, optionally filtered and sorted list of pantry items for t
 ## 5. Data Flow
 1. **Authentication middleware** validates JWT, populates `HttpContext.User`.
 2. **Endpoint handler** binds query parameters and validates them.
-3. **Service layer** method `GetPantryItemsAsync(userId, page, pageSize, favorite, sortField)`:
-   - Calls `IPantryRepository.GetPantryItemsAsync(userId, page, pageSize, favorite, sortField)`
+3. **Service layer** method `GetPantryItemsAsync(userId, page, pageSize, sortField)`:
+   - Calls `IPantryRepository.GetPantryItemsAsync(userId, page, pageSize, sortField)`
    - Receives raw list of `PantryItemsSelect` and total count.
    - Maps `PantryItemsSelect` to `PantryItemDto`.
    - Wraps list and metadata into `PantryItemsPaginatedResponseDto`.
@@ -56,7 +55,6 @@ Retrieves a paginated, optionally filtered and sorted list of pantry items for t
 - **Invalid parameters**: return 400 with descriptive message when
   - `page` or `pageSize` < 1 or > max
   - `sort` not in allowed set
-  - `favorite` cannot be parsed as bool
 - **Unauthenticated**: return 401
 - **Database/Service errors**: catch exceptions in service or endpoint, log via `ILogger`, return 500 with generic error message
 
@@ -71,13 +69,13 @@ Retrieves a paginated, optionally filtered and sorted list of pantry items for t
    ```csharp
    public interface IPantryRepository
    {
-       Task<(IEnumerable<PantryItemsSelect> Items, int Total)> GetPantryItemsAsync(Guid userId, int page, int pageSize, bool? favorite, string sortField);
+       Task<(IEnumerable<PantryItemsSelect> Items, int Total)> GetPantryItemsAsync(Guid userId, int page, int pageSize, string sortField);
    }
    ```
 3. **Implement repository** `PantryRepository`:
    - Inject `Client` (Supabase) and `ILogger<PantryRepository>`.
    - Implement `GetPantryItemsAsync`:
-     - Build Supabase query (filter by `user_id`, optional favorite, sort, range)
+     - Build Supabase query (filter by `user_id`, sort, range)
      - Execute query and separate count retrieval.
      - Return tuple of raw items and total.
 4. **Register repository** in DI container:
@@ -88,7 +86,7 @@ Retrieves a paginated, optionally filtered and sorted list of pantry items for t
    ```csharp
    public interface IPantryService
    {
-       Task<PantryItemsPaginatedResponseDto> GetPantryItemsAsync(Guid userId, int page, int pageSize, bool? favorite, string sortField);
+       Task<PantryItemsPaginatedResponseDto> GetPantryItemsAsync(Guid userId, int page, int pageSize, string sortField);
    }
    ```
 6. **Implement service** `PantryService`:
@@ -100,7 +98,7 @@ Retrieves a paginated, optionally filtered and sorted list of pantry items for t
    ```
 8. **Define endpoint** in `Program.cs`:
    ```csharp
-   app.MapGet("/pantry-items", async (int page, int pageSize, bool? favorite, string sort, IHttpContextAccessor ctx, IPantryService svc) =>
+   app.MapGet("/pantry-items", async (int page, int pageSize, string sort, IHttpContextAccessor ctx, IPantryService svc) =>
    {
        // Validate inputs
        // Extract userId from ctx.HttpContext.User
@@ -110,6 +108,6 @@ Retrieves a paginated, optionally filtered and sorted list of pantry items for t
    ```
 9. **Input validation**: Implement guard clauses for query parameters; return `Results.BadRequest()` if invalid.
 10. **Mapping**: Use LINQ to map `PantryItemsSelect` to `PantryItemDto` within service.
-11. **Testing**: Write unit tests mocking `IPantryRepository` for service logic, integration tests for endpoint covering paging, filtering, sorting, and error cases.
+11. **Testing**: Write unit tests mocking `IPantryRepository` for service logic, integration tests for endpoint covering paging, sorting, and error cases.
 12. **Documentation**: Update OpenAPI/Swagger docs with endpoint spec, parameters, and response schema.
 13. **Review & merge**: Conduct code review, ensure coding guidelines and clean code practices are followed.

@@ -22,7 +22,6 @@ public class PantryService : IPantryService
         Guid userId,
         int page,
         int pageSize,
-        bool? favorite,
         string sortField)
     {
         try
@@ -32,7 +31,6 @@ public class PantryService : IPantryService
                 userId, 
                 page, 
                 pageSize, 
-                favorite, 
                 sortField);
 
             // Map database models to DTOs

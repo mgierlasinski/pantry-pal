@@ -17,7 +17,6 @@
   - Query Parameters:
     - `page` (integer, default=1)
     - `pageSize` (integer, default=20)
-    - `favorite` (boolean, optional)
     - `sort` (`created_at`, `name`, default=`created_at`)
   - Response: 200 OK
     ```json

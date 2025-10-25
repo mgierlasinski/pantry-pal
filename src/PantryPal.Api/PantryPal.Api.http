@@ -1,0 +1,5 @@
+﻿@PantryPal.Api_HostAddress = https://localhost:7154
+
+GET {{PantryPal.Api_HostAddress}}/pantry-items
+
+###
