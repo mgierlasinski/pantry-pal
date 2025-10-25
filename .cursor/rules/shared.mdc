@@ -18,6 +18,9 @@ When introducing changes to the project, always follow the directory structure b
 
 - `./src` - source code
 - `./src/PantryPal.Api` - ASP.NET project
+- `./src/PantryPal.Api/Db` - Database types
+- `./src/PantryPal.Api/Repositories` - Data repositories
+- `./src/PantryPal.Api/Services` - Services with business logic
 - `./src/PantryPal.Data` - C# library project with Dtos, referenced by API and Mobile projects
 - `./src/PantryPal.Mobile` - MAUI project
 - `./src/PantryPal.Mobile/Models` - MAUI pages
