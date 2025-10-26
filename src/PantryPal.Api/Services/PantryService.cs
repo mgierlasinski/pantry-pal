@@ -69,28 +69,13 @@ public class PantryService : IPantryService
     /// <inheritdoc />
     public async Task<PantryItemDto> CreatePantryItemAsync(Guid userId, PantryItemCreateDto dto)
     {
-        // Guard clause: ensure name is not null or empty
-        if (string.IsNullOrWhiteSpace(dto.Name))
-        {
-            _logger.LogWarning("Attempted to create pantry item with null or empty name for user {UserId}", userId);
-            throw new ArgumentException("Name cannot be null or empty", nameof(dto.Name));
-        }
-
-        // Validate name length (1–100 characters)
-        if (dto.Name.Length > 100)
-        {
-            _logger.LogWarning("Attempted to create pantry item with name too long ({Length} chars) for user {UserId}",
-                dto.Name.Length, userId);
-            throw new ArgumentException("Name must be 1–100 characters", nameof(dto.Name));
-        }
-
         try
         {
             // Construct PantryItemsInsert model with UserId and Name
             var insertModel = new PantryItemsInsert
             {
                 UserId = userId.ToString(),
-                Name = dto.Name.Trim(),
+                Name = dto.Name, // Validation already done at endpoint level
                 IsFavorite = false
             };
 
@@ -115,6 +100,42 @@ public class PantryService : IPantryService
         {
             _logger.LogError(ex, "Error creating pantry item for user {UserId} with name '{ItemName}'",
                 userId, dto.Name);
+            throw;
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task<PantryItemDto> UpdatePantryItemAsync(Guid id, Guid userId, PantryItemUpdateDto dto)
+    {
+        try
+        {
+            var updateModel = new PantryItemsUpdate
+            {
+                Id = id.ToString(),
+                UserId = userId.ToString(),
+                Name = dto.Name,
+                IsFavorite = dto.IsFavorite
+            };
+
+            var updatedItem = await _repository.UpdatePantryItemAsync(updateModel);
+
+            // Map to DTO
+            var result = new PantryItemDto(
+                Id: updatedItem.Id,
+                Name: updatedItem.Name,
+                IsFavorite: updatedItem.IsFavorite,
+                CreatedAt: updatedItem.CreatedAt,
+                UpdatedAt: updatedItem.UpdatedAt
+            );
+
+            _logger.LogInformation("Successfully updated pantry item {ItemId} '{ItemName}' for user {UserId}",
+                result.Id, result.Name, userId);
+
+            return result;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error updating pantry item {ItemId} for user {UserId}", id, userId);
             throw;
         }
     }

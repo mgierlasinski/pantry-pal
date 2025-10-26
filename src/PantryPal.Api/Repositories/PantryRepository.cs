@@ -117,5 +117,61 @@ public class PantryRepository : IPantryRepository
             throw;
         }
     }
+
+    /// <inheritdoc />
+    public async Task<PantryItemsSelect> UpdatePantryItemAsync(PantryItemsUpdate model)
+    {
+        try
+        {
+            var response = await _supabaseClient
+                .From<PantryItemsUpdate>()
+                .Filter("id", Supabase.Postgrest.Constants.Operator.Equals, model.Id)
+                .Filter("user_id", Supabase.Postgrest.Constants.Operator.Equals, model.UserId)
+                .Update(model);
+
+            if (!response.Models.Any())
+            {
+                throw new ArgumentException("Pantry item not found or not owned by user");
+            }
+
+            var updatedItem = response.Models.First();
+
+            // Convert back to select model for consistency
+            var result = new PantryItemsSelect
+            {
+                Id = updatedItem.Id,
+                Name = updatedItem.Name,
+                IsFavorite = updatedItem.IsFavorite ?? false,
+                CreatedAt = updatedItem.CreatedAt,
+                UpdatedAt = updatedItem.UpdatedAt,
+                UserId = updatedItem.UserId
+            };
+
+            _logger.LogInformation("Successfully updated pantry item {ItemId} '{ItemName}' for user {UserId}",
+                result.Id, result.Name, result.UserId);
+
+            return result;
+        }
+        catch (Supabase.Postgrest.Exceptions.PostgrestException ex)
+        {
+            // Handle database errors (e.g., unique constraint violation)
+            if (ex.Message.Contains("duplicate key") || ex.Message.Contains("unique constraint"))
+            {
+                _logger.LogWarning(ex, "Duplicate pantry item name for user {UserId}: '{ItemName}'",
+                    model.UserId, model.Name);
+                throw new InvalidOperationException($"An item with the name '{model.Name}' already exists for this user");
+            }
+
+            _logger.LogError(ex, "Postgrest exception while updating pantry item {ItemId} for user {UserId}: '{ItemName}'",
+                model.Id, model.UserId, model.Name);
+            throw;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected exception while updating pantry item {ItemId} for user {UserId}: '{ItemName}'",
+                model.Id, model.UserId, model.Name);
+            throw;
+        }
+    }
 }
 

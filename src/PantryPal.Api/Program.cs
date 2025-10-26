@@ -1,3 +1,4 @@
+using FluentValidation;
 using PantryPal.Api.Repositories;
 using PantryPal.Api.Services;
 using PantryPal.Data;
@@ -16,6 +17,8 @@ builder.Services.AddSingleton(provider =>
 
     return new Client(url, key, options);
 });
+
+builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 
 // TODO: Configure authentication when ready
 // builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -118,21 +121,17 @@ app.MapGet("/pantry-items", async (
 // POST /pantry-items endpoint
 app.MapPost("/pantry-items", async (
     PantryItemCreateDto dto,
+    IValidator<PantryItemCreateDto> validator,
     IPantryService pantryService,
     ILogger<Program> logger) =>
 {
-    // Validate request body
-    if (string.IsNullOrWhiteSpace(dto.Name))
+    // Validate request body using FluentValidation
+    var validationResult = await validator.ValidateAsync(dto);
+    if (!validationResult.IsValid)
     {
-        logger.LogWarning("Missing or empty name in POST /pantry-items request");
-        return Results.BadRequest("Name is required");
-    }
-
-    // Validate name length (1–100 characters)
-    if (dto.Name.Length > 100)
-    {
-        logger.LogWarning("Name too long in POST /pantry-items request: {Length} characters", dto.Name.Length);
-        return Results.BadRequest("Name must be 1–100 characters");
+        logger.LogWarning("Validation failed for POST /pantry-items: {Errors}",
+            string.Join(", ", validationResult.Errors.Select(e => e.ErrorMessage)));
+        return Results.ValidationProblem(validationResult.ToDictionary());
     }
 
     try
@@ -162,6 +161,62 @@ app.MapPost("/pantry-items", async (
     catch (Exception ex)
     {
         logger.LogError(ex, "Unhandled exception in POST /pantry-items endpoint");
+        return Results.Problem(
+            title: "Internal Server Error",
+            detail: "An error occurred while processing your request.",
+            statusCode: 500);
+    }
+}); // TODO: Add .RequireAuthorization() when authentication is enabled
+
+// PATCH /pantry-items/{id} endpoint
+app.MapPatch("/pantry-items/{id}", async (
+    Guid id,
+    PantryItemUpdateDto dto,
+    IValidator<PantryItemUpdateDto> validator,
+    IPantryService pantryService,
+    ILogger<Program> logger) =>
+{
+    // Validate request body using FluentValidation
+    var validationResult = await validator.ValidateAsync(dto);
+    if (!validationResult.IsValid)
+    {
+        logger.LogWarning("Validation failed for PATCH /pantry-items/{Id}: {Errors}",
+            id, string.Join(", ", validationResult.Errors.Select(e => e.ErrorMessage)));
+        return Results.ValidationProblem(validationResult.ToDictionary());
+    }
+
+    try
+    {
+        // TODO: Extract userId from authenticated user when authentication is enabled
+        // var userIdClaim = httpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        // if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+        // {
+        //     logger.LogWarning("Unable to extract valid user ID from claims");
+        //     return Results.Unauthorized();
+        // }
+
+        // TEMPORARY: Use a hardcoded userId for testing until authentication is implemented
+        var userId = Guid.Parse(DefaultUserId);
+        logger.LogWarning("Using hardcoded userId for testing. Authentication not yet enabled.");
+
+        var updatedItem = await pantryService.UpdatePantryItemAsync(id, userId, dto);
+
+        logger.LogInformation("Successfully updated pantry item {ItemId} for user {UserId}", updatedItem.Id, userId);
+        return Results.Ok(updatedItem);
+    }
+    catch (ArgumentException ex) when (ex.Message.Contains("not found"))
+    {
+        logger.LogWarning(ex, "Pantry item {ItemId} not found for user", id);
+        return Results.NotFound("Pantry item not found");
+    }
+    catch (InvalidOperationException ex) when (ex.Message.Contains("already exists"))
+    {
+        logger.LogWarning(ex, "Duplicate pantry item name for user");
+        return Results.Conflict("An item with this name already exists");
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "Unhandled exception in PATCH /pantry-items/{Id} endpoint", id);
         return Results.Problem(
             title: "Internal Server Error",
             detail: "An error occurred while processing your request.",

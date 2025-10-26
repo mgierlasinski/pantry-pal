@@ -29,5 +29,16 @@ public interface IPantryService
     /// <returns>The created pantry item DTO</returns>
     /// <exception cref="InvalidOperationException">Thrown when an item with the same name already exists for the user</exception>
     Task<PantryItemDto> CreatePantryItemAsync(Guid userId, PantryItemCreateDto dto);
+
+    /// <summary>
+    /// Updates an existing pantry item for the specified user
+    /// </summary>
+    /// <param name="id">The ID of the pantry item to update</param>
+    /// <param name="userId">The ID of the user who owns the pantry item</param>
+    /// <param name="dto">The update DTO containing the fields to modify</param>
+    /// <returns>The updated pantry item DTO</returns>
+    /// <exception cref="ArgumentException">Thrown when the pantry item is not found or not owned by the user</exception>
+    /// <exception cref="InvalidOperationException">Thrown when an item with the same name already exists for the user</exception>
+    Task<PantryItemDto> UpdatePantryItemAsync(Guid id, Guid userId, PantryItemUpdateDto dto);
 }
 

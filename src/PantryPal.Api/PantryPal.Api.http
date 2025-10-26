@@ -1,4 +1,5 @@
 ﻿@PantryPal.Api_HostAddress = https://localhost:7154
+@ExistingPantryItem = 7b2e7457-8a9d-4cc4-807c-f7c2489008b5
 
 GET {{PantryPal.Api_HostAddress}}/pantry-items
 
@@ -27,6 +28,76 @@ Content-Type: application/json
 
 {
   "name": "A very long name that exceeds the maximum allowed length of 100 characters for pantry item names which should trigger validation error"
+}
+
+###
+
+# PATCH /pantry-items/{id} - Update pantry item name
+PATCH {{PantryPal.Api_HostAddress}}/pantry-items/{{ExistingPantryItem}}
+Content-Type: application/json
+
+{
+  "name": "Cherry Tomato"
+}
+
+###
+
+# PATCH /pantry-items/{id} - Update pantry item favorite status
+PATCH {{PantryPal.Api_HostAddress}}/pantry-items/{{ExistingPantryItem}}
+Content-Type: application/json
+
+{
+  "isFavorite": true
+}
+
+###
+
+# PATCH /pantry-items/{id} - Update both name and favorite status
+PATCH {{PantryPal.Api_HostAddress}}/pantry-items/{{ExistingPantryItem}}
+Content-Type: application/json
+
+{
+  "name": "Organic Cherry Tomato",
+  "isFavorite": true
+}
+
+###
+
+# PATCH /pantry-items/{id} - Validation error: no fields provided
+PATCH {{PantryPal.Api_HostAddress}}/pantry-items/{{ExistingPantryItem}}
+Content-Type: application/json
+
+{
+}
+
+###
+
+# PATCH /pantry-items/{id} - Validation error: empty name
+PATCH {{PantryPal.Api_HostAddress}}/pantry-items/{{ExistingPantryItem}}
+Content-Type: application/json
+
+{
+  "name": ""
+}
+
+###
+
+# PATCH /pantry-items/{id} - Validation error: name too long
+PATCH {{PantryPal.Api_HostAddress}}/pantry-items/{{ExistingPantryItem}}
+Content-Type: application/json
+
+{
+  "name": "A very long name that exceeds the maximum allowed length of 100 characters for pantry item names which should trigger validation error"
+}
+
+###
+
+# PATCH /pantry-items/{id} - Error: item not found
+PATCH {{PantryPal.Api_HostAddress}}/pantry-items/00000000-0000-0000-0000-999999999999
+Content-Type: application/json
+
+{
+  "name": "Non-existent Item"
 }
 
 ###

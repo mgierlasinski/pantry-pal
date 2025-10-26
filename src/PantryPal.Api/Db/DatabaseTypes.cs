@@ -145,19 +145,19 @@ public class PantryItemsUpdate : BaseModel
     public string? CreatedAt { get; set; }
 
     [PrimaryKey("id")]
-    public string? Id { get; set; }
+    public string Id { get; set; }
 
-    [Column("is_favorite")]
+    [Column("is_favorite", nullValueHandling: NullValueHandling.Ignore)]
     public bool? IsFavorite { get; set; }
 
-    [Column("name")]
+    [Column("name", nullValueHandling: NullValueHandling.Ignore)]
     public string? Name { get; set; }
 
     [Column("updated_at", nullValueHandling: NullValueHandling.Ignore)]
     public string? UpdatedAt { get; set; }
 
     [Column("user_id")]
-    public string? UserId { get; set; }
+    public string UserId { get; set; }
 }
 
 [Table("recipes")]

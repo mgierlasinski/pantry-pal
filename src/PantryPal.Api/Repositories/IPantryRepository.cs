@@ -28,5 +28,13 @@ public interface IPantryRepository
     /// <returns>The created pantry item record</returns>
     /// <exception cref="InvalidOperationException">Thrown when a pantry item with the same name already exists for the user</exception>
     Task<PantryItemsSelect> CreatePantryItemAsync(PantryItemsInsert model);
+
+    /// <summary>
+    /// Updates an existing pantry item in the database
+    /// </summary>
+    /// <param name="model">The update model containing the pantry item data</param>
+    /// <returns>The updated pantry item record</returns>
+    /// <exception cref="InvalidOperationException">Thrown when a pantry item with the same name already exists for the user</exception>
+    Task<PantryItemsSelect> UpdatePantryItemAsync(PantryItemsUpdate model);
 }
 
