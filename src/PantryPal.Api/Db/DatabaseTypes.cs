@@ -1,4 +1,5 @@
-﻿using Supabase.Postgrest.Attributes;
+﻿using Newtonsoft.Json;
+using Supabase.Postgrest.Attributes;
 using Supabase.Postgrest.Models;
 
 namespace PantryPal.Api.Db;
@@ -118,19 +119,19 @@ public class PantryItemsSelect : BaseModel
 [Table("pantry_items")]
 public class PantryItemsInsert : BaseModel
 {
-    [Column("created_at")]
+    [Column("created_at", nullValueHandling: NullValueHandling.Ignore)]
     public string? CreatedAt { get; set; }
 
-    [Column("id")]
+    [PrimaryKey("id")]
     public string? Id { get; set; }
 
     [Column("is_favorite")]
-    public bool? IsFavorite { get; set; }
+    public bool IsFavorite { get; set; }
 
     [Column("name")]
     public string Name { get; set; }
 
-    [Column("updated_at")]
+    [Column("updated_at", nullValueHandling: NullValueHandling.Ignore)]
     public string? UpdatedAt { get; set; }
 
     [Column("user_id")]
@@ -140,10 +141,10 @@ public class PantryItemsInsert : BaseModel
 [Table("pantry_items")]
 public class PantryItemsUpdate : BaseModel
 {
-    [Column("created_at")]
+    [Column("created_at", nullValueHandling: NullValueHandling.Ignore)]
     public string? CreatedAt { get; set; }
 
-    [Column("id")]
+    [PrimaryKey("id")]
     public string? Id { get; set; }
 
     [Column("is_favorite")]
@@ -152,7 +153,7 @@ public class PantryItemsUpdate : BaseModel
     [Column("name")]
     public string? Name { get; set; }
 
-    [Column("updated_at")]
+    [Column("updated_at", nullValueHandling: NullValueHandling.Ignore)]
     public string? UpdatedAt { get; set; }
 
     [Column("user_id")]

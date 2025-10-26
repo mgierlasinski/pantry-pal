@@ -16,9 +16,17 @@ public interface IPantryRepository
     /// <param name="sortField">The field to sort by (created_at or name)</param>
     /// <returns>A tuple containing the list of items and the total count</returns>
     Task<(IEnumerable<PantryItemsSelect> Items, int Total)> GetPantryItemsAsync(
-        Guid userId, 
-        int page, 
-        int pageSize, 
+        Guid userId,
+        int page,
+        int pageSize,
         string sortField);
+
+    /// <summary>
+    /// Creates a new pantry item in the database
+    /// </summary>
+    /// <param name="model">The insert model containing the pantry item data</param>
+    /// <returns>The created pantry item record</returns>
+    /// <exception cref="InvalidOperationException">Thrown when a pantry item with the same name already exists for the user</exception>
+    Task<PantryItemsSelect> CreatePantryItemAsync(PantryItemsInsert model);
 }
 

@@ -3,3 +3,30 @@
 GET {{PantryPal.Api_HostAddress}}/pantry-items
 
 ###
+
+POST {{PantryPal.Api_HostAddress}}/pantry-items
+Content-Type: application/json
+
+{
+  "name": "Tomato"
+}
+
+###
+
+POST {{PantryPal.Api_HostAddress}}/pantry-items
+Content-Type: application/json
+
+{
+  "name": ""
+}
+
+###
+
+POST {{PantryPal.Api_HostAddress}}/pantry-items
+Content-Type: application/json
+
+{
+  "name": "A very long name that exceeds the maximum allowed length of 100 characters for pantry item names which should trigger validation error"
+}
+
+###

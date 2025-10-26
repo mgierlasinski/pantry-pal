@@ -1,6 +1,9 @@
 using PantryPal.Api.Repositories;
 using PantryPal.Api.Services;
+using PantryPal.Data;
 using Supabase;
+
+const string DefaultUserId = "cedc2d66-51dc-4b19-8713-b51bf177df39";
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -91,7 +94,7 @@ app.MapGet("/pantry-items", async (
         // }
 
         // TEMPORARY: Use a hardcoded userId for testing until authentication is implemented
-        var userId = Guid.Parse("00000000-0000-0000-0000-000000000000");
+        var userId = Guid.Parse(DefaultUserId);
         logger.LogWarning("Using hardcoded userId for testing. Authentication not yet enabled.");
 
         var result = await pantryService.GetPantryItemsAsync(
@@ -105,6 +108,60 @@ app.MapGet("/pantry-items", async (
     catch (Exception ex)
     {
         logger.LogError(ex, "Unhandled exception in GET /pantry-items endpoint");
+        return Results.Problem(
+            title: "Internal Server Error",
+            detail: "An error occurred while processing your request.",
+            statusCode: 500);
+    }
+}); // TODO: Add .RequireAuthorization() when authentication is enabled
+
+// POST /pantry-items endpoint
+app.MapPost("/pantry-items", async (
+    PantryItemCreateDto dto,
+    IPantryService pantryService,
+    ILogger<Program> logger) =>
+{
+    // Validate request body
+    if (string.IsNullOrWhiteSpace(dto.Name))
+    {
+        logger.LogWarning("Missing or empty name in POST /pantry-items request");
+        return Results.BadRequest("Name is required");
+    }
+
+    // Validate name length (1–100 characters)
+    if (dto.Name.Length > 100)
+    {
+        logger.LogWarning("Name too long in POST /pantry-items request: {Length} characters", dto.Name.Length);
+        return Results.BadRequest("Name must be 1–100 characters");
+    }
+
+    try
+    {
+        // TODO: Extract userId from authenticated user when authentication is enabled
+        // var userIdClaim = httpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        // if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+        // {
+        //     logger.LogWarning("Unable to extract valid user ID from claims");
+        //     return Results.Unauthorized();
+        // }
+
+        // TEMPORARY: Use a hardcoded userId for testing until authentication is implemented
+        var userId = Guid.Parse(DefaultUserId);
+        logger.LogWarning("Using hardcoded userId for testing. Authentication not yet enabled.");
+
+        var createdItem = await pantryService.CreatePantryItemAsync(userId, dto);
+
+        logger.LogInformation("Successfully created pantry item {ItemId} for user {UserId}", createdItem.Id, userId);
+        return Results.Created($"/pantry-items/{createdItem.Id}", createdItem);
+    }
+    catch (InvalidOperationException ex) when (ex.Message.Contains("already exists"))
+    {
+        logger.LogWarning(ex, "Duplicate pantry item name");
+        return Results.Conflict("An item with this name already exists");
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "Unhandled exception in POST /pantry-items endpoint");
         return Results.Problem(
             title: "Internal Server Error",
             detail: "An error occurred while processing your request.",

@@ -67,5 +67,55 @@ public class PantryRepository : IPantryRepository
             throw;
         }
     }
+
+    /// <inheritdoc />
+    public async Task<PantryItemsSelect> CreatePantryItemAsync(PantryItemsInsert model)
+    {
+        try
+        {
+            // Use Supabase.Client.From<PantryItemsInsert>().Insert() to insert record
+            var response = await _supabaseClient
+                .From<PantryItemsInsert>()
+                .Insert(model);
+
+            var createdItem = response.Models.First();
+
+            // Convert back to select model for consistency
+            var result = new PantryItemsSelect
+            {
+                Id = createdItem.Id,
+                Name = createdItem.Name,
+                IsFavorite = createdItem.IsFavorite,
+                CreatedAt = createdItem.CreatedAt,
+                UpdatedAt = createdItem.UpdatedAt,
+                UserId = createdItem.UserId
+            };
+
+            _logger.LogInformation("Successfully created pantry item {ItemId} '{ItemName}' for user {UserId}",
+                result.Id, result.Name, result.UserId);
+
+            return result;
+        }
+        catch (Supabase.Postgrest.Exceptions.PostgrestException ex)
+        {
+            // Handle database errors (e.g., unique constraint violation)
+            if (ex.Message.Contains("duplicate key") || ex.Message.Contains("unique constraint"))
+            {
+                _logger.LogWarning(ex, "Duplicate pantry item name for user {UserId}: '{ItemName}'",
+                    model.UserId, model.Name);
+                throw new InvalidOperationException($"An item with the name '{model.Name}' already exists for this user");
+            }
+
+            _logger.LogError(ex, "Postgrest exception while creating pantry item for user {UserId}: '{ItemName}'",
+                model.UserId, model.Name);
+            throw;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected exception while creating pantry item for user {UserId}: '{ItemName}'",
+                model.UserId, model.Name);
+            throw;
+        }
+    }
 }
 

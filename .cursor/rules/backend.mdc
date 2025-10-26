@@ -11,6 +11,7 @@ alwaysApply: false
 - Use dependency injection with scoped lifetime for request-specific services and singleton for stateless services
 - Implement repository pattern with Supabase client injected
 - Implement proper exception handling to provide consistent error responses
+- use /src/PantryPal.Api/PantryPal.Api.http for runtime testing
 
 ### Database
 - Use Supabase for backend services, including authentication and database interactions

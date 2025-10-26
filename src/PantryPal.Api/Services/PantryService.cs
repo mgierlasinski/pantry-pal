@@ -1,3 +1,4 @@
+using PantryPal.Api.Db;
 using PantryPal.Api.Repositories;
 using PantryPal.Data;
 
@@ -61,6 +62,59 @@ public class PantryService : IPantryService
             _logger.LogError(ex,
                 "Error in PantryService while retrieving items for user {UserId} (page {Page}, pageSize {PageSize})",
                 userId, page, pageSize);
+            throw;
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task<PantryItemDto> CreatePantryItemAsync(Guid userId, PantryItemCreateDto dto)
+    {
+        // Guard clause: ensure name is not null or empty
+        if (string.IsNullOrWhiteSpace(dto.Name))
+        {
+            _logger.LogWarning("Attempted to create pantry item with null or empty name for user {UserId}", userId);
+            throw new ArgumentException("Name cannot be null or empty", nameof(dto.Name));
+        }
+
+        // Validate name length (1–100 characters)
+        if (dto.Name.Length > 100)
+        {
+            _logger.LogWarning("Attempted to create pantry item with name too long ({Length} chars) for user {UserId}",
+                dto.Name.Length, userId);
+            throw new ArgumentException("Name must be 1–100 characters", nameof(dto.Name));
+        }
+
+        try
+        {
+            // Construct PantryItemsInsert model with UserId and Name
+            var insertModel = new PantryItemsInsert
+            {
+                UserId = userId.ToString(),
+                Name = dto.Name.Trim(),
+                IsFavorite = false
+            };
+
+            // Call repository to create the item
+            var createdItem = await _repository.CreatePantryItemAsync(insertModel);
+
+            // Map database model to DTO
+            var result = new PantryItemDto(
+                Id: createdItem.Id,
+                Name: createdItem.Name,
+                IsFavorite: createdItem.IsFavorite,
+                CreatedAt: createdItem.CreatedAt,
+                UpdatedAt: createdItem.UpdatedAt
+            );
+
+            _logger.LogInformation("Successfully created pantry item {ItemId} '{ItemName}' for user {UserId}",
+                result.Id, result.Name, userId);
+
+            return result;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error creating pantry item for user {UserId} with name '{ItemName}'",
+                userId, dto.Name);
             throw;
         }
     }

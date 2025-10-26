@@ -20,5 +20,14 @@ public interface IPantryService
         int page,
         int pageSize,
         string sortField);
+
+    /// <summary>
+    /// Creates a new pantry item for the specified user
+    /// </summary>
+    /// <param name="userId">The ID of the user creating the pantry item</param>
+    /// <param name="dto">The create DTO containing the item name</param>
+    /// <returns>The created pantry item DTO</returns>
+    /// <exception cref="InvalidOperationException">Thrown when an item with the same name already exists for the user</exception>
+    Task<PantryItemDto> CreatePantryItemAsync(Guid userId, PantryItemCreateDto dto);
 }
 
