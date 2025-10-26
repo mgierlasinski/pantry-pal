@@ -3,6 +3,7 @@ using PantryPal.Api.Repositories;
 using PantryPal.Api.Services;
 using PantryPal.Data;
 using Supabase;
+using System.Security.Claims;
 
 const string DefaultUserId = "cedc2d66-51dc-4b19-8713-b51bf177df39";
 
@@ -217,6 +218,47 @@ app.MapPatch("/pantry-items/{id}", async (
     catch (Exception ex)
     {
         logger.LogError(ex, "Unhandled exception in PATCH /pantry-items/{Id} endpoint", id);
+        return Results.Problem(
+            title: "Internal Server Error",
+            detail: "An error occurred while processing your request.",
+            statusCode: 500);
+    }
+}); // TODO: Add .RequireAuthorization() when authentication is enabled
+
+// DELETE /pantry-items/{id} endpoint
+app.MapDelete("/pantry-items/{id}", async (
+    Guid id,
+    ClaimsPrincipal user,
+    IPantryService pantryService,
+    ILogger<Program> logger) =>
+{
+    try
+    {
+        // TODO: Extract userId from authenticated user when authentication is enabled
+        // var userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        // if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+        // {
+        //     logger.LogWarning("Unable to extract valid user ID from claims");
+        //     return Results.Unauthorized();
+        // }
+
+        // TEMPORARY: Use a hardcoded userId for testing until authentication is implemented
+        var userId = Guid.Parse(DefaultUserId);
+        logger.LogWarning("Using hardcoded userId for testing. Authentication not yet enabled.");
+
+        await pantryService.DeletePantryItemAsync(id, userId);
+
+        logger.LogInformation("Successfully deleted pantry item {ItemId} for user {UserId}", id, userId);
+        return Results.NoContent();
+    }
+    catch (ArgumentException ex) when (ex.Message.Contains("not found"))
+    {
+        logger.LogWarning(ex, "Pantry item {ItemId} not found for user", id);
+        return Results.NotFound("Pantry item not found");
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "Unhandled exception in DELETE /pantry-items/{Id} endpoint", id);
         return Results.Problem(
             title: "Internal Server Error",
             detail: "An error occurred while processing your request.",

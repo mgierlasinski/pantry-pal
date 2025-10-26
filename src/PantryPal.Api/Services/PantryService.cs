@@ -139,5 +139,32 @@ public class PantryService : IPantryService
             throw;
         }
     }
+
+    /// <inheritdoc />
+    public async Task DeletePantryItemAsync(Guid id, Guid userId)
+    {
+        try
+        {
+            var rowsAffected = await _repository.DeletePantryItemAsync(id, userId);
+
+            if (rowsAffected == 0)
+            {
+                throw new ArgumentException("Pantry item not found or not owned by user");
+            }
+
+            _logger.LogInformation("Successfully deleted pantry item {ItemId} for user {UserId}",
+                id, userId);
+        }
+        catch (ArgumentException ex) when (ex.Message.Contains("not found"))
+        {
+            _logger.LogWarning(ex, "Pantry item {ItemId} not found for user {UserId}", id, userId);
+            throw;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error deleting pantry item {ItemId} for user {UserId}", id, userId);
+            throw;
+        }
+    }
 }
 

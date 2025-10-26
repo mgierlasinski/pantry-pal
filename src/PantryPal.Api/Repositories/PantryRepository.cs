@@ -173,5 +173,51 @@ public class PantryRepository : IPantryRepository
             throw;
         }
     }
+
+    /// <inheritdoc />
+    public async Task<int> DeletePantryItemAsync(Guid id, Guid userId)
+    {
+        try
+        {
+            // Check if the item exists first
+            var countQuery = _supabaseClient
+                .From<PantryItemsSelect>()
+                .Filter("id", Supabase.Postgrest.Constants.Operator.Equals, id.ToString())
+                .Filter("user_id", Supabase.Postgrest.Constants.Operator.Equals, userId.ToString());
+
+            var existingCount = await countQuery.Count(Supabase.Postgrest.Constants.CountType.Exact);
+
+            if (existingCount == 0)
+            {
+                _logger.LogWarning("No pantry item found with id {ItemId} for user {UserId}",
+                    id, userId);
+                return 0;
+            }
+
+            // Perform the delete operation
+            await _supabaseClient
+                .From<PantryItemsSelect>()
+                .Filter("id", Supabase.Postgrest.Constants.Operator.Equals, id.ToString())
+                .Filter("user_id", Supabase.Postgrest.Constants.Operator.Equals, userId.ToString())
+                .Delete();
+
+            _logger.LogInformation("Successfully deleted pantry item {ItemId} for user {UserId}",
+                id, userId);
+
+            return 1;
+        }
+        catch (Supabase.Postgrest.Exceptions.PostgrestException ex)
+        {
+            _logger.LogError(ex, "Postgrest exception while deleting pantry item {ItemId} for user {UserId}",
+                id, userId);
+            throw;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected exception while deleting pantry item {ItemId} for user {UserId}",
+                id, userId);
+            throw;
+        }
+    }
 }
 

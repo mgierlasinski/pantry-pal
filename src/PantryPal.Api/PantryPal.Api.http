@@ -5,6 +5,7 @@ GET {{PantryPal.Api_HostAddress}}/pantry-items
 
 ###
 
+# POST /pantry-items - Create pantry item
 POST {{PantryPal.Api_HostAddress}}/pantry-items
 Content-Type: application/json
 
@@ -14,6 +15,7 @@ Content-Type: application/json
 
 ###
 
+# POST /pantry-items - Validation error: empty name
 POST {{PantryPal.Api_HostAddress}}/pantry-items
 Content-Type: application/json
 
@@ -23,6 +25,7 @@ Content-Type: application/json
 
 ###
 
+# POST /pantry-items - Validation error: name too long
 POST {{PantryPal.Api_HostAddress}}/pantry-items
 Content-Type: application/json
 
@@ -99,5 +102,15 @@ Content-Type: application/json
 {
   "name": "Non-existent Item"
 }
+
+###
+
+# DELETE /pantry-items/{id} - Delete existing pantry item
+DELETE {{PantryPal.Api_HostAddress}}/pantry-items/20064eb6-236c-4eec-90f9-3db822d659be
+
+###
+
+# DELETE /pantry-items/{id} - Error: item not found
+DELETE {{PantryPal.Api_HostAddress}}/pantry-items/00000000-0000-0000-0000-999999999999
 
 ###

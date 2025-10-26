@@ -36,5 +36,13 @@ public interface IPantryRepository
     /// <returns>The updated pantry item record</returns>
     /// <exception cref="InvalidOperationException">Thrown when a pantry item with the same name already exists for the user</exception>
     Task<PantryItemsSelect> UpdatePantryItemAsync(PantryItemsUpdate model);
+
+    /// <summary>
+    /// Deletes a pantry item from the database
+    /// </summary>
+    /// <param name="id">The ID of the pantry item to delete</param>
+    /// <param name="userId">The ID of the user who owns the pantry item</param>
+    /// <returns>The number of rows affected (0 if item not found, 1 if deleted)</returns>
+    Task<int> DeletePantryItemAsync(Guid id, Guid userId);
 }
 
