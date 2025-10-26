@@ -1,6 +1,7 @@
 Frontend – Mobile Application:
 - MAUI as a cross-platform framework for mobile apps in the .NET stack
 - Simultaneous creation of views for Android and iOS using XAML
+- UraniumUI for Material Design theme and controls
 
 Backend – REST API:
 - ASP.NET for handling API endpoints
