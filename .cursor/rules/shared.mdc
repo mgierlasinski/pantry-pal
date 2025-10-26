@@ -29,6 +29,7 @@ When introducing changes to the project, always follow the directory structure b
 - `./src/PantryPal.Mobile/ViewModels` - MAUI view models
 - `./tests` - test projects
 - `./tests/PantryPal.Api.UnitTests` - ASP.NET tests project
+- `./tests/PantryPal.Mobile.UnitTests` - MAUI tests project
 
 When modifying the directory structure, always update this section.
 
