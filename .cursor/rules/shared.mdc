@@ -23,10 +23,12 @@ When introducing changes to the project, always follow the directory structure b
 - `./src/PantryPal.Api/Services` - Services with business logic
 - `./src/PantryPal.Data` - C# library project with Dtos, referenced by API and Mobile projects
 - `./src/PantryPal.Mobile` - MAUI project
-- `./src/PantryPal.Mobile/Models` - MAUI pages
-- `./src/PantryPal.Mobile/Services` - MAUI services
-- `./src/PantryPal.Mobile/Views` - MAUI views
-- `./src/PantryPal.Mobile/ViewModels` - MAUI view models
+- `./src/PantryPal.Mobile/Constants` - Constant values
+- `./src/PantryPal.Mobile/Converters` - Value converters
+- `./src/PantryPal.Mobile/Models` - Models
+- `./src/PantryPal.Mobile/Services` - Services
+- `./src/PantryPal.Mobile/Views` - MAUI pages
+- `./src/PantryPal.Mobile/ViewModels` - View models
 - `./tests` - test projects
 - `./tests/PantryPal.Api.UnitTests` - ASP.NET tests project
 - `./tests/PantryPal.Mobile.UnitTests` - MAUI tests project

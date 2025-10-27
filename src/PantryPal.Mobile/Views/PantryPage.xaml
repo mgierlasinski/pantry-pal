@@ -18,7 +18,7 @@
     <ContentPage.ToolbarItems>
         <ToolbarItem Text="Add"
                      Command="{Binding ShowAddDialogCommand}"
-                     IconImageSource="{FontImageSource FontFamily={x:Static const:MaterialFont.Outlined}, Glyph={x:Static m:MaterialOutlined.Add}}"
+                     IconImageSource="{FontImageSource FontFamily={x:Static const:MaterialFont.Outlined}, Glyph={x:Static m:MaterialOutlined.Add}, Color={DynamicResource Gray400}}"
                      AutomationId="AddItemToolbarButton" />
     </ContentPage.ToolbarItems>
 
@@ -45,7 +45,7 @@
         
         <!-- Main Content -->
         <RefreshView Grid.Row="0"
-                     IsRefreshing="{Binding IsBusy}"
+                     IsRefreshing="{Binding IsRefreshing}"
                      Command="{Binding LoadItemsCommand}"
                      RefreshColor="{DynamicResource Primary}">
             
@@ -133,14 +133,9 @@
                                             AutomationId="{Binding Id, StringFormat='FavoriteToggle_{0}'}">
                                     <ImageButton.Source>
                                         <FontImageSource FontFamily="{x:Static const:MaterialFont.Outlined}"
-                                                        Size="24"
-                                                        Color="{DynamicResource Primary}">
-                                            <FontImageSource.Glyph>
-                                                <MultiBinding Converter="{StaticResource FavoriteIconConverter}">
-                                                    <Binding Path="IsFavorite" />
-                                                </MultiBinding>
-                                            </FontImageSource.Glyph>
-                                        </FontImageSource>
+                                                         Size="24"
+                                                         Color="{DynamicResource Primary}"
+                                                         Glyph="{Binding IsFavorite, Converter={StaticResource FavoriteIconConverter}}"/>
                                     </ImageButton.Source>
                                 </ImageButton>
 

@@ -37,7 +37,21 @@ public static class MauiProgram
 
     private static void RegisterServices(IServiceCollection services)
     {
-        services.AddSingleton<HttpClient>();
+        services.AddSingleton<HttpClient>(sp =>
+        {
+            var handler = new HttpClientHandler();
+#if DEBUG
+            handler.ServerCertificateCustomValidationCallback = (message, cert, chain, errors) =>
+            {
+                if (cert is { Issuer: "CN=localhost" })
+                {
+                    return true;
+                }
+                return errors == System.Net.Security.SslPolicyErrors.None;
+            };
+#endif
+            return new HttpClient(handler);
+        });
         services.AddSingleton<IPantryService, PantryService>();
     }
 

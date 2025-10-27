@@ -3,19 +3,19 @@ using UraniumUI.Icons.MaterialSymbols;
 
 namespace PantryPal.Mobile.Converters;
 
-public class FavoriteIconConverter : IMultiValueConverter
+public class FavoriteIconConverter : IValueConverter
 {
-    public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
-        if (values.Length > 0 && values[0] is bool isFavorite)
+        if (value is bool isFavorite)
         {
-            return isFavorite ? MaterialOutlined.Star : MaterialOutlined.Grade;
+            return isFavorite ? MaterialOutlined.Star_half : MaterialOutlined.Star;
         }
 
-        return MaterialOutlined.Grade;
+        return MaterialOutlined.Star;
     }
 
-    public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
         throw new NotImplementedException();
     }

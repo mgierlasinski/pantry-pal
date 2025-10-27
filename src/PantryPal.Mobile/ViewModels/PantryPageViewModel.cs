@@ -1,3 +1,4 @@
+using CommunityToolkit.Maui.Alerts;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using PantryPal.Data;
@@ -27,6 +28,9 @@ public partial class PantryPageViewModel : ObservableObject
     // State properties
     [ObservableProperty]
     private bool _isBusy;
+
+    [ObservableProperty]
+    private bool _isRefreshing;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsNotEmpty))]
@@ -104,6 +108,7 @@ public partial class PantryPageViewModel : ObservableObject
         finally
         {
             IsBusy = false;
+            IsRefreshing = false;
         }
     }
 
@@ -439,6 +444,15 @@ public partial class PantryPageViewModel : ObservableObject
         });
 
         return viewModel;
+    }
+
+    partial void OnErrorMessageChanged(string value)
+    {
+        if (!string.IsNullOrEmpty(value))
+        {
+            var toast = Toast.Make(value);
+            toast.Show();
+        }
     }
 }
 

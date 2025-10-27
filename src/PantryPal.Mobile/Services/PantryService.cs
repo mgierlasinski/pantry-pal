@@ -15,8 +15,8 @@ public class PantryService : IPantryService
         _httpClient = httpClient;
         // TODO: Move to configuration
         _baseUrl = DeviceInfo.Platform == DevicePlatform.Android
-            ? "http://10.0.2.2:5000" // Android emulator localhost
-            : "http://localhost:5000";
+            ? "https://10.0.2.2:7154" // Android emulator localhost
+            : "https://localhost:7154";
     }
 
     public async Task<PantryItemsPaginatedResponseDto> GetPantryItemsAsync(int page, int pageSize, string sortField = "name")
