@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:m="clr-namespace:UraniumUI.Icons.MaterialSymbols;assembly=UraniumUI.Icons.MaterialSymbols"
+             xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
+             xmlns:viewModels="clr-namespace:PantryPal.Mobile.ViewModels"
+             xmlns:const="clr-namespace:PantryPal.Mobile.Constants"
+             xmlns:models="clr-namespace:PantryPal.Mobile.Models"
+             xmlns:converters="clr-namespace:PantryPal.Mobile.Converters"
+             x:Class="PantryPal.Mobile.Views.PantryPage"
+             x:DataType="viewModels:PantryPageViewModel"
+             Title="My Pantry">
+
+    <ContentPage.Resources>
+        <converters:FavoriteIconConverter x:Key="FavoriteIconConverter" />
+    </ContentPage.Resources>
+
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="Add"
+                     Command="{Binding ShowAddDialogCommand}"
+                     IconImageSource="{FontImageSource FontFamily={x:Static const:MaterialFont.Outlined}, Glyph={x:Static m:MaterialOutlined.Add}}"
+                     AutomationId="AddItemToolbarButton" />
+    </ContentPage.ToolbarItems>
+
+    <Grid RowDefinitions="*,Auto" Padding="0">
+        
+        <!-- Loading Overlay -->
+        <Grid Grid.RowSpan="2"
+              IsVisible="{Binding IsBusy}"
+              BackgroundColor="#80000000"
+              ZIndex="1000">
+            <VerticalStackLayout VerticalOptions="Center"
+                                HorizontalOptions="Center"
+                                Spacing="16">
+                <ActivityIndicator IsRunning="{Binding IsBusy}"
+                                  Color="{DynamicResource Primary}"
+                                  WidthRequest="48"
+                                  HeightRequest="48" />
+                <Label Text="Loading..."
+                       TextColor="White"
+                       FontSize="16"
+                       HorizontalOptions="Center" />
+            </VerticalStackLayout>
+        </Grid>
+        
+        <!-- Main Content -->
+        <RefreshView Grid.Row="0"
+                     IsRefreshing="{Binding IsBusy}"
+                     Command="{Binding LoadItemsCommand}"
+                     RefreshColor="{DynamicResource Primary}">
+            
+            <CollectionView ItemsSource="{Binding Items}"
+                            SelectionMode="None"
+                            AutomationId="PantryItemsList">
+                
+                <!-- Empty View -->
+                <CollectionView.EmptyView>
+                    <VerticalStackLayout Spacing="20"
+                                        Padding="40"
+                                        VerticalOptions="Center"
+                                        HorizontalOptions="Center">
+                        <Label FontFamily="{x:Static const:MaterialFont.Outlined}"
+                               FontSize="64"
+                               HorizontalOptions="Center"
+                               TextColor="{DynamicResource Gray400}">
+                            <Label.Text>
+                                <x:Static Member="m:MaterialOutlined.Kitchen" />
+                            </Label.Text>
+                        </Label>
+                        <Label Text="Your pantry is empty"
+                               FontSize="20"
+                               FontAttributes="Bold"
+                               HorizontalOptions="Center"
+                               TextColor="{DynamicResource Gray600}" />
+                        <Label Text="Add ingredients to start managing your pantry and generating recipes"
+                               FontSize="14"
+                               HorizontalOptions="Center"
+                               HorizontalTextAlignment="Center"
+                               TextColor="{DynamicResource Gray500}" />
+                        <Button Text="Add First Item"
+                                Command="{Binding ShowAddDialogCommand}"
+                                HorizontalOptions="Center"
+                                Margin="0,20,0,0"
+                                AutomationId="EmptyStateAddButton" />
+                    </VerticalStackLayout>
+                </CollectionView.EmptyView>
+
+                <!-- Item Template -->
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="models:PantryItemViewModel">
+                        <SwipeView>
+                            <SwipeView.RightItems>
+                                <SwipeItems>
+                                    <SwipeItem Text="Delete"
+                                              BackgroundColor="{DynamicResource Danger}"
+                                              Command="{Binding DeleteItemCommand}"
+                                              CommandParameter="{Binding Id}"
+                                              AutomationId="{Binding Id, StringFormat='DeleteItem_{0}'}" />
+                                </SwipeItems>
+                            </SwipeView.RightItems>
+
+                            <Border StrokeThickness="0"
+                                   BackgroundColor="{DynamicResource White}"
+                                   Margin="8,4">
+                                <Border.Shadow>
+                                    <Shadow Brush="Black" Opacity="0.05" Radius="4" Offset="0,2" />
+                                </Border.Shadow>
+                                
+                                <Grid Padding="16,12"
+                                      ColumnDefinitions="*,Auto,Auto"
+                                      ColumnSpacing="12">
+                                    
+                                    <Grid.GestureRecognizers>
+                                        <TapGestureRecognizer Command="{Binding EditItemCommand}"
+                                                             CommandParameter="{Binding Id}" />
+                                    </Grid.GestureRecognizers>
+
+                                    <!-- Item Name -->
+                                    <Label Grid.Column="0"
+                                           Text="{Binding Name}"
+                                           FontSize="16"
+                                           VerticalOptions="Center"
+                                           AutomationId="{Binding Id, StringFormat='PantryItemName_{0}'}" />
+
+                                <!-- Favorite Icon -->
+                                <ImageButton Grid.Column="1"
+                                            Command="{Binding ToggleFavoriteCommand}"
+                                            CommandParameter="{Binding Id}"
+                                            BackgroundColor="Transparent"
+                                            WidthRequest="40"
+                                            HeightRequest="40"
+                                            VerticalOptions="Center"
+                                            AutomationId="{Binding Id, StringFormat='FavoriteToggle_{0}'}">
+                                    <ImageButton.Source>
+                                        <FontImageSource FontFamily="{x:Static const:MaterialFont.Outlined}"
+                                                        Size="24"
+                                                        Color="{DynamicResource Primary}">
+                                            <FontImageSource.Glyph>
+                                                <MultiBinding Converter="{StaticResource FavoriteIconConverter}">
+                                                    <Binding Path="IsFavorite" />
+                                                </MultiBinding>
+                                            </FontImageSource.Glyph>
+                                        </FontImageSource>
+                                    </ImageButton.Source>
+                                </ImageButton>
+
+                                    <!-- Chevron Icon -->
+                                    <Label Grid.Column="2"
+                                           FontFamily="{x:Static const:MaterialFont.Outlined}"
+                                           FontSize="20"
+                                           VerticalOptions="Center"
+                                           TextColor="{DynamicResource Gray400}">
+                                        <Label.Text>
+                                            <x:Static Member="m:MaterialOutlined.Chevron_right" />
+                                        </Label.Text>
+                                    </Label>
+                                </Grid>
+                            </Border>
+                        </SwipeView>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+
+            </CollectionView>
+        </RefreshView>
+
+        <!-- Generate Recipe Button -->
+        <Border Grid.Row="1"
+                Margin="16"
+                StrokeThickness="0"
+                BackgroundColor="Transparent">
+            <Border.Shadow>
+                <Shadow Brush="Black" Opacity="0.1" Radius="8" Offset="0,4" />
+            </Border.Shadow>
+            
+            <Button Text="Generate Recipe"
+                    Command="{Binding GenerateRecipeCommand}"
+                    IsEnabled="{Binding IsNotEmpty}"
+                    BackgroundColor="{DynamicResource Primary}"
+                    TextColor="White"
+                    FontAttributes="Bold"
+                    HeightRequest="56"
+                    CornerRadius="12"
+                    AutomationId="GenerateRecipeButton">
+                <Button.ImageSource>
+                    <FontImageSource FontFamily="{x:Static const:MaterialFont.Outlined}"
+                                    Glyph="{x:Static m:MaterialOutlined.Restaurant}"
+                                    Color="White"
+                                    Size="24" />
+                </Button.ImageSource>
+            </Button>
+        </Border>
+    </Grid>
+
+</ContentPage>
+

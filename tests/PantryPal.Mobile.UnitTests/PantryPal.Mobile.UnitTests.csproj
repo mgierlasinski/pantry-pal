@@ -25,4 +25,8 @@
     <Using Include="Xunit" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\PantryPal.Mobile\PantryPal.Mobile.csproj" />
+  </ItemGroup>
+
 </Project>
