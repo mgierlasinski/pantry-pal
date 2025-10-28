@@ -41,10 +41,13 @@ builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 // Register repositories
 builder.Services.AddScoped<IPantryRepository, PantryRepository>();
 builder.Services.AddScoped<IRecipeRepository, RecipeRepository>();
+builder.Services.AddScoped<IUserPreferencesRepository, UserPreferencesRepository>();
+builder.Services.AddScoped<IRecipesGenerationsRepository, RecipesGenerationsRepository>();
 
 // Register services
 builder.Services.AddScoped<IPantryService, PantryService>();
 builder.Services.AddScoped<IRecipeService, RecipeService>();
+builder.Services.AddScoped<IAIRecipeGeneratorService, MockAIRecipeGeneratorService>();
 
 var app = builder.Build();
 
@@ -326,6 +329,60 @@ app.MapGet("/recipes", async (
     catch (Exception ex)
     {
         logger.LogError(ex, "Unhandled exception in GET /recipes endpoint");
+        return Results.Problem(
+            title: "Internal Server Error",
+            detail: "An error occurred while processing your request.",
+            statusCode: 500);
+    }
+}); // TODO: Add .RequireAuthorization() when authentication is enabled
+
+// POST /recipes/generate endpoint
+app.MapPost("/recipes/generate", async (
+    IRecipeService recipeService,
+    ILogger<Program> logger) =>
+{
+    try
+    {
+        // TODO: Extract userId from authenticated user when authentication is enabled
+        // var userIdClaim = httpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        // if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+        // {
+        //     logger.LogWarning("Unable to extract valid user ID from claims");
+        //     return Results.Unauthorized();
+        // }
+
+        // TEMPORARY: Use a hardcoded userId for testing until authentication is implemented
+        var userId = Guid.Parse(DefaultUserId);
+        logger.LogWarning("Using hardcoded userId for testing. Authentication not yet enabled.");
+
+        var result = await recipeService.GenerateRecipeAsync(userId);
+
+        logger.LogInformation("Successfully generated recipe {GenerationId} for user {UserId}",
+            result.GenerationId, userId);
+
+        return Results.Ok(result);
+    }
+    catch (InvalidOperationException ex) when (ex.Message.Contains("preferences not set"))
+    {
+        logger.LogWarning(ex, "Recipe generation failed: user preferences not set");
+        return Results.BadRequest(new { error = "User preferences not set." });
+    }
+    catch (InvalidOperationException ex) when (ex.Message.Contains("Pantry is empty"))
+    {
+        logger.LogWarning(ex, "Recipe generation failed: pantry is empty");
+        return Results.BadRequest(new { error = "Pantry is empty." });
+    }
+    catch (InvalidOperationException ex) when (ex.Message.Contains("Failed to generate recipe"))
+    {
+        logger.LogError(ex, "Recipe generation failed: AI service error");
+        return Results.Problem(
+            title: "Recipe Generation Failed",
+            detail: "Failed to generate recipe. Please try again later.",
+            statusCode: 500);
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "Unhandled exception in POST /recipes/generate endpoint");
         return Results.Problem(
             title: "Internal Server Error",
             detail: "An error occurred while processing your request.",

@@ -18,4 +18,11 @@ public interface IRecipeRepository
         Guid userId,
         int page,
         int pageSize);
+
+    /// <summary>
+    /// Creates a new recipe in the database
+    /// </summary>
+    /// <param name="model">The insert model containing the recipe data</param>
+    /// <returns>The created recipe record</returns>
+    Task<RecipesSelect> CreateRecipeAsync(RecipesInsert model);
 }

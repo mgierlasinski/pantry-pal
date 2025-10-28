@@ -180,3 +180,24 @@ GET {{PantryPal.Api_HostAddress}}/recipes?page=1&pageSize=0
 GET {{PantryPal.Api_HostAddress}}/recipes?page=1&pageSize=10&sort=name
 
 ###
+
+# POST /recipes/generate - Generate AI-powered recipe based on pantry items and preferences
+POST {{PantryPal.Api_HostAddress}}/recipes/generate
+
+###
+
+# Note: Error scenarios for POST /recipes/generate
+# 
+# 400 Bad Request - "User preferences not set."
+# This occurs when the user has not configured their dietary preferences.
+# To test: ensure the test user has no preferences in the user_preferences table.
+#
+# 400 Bad Request - "Pantry is empty."
+# This occurs when the user has no pantry items.
+# To test: ensure the test user has no items in the pantry_items table.
+#
+# 500 Internal Server Error - "Failed to generate recipe. Please try again later."
+# This occurs when the AI service fails to generate a recipe.
+# To test: modify the MockAIRecipeGeneratorService to throw an exception.
+
+###

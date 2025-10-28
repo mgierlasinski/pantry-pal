@@ -69,6 +69,31 @@ public class PantryRepository : IPantryRepository
     }
 
     /// <inheritdoc />
+    public async Task<IEnumerable<PantryItemsSelect>> GetAllPantryItemsAsync(Guid userId)
+    {
+        try
+        {
+            var response = await _supabaseClient
+                .From<PantryItemsSelect>()
+                .Filter("user_id", Supabase.Postgrest.Constants.Operator.Equals, userId.ToString())
+                .Get();
+
+            _logger.LogInformation(
+                "Retrieved {Count} pantry items for user {UserId}",
+                response.Models.Count, userId);
+
+            return response.Models;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex,
+                "Error retrieving all pantry items for user {UserId}",
+                userId);
+            throw;
+        }
+    }
+
+    /// <inheritdoc />
     public async Task<PantryItemsSelect> CreatePantryItemAsync(PantryItemsInsert model)
     {
         try

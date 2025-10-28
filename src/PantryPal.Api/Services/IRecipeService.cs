@@ -18,4 +18,12 @@ public interface IRecipeService
         Guid userId,
         int page,
         int pageSize);
+
+    /// <summary>
+    /// Generates an AI-powered recipe based on user's pantry items and preferences
+    /// </summary>
+    /// <param name="userId">The ID of the user requesting recipe generation</param>
+    /// <returns>A response containing the generation ID and generated recipe text</returns>
+    /// <exception cref="InvalidOperationException">Thrown when user preferences are not set or pantry is empty</exception>
+    Task<RecipeGenerateResponseDto> GenerateRecipeAsync(Guid userId);
 }

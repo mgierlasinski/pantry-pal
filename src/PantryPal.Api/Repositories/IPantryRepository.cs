@@ -22,6 +22,13 @@ public interface IPantryRepository
         string sortField);
 
     /// <summary>
+    /// Retrieves all pantry items for a specific user (no pagination)
+    /// </summary>
+    /// <param name="userId">The ID of the user whose pantry items to retrieve</param>
+    /// <returns>A list of all pantry items for the user</returns>
+    Task<IEnumerable<PantryItemsSelect>> GetAllPantryItemsAsync(Guid userId);
+
+    /// <summary>
     /// Creates a new pantry item in the database
     /// </summary>
     /// <param name="model">The insert model containing the pantry item data</param>

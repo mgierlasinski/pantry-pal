@@ -63,4 +63,38 @@ public class RecipeRepository : IRecipeRepository
             throw;
         }
     }
+
+    /// <inheritdoc />
+    public async Task<RecipesSelect> CreateRecipeAsync(RecipesInsert model)
+    {
+        try
+        {
+            var response = await _supabaseClient
+                .From<RecipesInsert>()
+                .Insert(model);
+
+            var createdRecipe = response.Models.First();
+
+            // Convert back to select model for consistency
+            var result = new RecipesSelect
+            {
+                Id = createdRecipe.Id,
+                RecipeText = createdRecipe.RecipeText,
+                CreatedAt = createdRecipe.CreatedAt,
+                UpdatedAt = createdRecipe.UpdatedAt,
+                UserId = createdRecipe.UserId
+            };
+
+            _logger.LogInformation("Successfully created recipe {RecipeId} for user {UserId}",
+                result.Id, result.UserId);
+
+            return result;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error creating recipe for user {UserId}",
+                model.UserId);
+            throw;
+        }
+    }
 }
