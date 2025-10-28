@@ -1,7 +1,38 @@
 ﻿@PantryPal.Api_HostAddress = https://localhost:7154
 @ExistingPantryItem = 7b2e7457-8a9d-4cc4-807c-f7c2489008b5
 
+# GET /pantry-items - Get pantry items with default pagination (page=1, pageSize=20, sort=created_at)
 GET {{PantryPal.Api_HostAddress}}/pantry-items
+
+###
+
+# GET /pantry-items - Get pantry items with custom pagination
+GET {{PantryPal.Api_HostAddress}}/pantry-items?page=1&pageSize=10&sort=created_at
+
+###
+
+# GET /pantry-items - Get pantry items with custom page and name sorting
+GET {{PantryPal.Api_HostAddress}}/pantry-items?page=2&pageSize=5&sort=name
+
+###
+
+# GET /pantry-items - Validation error: invalid page (less than 1)
+GET {{PantryPal.Api_HostAddress}}/pantry-items?page=0&pageSize=10
+
+###
+
+# GET /pantry-items - Validation error: invalid pageSize (too large)
+GET {{PantryPal.Api_HostAddress}}/pantry-items?page=1&pageSize=150
+
+###
+
+# GET /pantry-items - Validation error: invalid pageSize (too small)
+GET {{PantryPal.Api_HostAddress}}/pantry-items?page=1&pageSize=0
+
+###
+
+# GET /pantry-items - Validation error: invalid sort parameter
+GET {{PantryPal.Api_HostAddress}}/pantry-items?page=1&pageSize=10&sort=invalid
 
 ###
 
@@ -112,5 +143,40 @@ DELETE {{PantryPal.Api_HostAddress}}/pantry-items/20064eb6-236c-4eec-90f9-3db822
 
 # DELETE /pantry-items/{id} - Error: item not found
 DELETE {{PantryPal.Api_HostAddress}}/pantry-items/00000000-0000-0000-0000-999999999999
+
+###
+
+# GET /recipes - Get recipes with default pagination (page=1, pageSize=20, sort=created_at)
+GET {{PantryPal.Api_HostAddress}}/recipes
+
+###
+
+# GET /recipes - Get recipes with custom pagination
+GET {{PantryPal.Api_HostAddress}}/recipes?page=1&pageSize=10&sort=created_at
+
+###
+
+# GET /recipes - Get recipes with custom page
+GET {{PantryPal.Api_HostAddress}}/recipes?page=2&pageSize=5
+
+###
+
+# GET /recipes - Validation error: invalid page (less than 1)
+GET {{PantryPal.Api_HostAddress}}/recipes?page=0&pageSize=10
+
+###
+
+# GET /recipes - Validation error: invalid pageSize (too large)
+GET {{PantryPal.Api_HostAddress}}/recipes?page=1&pageSize=150
+
+###
+
+# GET /recipes - Validation error: invalid pageSize (too small)
+GET {{PantryPal.Api_HostAddress}}/recipes?page=1&pageSize=0
+
+###
+
+# GET /recipes - Validation error: invalid sort parameter
+GET {{PantryPal.Api_HostAddress}}/recipes?page=1&pageSize=10&sort=name
 
 ###

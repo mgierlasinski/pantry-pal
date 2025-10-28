@@ -40,9 +40,11 @@ builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 
 // Register repositories
 builder.Services.AddScoped<IPantryRepository, PantryRepository>();
+builder.Services.AddScoped<IRecipeRepository, RecipeRepository>();
 
 // Register services
 builder.Services.AddScoped<IPantryService, PantryService>();
+builder.Services.AddScoped<IRecipeService, RecipeService>();
 
 var app = builder.Build();
 
@@ -259,6 +261,71 @@ app.MapDelete("/pantry-items/{id}", async (
     catch (Exception ex)
     {
         logger.LogError(ex, "Unhandled exception in DELETE /pantry-items/{Id} endpoint", id);
+        return Results.Problem(
+            title: "Internal Server Error",
+            detail: "An error occurred while processing your request.",
+            statusCode: 500);
+    }
+}); // TODO: Add .RequireAuthorization() when authentication is enabled
+
+// GET /recipes endpoint
+app.MapGet("/recipes", async (
+    int? page,
+    int? pageSize,
+    string? sort,
+    IRecipeService recipeService,
+    ILogger<Program> logger) =>
+{
+    // Set default values
+    var validatedPage = page ?? 1;
+    var validatedPageSize = pageSize ?? 20;
+    var validatedSort = sort ?? "created_at";
+
+    // Validate page parameter
+    if (validatedPage < 1)
+    {
+        logger.LogWarning("Invalid page parameter: {Page}", validatedPage);
+        return Results.BadRequest(new { error = "Page must be greater than or equal to 1." });
+    }
+
+    // Validate pageSize parameter
+    if (validatedPageSize < 1 || validatedPageSize > 100)
+    {
+        logger.LogWarning("Invalid pageSize parameter: {PageSize}", validatedPageSize);
+        return Results.BadRequest(new { error = "PageSize must be between 1 and 100." });
+    }
+
+    // Validate sort parameter (only "created_at" is supported)
+    if (validatedSort != "created_at")
+    {
+        logger.LogWarning("Invalid sort parameter: {Sort}", validatedSort);
+        return Results.BadRequest(new { error = "Sort must be 'created_at'." });
+    }
+
+    try
+    {
+        // TODO: Extract userId from authenticated user when authentication is enabled
+        // var userIdClaim = httpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        // if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+        // {
+        //     logger.LogWarning("Unable to extract valid user ID from claims");
+        //     return Results.Unauthorized();
+        // }
+
+        // TEMPORARY: Use a hardcoded userId for testing until authentication is implemented
+        var userId = Guid.Parse(DefaultUserId);
+        logger.LogWarning("Using hardcoded userId for testing. Authentication not yet enabled.");
+
+        var result = await recipeService.GetRecipesAsync(
+            userId,
+            validatedPage,
+            validatedPageSize);
+
+        return Results.Ok(result);
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "Unhandled exception in GET /recipes endpoint");
         return Results.Problem(
             title: "Internal Server Error",
             detail: "An error occurred while processing your request.",
