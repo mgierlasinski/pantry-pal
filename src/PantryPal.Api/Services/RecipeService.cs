@@ -108,7 +108,7 @@ public class RecipeService : IRecipeService
                 throw new InvalidOperationException("Pantry is empty.");
             }
 
-            // Step 3: Create initial generation record
+            // Step 3: Create initial generation record (without recipe text yet)
             var generationInsert = new RecipesGenerationsInsert
             {
                 Id = generationId,
@@ -166,23 +166,16 @@ Please create a detailed recipe in markdown format with ingredients, instruction
                 throw new InvalidOperationException("Failed to generate recipe. Please try again later.", aiEx);
             }
 
-            // Step 6: Save recipe
-            var recipeInsert = new RecipesInsert
-            {
-                UserId = userId.ToString(),
-                RecipeText = recipeText
-            };
-
-            var savedRecipe = await _recipeRepository.CreateRecipeAsync(recipeInsert);
-            _logger.LogInformation("Saved recipe {RecipeId} for user {UserId}", 
-                savedRecipe.Id, userId);
-
-            // Step 7: Update generation record with success
+            // Step 6: Update generation record with success and store recipe text
+            // Recipe text is stored temporarily in generations table for hybrid approach:
+            // - Client can use the returned recipe text immediately
+            // - If client crashes, recipe text can be retrieved from generation record
+            // - Recipe will be moved to recipes table when user calls accept endpoint
             var successUpdate = new RecipesGenerationsUpdate
             {
                 Id = generationId,
                 DurationMs = (int)stopwatch.ElapsedMilliseconds,
-                GeneratedRecipeId = savedRecipe.Id
+                GeneratedRecipeText = recipeText
             };
             await _recipesGenerationsRepository.UpdateGenerationAsync(successUpdate);
 
@@ -190,7 +183,7 @@ Please create a detailed recipe in markdown format with ingredients, instruction
                 "Successfully completed recipe generation {GenerationId} for user {UserId} in {Duration}ms",
                 generationId, userId, stopwatch.ElapsedMilliseconds);
 
-            // Step 8: Return response
+            // Step 7: Return response (recipe stored in generations, not in recipes table yet)
             return new RecipeGenerateResponseDto(
                 GenerationId: generationId,
                 RecipeText: recipeText

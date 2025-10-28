@@ -38,6 +38,7 @@ public class RecipesGenerationsRepository : IRecipesGenerationsRepository
                 ErrorCode = createdGeneration.ErrorCode,
                 ErrorMessage = createdGeneration.ErrorMessage,
                 GeneratedRecipeId = createdGeneration.GeneratedRecipeId,
+                GeneratedRecipeText = createdGeneration.GeneratedRecipeText,
                 RejectReasonId = createdGeneration.RejectReasonId,
                 CreatedAt = createdGeneration.CreatedAt
             };
@@ -82,6 +83,7 @@ public class RecipesGenerationsRepository : IRecipesGenerationsRepository
                 ErrorCode = updatedGeneration.ErrorCode,
                 ErrorMessage = updatedGeneration.ErrorMessage,
                 GeneratedRecipeId = updatedGeneration.GeneratedRecipeId,
+                GeneratedRecipeText = updatedGeneration.GeneratedRecipeText,
                 RejectReasonId = updatedGeneration.RejectReasonId,
                 CreatedAt = updatedGeneration.CreatedAt
             };

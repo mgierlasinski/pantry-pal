@@ -235,6 +235,9 @@ public class RecipesGenerationsSelect : BaseModel
     [Column("generated_recipe_id")]
     public string? GeneratedRecipeId { get; set; }
 
+    [Column("generated_recipe_text")]
+    public string? GeneratedRecipeText { get; set; }
+
     [PrimaryKey("id")]
     public string Id { get; set; }
 
@@ -266,6 +269,9 @@ public class RecipesGenerationsInsert : BaseModel
     [Column("generated_recipe_id")]
     public string? GeneratedRecipeId { get; set; }
 
+    [Column("generated_recipe_text")]
+    public string? GeneratedRecipeText { get; set; }
+
     [Column("id")]
     public string? Id { get; set; }
 
@@ -296,6 +302,9 @@ public class RecipesGenerationsUpdate : BaseModel
 
     [Column("generated_recipe_id")]
     public string? GeneratedRecipeId { get; set; }
+
+    [Column("generated_recipe_text")]
+    public string? GeneratedRecipeText { get; set; }
 
     [Column("id")]
     public string? Id { get; set; }
