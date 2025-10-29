@@ -128,11 +128,14 @@ public record RecipeGenerationsPaginatedResponseDto(
 
 /// <summary>
 /// DTO for user preferences responses (derived from UserPreferencesSelect)
+/// Includes resolved names for diet type and preferred cuisine for better usability
 /// </summary>
 public record UserPreferencesDto(
     string UserId,
     short DietTypeId,
+    string DietTypeName,
     short PreferredCuisineId,
+    string PreferredCuisineName,
     string? DislikedIngredients,
     string CreatedAt,
     string UpdatedAt

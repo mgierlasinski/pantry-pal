@@ -339,6 +339,10 @@ public class UserPreferencesSelect : BaseModel
 
     [PrimaryKey("user_id")]
     public string UserId { get; set; }
+
+    // Joined properties for diet type and cuisine names
+    public DietTypesSelect? DietTypes { get; set; }
+    public PreferredCuisinesSelect? PreferredCuisines { get; set; }
 }
 
 [Table("user_preferences")]

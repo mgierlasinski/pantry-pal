@@ -48,6 +48,7 @@ builder.Services.AddScoped<IRecipeRejectReasonsRepository, RecipeRejectReasonsRe
 // Register services
 builder.Services.AddScoped<IPantryService, PantryService>();
 builder.Services.AddScoped<IRecipeService, RecipeService>();
+builder.Services.AddScoped<IUserPreferencesService, UserPreferencesService>();
 builder.Services.AddScoped<IAIRecipeGeneratorService, MockAIRecipeGeneratorService>();
 
 var app = builder.Build();
@@ -552,5 +553,101 @@ app.MapDelete("/recipes/{id}", async (
             statusCode: 500);
     }
 }); // TODO: Add .RequireAuthorization() when authentication is enabled
+
+// GET /user-preferences endpoint
+app.MapGet("/user-preferences", async (
+    IUserPreferencesService service,
+    ILogger<Program> logger) =>
+{
+    try
+    {
+        // TODO: Extract userId from authenticated user when authentication is enabled
+        // var userIdClaim = httpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        // if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+        // {
+        //     logger.LogWarning("Unable to extract valid user ID from claims");
+        //     return Results.Unauthorized();
+        // }
+
+        // TEMPORARY: Use a hardcoded userId for testing until authentication is implemented
+        var userId = Guid.Parse(DefaultUserId);
+        logger.LogWarning("Using hardcoded userId for testing. Authentication not yet enabled.");
+
+        var preferences = await service.GetUserPreferencesAsync(userId);
+
+        if (preferences == null)
+        {
+            logger.LogWarning("User preferences not found for user {UserId}", userId);
+            return Results.NotFound(new { error = "User preferences not found" });
+        }
+
+        logger.LogInformation(
+            "Successfully retrieved user preferences for user {UserId}: Diet={DietType}, Cuisine={PreferredCuisine}",
+            userId, preferences.DietTypeName, preferences.PreferredCuisineName);
+
+        return Results.Ok(preferences);
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "Unhandled exception in GET /user-preferences endpoint");
+        return Results.Problem(
+            title: "Internal Server Error",
+            detail: "An error occurred while processing your request.",
+            statusCode: 500);
+    }
+}); // TODO: Add .RequireAuthorization() when authentication is enabled
+
+// POST /user-preferences endpoint
+app.MapPost("/user-preferences", async (
+    UserPreferencesCreateDto dto,
+    IValidator<UserPreferencesCreateDto> validator,
+    IUserPreferencesService service,
+    ILogger<Program> logger) =>
+{
+    // Validate request body using FluentValidation
+    var validationResult = await validator.ValidateAsync(dto);
+    if (!validationResult.IsValid)
+    {
+        logger.LogWarning("Validation failed for POST /user-preferences: {Errors}",
+            string.Join(", ", validationResult.Errors.Select(e => e.ErrorMessage)));
+        return Results.ValidationProblem(validationResult.ToDictionary());
+    }
+
+    try
+    {
+        // TODO: Extract userId from authenticated user when authentication is enabled
+        // var userIdClaim = httpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        // if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+        // {
+        //     logger.LogWarning("Unable to extract valid user ID from claims");
+        //     return Results.Unauthorized();
+        // }
+
+        // TEMPORARY: Use a hardcoded userId for testing until authentication is implemented
+        var userId = DefaultUserId;
+        logger.LogWarning("Using hardcoded userId for testing. Authentication not yet enabled.");
+
+        var result = await service.UpsertPreferencesAsync(dto, userId);
+
+        logger.LogInformation(
+            "Successfully upserted user preferences for user {UserId}: Diet={DietType}, Cuisine={PreferredCuisine}",
+            userId, result.DietTypeName, result.PreferredCuisineName);
+
+        return Results.Ok(result);
+    }
+    catch (ArgumentException ex) when (ex.Message.Contains("does not exist"))
+    {
+        logger.LogWarning(ex, "Invalid reference in user preferences");
+        return Results.BadRequest(new { error = ex.Message });
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "Unhandled exception in POST /user-preferences endpoint");
+        return Results.Problem(
+            title: "Internal Server Error",
+            detail: "An error occurred while processing your request.",
+            statusCode: 500);
+    }
+}).Produces<UserPreferencesDto>(200).Produces(400).Produces(500); // TODO: Add .RequireAuthorization() when authentication is enabled
 
 app.Run();

@@ -324,3 +324,175 @@ DELETE {{PantryPal.Api_HostAddress}}/recipes/00000000-0000-0000-0000-99999999999
 # This occurs for database or other server-side errors.
 
 ###
+
+# GET /user-preferences - Get user preferences (requires authentication)
+# Note: Authentication not yet fully implemented in http file
+# TODO: Add Authorization header with Supabase JWT when authentication is enabled
+GET {{PantryPal.Api_HostAddress}}/user-preferences
+
+###
+
+# Note: Response scenarios for GET /user-preferences
+#
+# 200 OK - Success
+# Returns UserPreferencesDto with resolved diet type and cuisine names.
+# Example response:
+# {
+#   "userId": "uuid-string",
+#   "dietTypeId": 1,
+#   "dietTypeName": "vegetarian",
+#   "preferredCuisineId": 1,
+#   "preferredCuisineName": "Italian",
+#   "dislikedIngredients": "nuts, shellfish",
+#   "createdAt": "2025-10-29T10:00:00Z",
+#   "updatedAt": "2025-10-29T10:00:00Z"
+# }
+#
+# 401 Unauthorized - "Authentication required"
+# This occurs when no valid JWT token is provided or user is not authenticated.
+#
+# 404 Not Found - "User preferences not found"
+# This occurs when the authenticated user has not set their preferences yet.
+#
+# 500 Internal Server Error - Unexpected errors
+# This occurs for database or other server-side errors.
+
+###
+
+# POST /user-preferences - Create or update user preferences (upsert)
+# Note: Authentication not yet fully implemented in http file
+# TODO: Add Authorization header with Supabase JWT when authentication is enabled
+POST {{PantryPal.Api_HostAddress}}/user-preferences
+Content-Type: application/json
+
+{
+  "dietTypeId": 1,
+  "preferredCuisineId": 1,
+  "dislikedIngredients": "nuts, shellfish"
+}
+
+###
+
+# POST /user-preferences - Create preferences without disliked ingredients
+POST {{PantryPal.Api_HostAddress}}/user-preferences
+Content-Type: application/json
+
+{
+  "dietTypeId": 2,
+  "preferredCuisineId": 3
+}
+
+###
+
+# POST /user-preferences - Update existing preferences with different values
+POST {{PantryPal.Api_HostAddress}}/user-preferences
+Content-Type: application/json
+
+{
+  "dietTypeId": 3,
+  "preferredCuisineId": 2,
+  "dislikedIngredients": "gluten, dairy"
+}
+
+###
+
+# POST /user-preferences - Validation error: missing required dietTypeId
+POST {{PantryPal.Api_HostAddress}}/user-preferences
+Content-Type: application/json
+
+{
+  "preferredCuisineId": 1,
+  "dislikedIngredients": "nuts"
+}
+
+###
+
+# POST /user-preferences - Validation error: missing required preferredCuisineId
+POST {{PantryPal.Api_HostAddress}}/user-preferences
+Content-Type: application/json
+
+{
+  "dietTypeId": 1,
+  "dislikedIngredients": "nuts"
+}
+
+###
+
+# POST /user-preferences - Validation error: invalid dietTypeId (doesn't exist)
+POST {{PantryPal.Api_HostAddress}}/user-preferences
+Content-Type: application/json
+
+{
+  "dietTypeId": 999,
+  "preferredCuisineId": 1,
+  "dislikedIngredients": "nuts"
+}
+
+###
+
+# POST /user-preferences - Validation error: invalid preferredCuisineId (doesn't exist)
+POST {{PantryPal.Api_HostAddress}}/user-preferences
+Content-Type: application/json
+
+{
+  "dietTypeId": 1,
+  "preferredCuisineId": 999,
+  "dislikedIngredients": "nuts"
+}
+
+###
+
+# POST /user-preferences - Validation error: dislikedIngredients too long (>1000 characters)
+POST {{PantryPal.Api_HostAddress}}/user-preferences
+Content-Type: application/json
+
+{
+  "dietTypeId": 1,
+  "preferredCuisineId": 1,
+  "dislikedIngredients": "This is a very long string that exceeds the maximum allowed length of 1000 characters for the disliked ingredients field. This validation test is designed to ensure that the API properly validates input length and returns appropriate error messages when the input exceeds the specified limits. The field should be limited to prevent potential issues with data storage and processing, and to maintain consistency with the database schema constraints. By enforcing this limit, we can ensure data integrity and prevent potential security issues that might arise from overly long input strings. The validation should catch this and return a 400 Bad Request with appropriate error details indicating that the dislikedIngredients field exceeds the maximum allowed length. This helps developers understand exactly what went wrong and how to fix their request. The error message should be clear and actionable, providing guidance on the acceptable input constraints."
+}
+
+###
+
+# POST /user-preferences - Validation error: invalid JSON format
+POST {{PantryPal.Api_HostAddress}}/user-preferences
+Content-Type: application/json
+
+{
+  "dietTypeId": "invalid",
+  "preferredCuisineId": 1,
+  "dislikedIngredients": "nuts"
+}
+
+###
+
+# Note: Response scenarios for POST /user-preferences
+#
+# 200 OK - Success (upsert operation completed)
+# Returns UserPreferencesDto with resolved diet type and cuisine names.
+# Example response:
+# {
+#   "userId": "uuid-string",
+#   "dietTypeId": 1,
+#   "dietTypeName": "vegetarian",
+#   "preferredCuisineId": 1,
+#   "preferredCuisineName": "Italian",
+#   "dislikedIngredients": "nuts, shellfish",
+#   "createdAt": "2025-10-29T10:00:00Z",
+#   "updatedAt": "2025-10-29T10:00:00Z"
+# }
+#
+# 400 Bad Request - Validation errors
+# This occurs when:
+# - dietTypeId or preferredCuisineId is missing
+# - dietTypeId or preferredCuisineId doesn't exist in the database
+# - dislikedIngredients exceeds 1000 characters
+# - Invalid data types in request body
+#
+# 401 Unauthorized - "Authentication required"
+# This occurs when no valid JWT token is provided or user is not authenticated.
+#
+# 500 Internal Server Error - Unexpected errors
+# This occurs for database or other server-side errors.
+
+###

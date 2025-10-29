@@ -8,10 +8,34 @@ namespace PantryPal.Api.Repositories;
 public interface IUserPreferencesRepository
 {
     /// <summary>
-    /// Retrieves user preferences for a specific user
+    /// Retrieves user preferences for a specific user, including joined diet type and cuisine data
     /// </summary>
     /// <param name="userId">The ID of the user whose preferences to retrieve</param>
-    /// <returns>The user preferences record, or null if not found</returns>
+    /// <returns>The user preferences database record with joined data, or null if not found</returns>
     Task<UserPreferencesSelect?> GetUserPreferencesAsync(Guid userId);
+
+    /// <summary>
+    /// Checks if a diet type with the given ID exists
+    /// </summary>
+    /// <param name="dietTypeId">The diet type ID to check</param>
+    /// <returns>True if the diet type exists, false otherwise</returns>
+    Task<bool> DietTypeExistsAsync(short dietTypeId);
+
+    /// <summary>
+    /// Checks if a preferred cuisine with the given ID exists
+    /// </summary>
+    /// <param name="preferredCuisineId">The preferred cuisine ID to check</param>
+    /// <returns>True if the preferred cuisine exists, false otherwise</returns>
+    Task<bool> PreferredCuisineExistsAsync(short preferredCuisineId);
+
+    /// <summary>
+    /// Creates or updates user preferences using upsert functionality
+    /// </summary>
+    /// <param name="userId">The user ID</param>
+    /// <param name="dietTypeId">The diet type ID</param>
+    /// <param name="preferredCuisineId">The preferred cuisine ID</param>
+    /// <param name="dislikedIngredients">Optional disliked ingredients</param>
+    /// <returns>The updated user preferences record</returns>
+    Task<UserPreferencesSelect> UpsertUserPreferencesAsync(string userId, short dietTypeId, short preferredCuisineId, string? dislikedIngredients);
 }
 
