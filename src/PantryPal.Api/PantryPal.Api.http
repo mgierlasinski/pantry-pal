@@ -292,3 +292,35 @@ Content-Type: application/json
 # This occurs for database or other server-side errors.
 
 ###
+
+# DELETE /recipes/{id} - Success: delete existing recipe
+# Note: Replace @ExistingRecipeId with a valid recipe ID from POST /recipes/{generationId}/accept response
+DELETE {{PantryPal.Api_HostAddress}}/recipes/{{ExistingRecipeId}}
+
+###
+
+# DELETE /recipes/{id} - Error: invalid recipe ID format
+DELETE {{PantryPal.Api_HostAddress}}/recipes/invalid-id
+
+###
+
+# DELETE /recipes/{id} - Error: recipe not found (404)
+DELETE {{PantryPal.Api_HostAddress}}/recipes/00000000-0000-0000-0000-999999999999
+
+###
+
+# Note: Error scenarios for DELETE /recipes/{id}
+#
+# 204 No Content - Success
+# Returns no content when successfully deleted.
+#
+# 400 Bad Request - "Invalid recipe ID format."
+# This occurs when the ID parameter is not a valid UUID format.
+#
+# 404 Not Found - "Recipe not found."
+# This occurs when the recipe doesn't exist or doesn't belong to the authenticated user.
+#
+# 500 Internal Server Error - Unexpected errors
+# This occurs for database or other server-side errors.
+
+###

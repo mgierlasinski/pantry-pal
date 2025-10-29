@@ -46,4 +46,13 @@ public interface IRecipeService
     /// <exception cref="ArgumentException">Thrown when generation is not found or does not belong to the user</exception>
     /// <exception cref="InvalidOperationException">Thrown when generation is already rejected</exception>
     Task RejectGeneratedRecipeAsync(Guid generationId, short rejectReasonId, Guid userId);
+
+    /// <summary>
+    /// Deletes a saved recipe from the user's personal collection
+    /// </summary>
+    /// <param name="recipeId">The unique identifier of the recipe to delete</param>
+    /// <param name="userId">The ID of the user requesting the deletion</param>
+    /// <exception cref="ArgumentException">Thrown when recipe ID format is invalid</exception>
+    /// <exception cref="KeyNotFoundException">Thrown when recipe is not found or does not belong to the user</exception>
+    Task DeleteRecipeAsync(string recipeId, Guid userId);
 }

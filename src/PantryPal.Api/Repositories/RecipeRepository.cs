@@ -97,4 +97,47 @@ public class RecipeRepository : IRecipeRepository
             throw;
         }
     }
+
+    /// <inheritdoc />
+    public async Task<RecipesSelect?> GetByIdAsync(string id)
+    {
+        try
+        {
+            var response = await _supabaseClient
+                .From<RecipesSelect>()
+                .Filter("id", Supabase.Postgrest.Constants.Operator.Equals, id)
+                .Get();
+
+            var recipe = response.Models.FirstOrDefault();
+
+            _logger.LogInformation("Retrieved recipe {RecipeId}: {Found}",
+                id, recipe != null ? "found" : "not found");
+
+            return recipe;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving recipe {RecipeId}", id);
+            throw;
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task DeleteAsync(string id)
+    {
+        try
+        {
+            await _supabaseClient
+                .From<RecipesSelect>()
+                .Filter("id", Supabase.Postgrest.Constants.Operator.Equals, id)
+                .Delete();
+
+            _logger.LogInformation("Successfully deleted recipe {RecipeId}", id);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error deleting recipe {RecipeId}", id);
+            throw;
+        }
+    }
 }

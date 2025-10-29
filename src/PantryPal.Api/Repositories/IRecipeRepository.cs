@@ -25,4 +25,17 @@ public interface IRecipeRepository
     /// <param name="model">The insert model containing the recipe data</param>
     /// <returns>The created recipe record</returns>
     Task<RecipesSelect> CreateRecipeAsync(RecipesInsert model);
+
+    /// <summary>
+    /// Retrieves a recipe by its ID
+    /// </summary>
+    /// <param name="id">The unique identifier of the recipe</param>
+    /// <returns>The recipe record if found, null otherwise</returns>
+    Task<RecipesSelect?> GetByIdAsync(string id);
+
+    /// <summary>
+    /// Deletes a recipe from the database
+    /// </summary>
+    /// <param name="id">The unique identifier of the recipe to delete</param>
+    Task DeleteAsync(string id);
 }

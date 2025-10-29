@@ -501,4 +501,56 @@ app.MapPost("/recipes/{generationId}/reject", async (
     }
 }); // TODO: Add .RequireAuthorization() when authentication is enabled
 
+// DELETE /recipes/{id} endpoint
+app.MapDelete("/recipes/{id}", async (
+    string id,
+    IRecipeService recipeService,
+    ILogger<Program> logger) =>
+{
+    // Validate recipe ID format
+    if (!Guid.TryParse(id, out _))
+    {
+        logger.LogWarning("Invalid recipe ID format: {RecipeId}", id);
+        return Results.BadRequest(new { error = "Invalid recipe ID format." });
+    }
+
+    try
+    {
+        // TODO: Extract userId from authenticated user when authentication is enabled
+        // var userIdClaim = httpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        // if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+        // {
+        //     logger.LogWarning("Unable to extract valid user ID from claims");
+        //     return Results.Unauthorized();
+        // }
+
+        // TEMPORARY: Use a hardcoded userId for testing until authentication is implemented
+        var userId = Guid.Parse(DefaultUserId);
+        logger.LogWarning("Using hardcoded userId for testing. Authentication not yet enabled.");
+
+        await recipeService.DeleteRecipeAsync(id, userId);
+
+        logger.LogInformation("Successfully deleted recipe {RecipeId} for user {UserId}", id, userId);
+        return Results.NoContent();
+    }
+    catch (ArgumentException ex) when (ex.Message.Contains("Invalid recipe ID format"))
+    {
+        logger.LogWarning(ex, "Invalid recipe ID format: {RecipeId}", id);
+        return Results.BadRequest(new { error = "Invalid recipe ID format." });
+    }
+    catch (KeyNotFoundException ex) when (ex.Message.Contains("Recipe not found"))
+    {
+        logger.LogWarning(ex, "Recipe {RecipeId} not found for user {UserId}", id, Guid.Parse(DefaultUserId));
+        return Results.NotFound(new { error = "Recipe not found." });
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "Unhandled exception in DELETE /recipes/{Id} endpoint", id);
+        return Results.Problem(
+            title: "Internal Server Error",
+            detail: "An error occurred while processing your request.",
+            statusCode: 500);
+    }
+}); // TODO: Add .RequireAuthorization() when authentication is enabled
+
 app.Run();

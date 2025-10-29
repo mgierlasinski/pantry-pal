@@ -356,4 +356,59 @@ Please create a detailed recipe in markdown format with ingredients, instruction
             throw;
         }
     }
+
+    /// <inheritdoc />
+    public async Task DeleteRecipeAsync(string recipeId, Guid userId)
+    {
+        try
+        {
+            // Early guard clause: validate recipe ID format
+            if (!Guid.TryParse(recipeId, out _))
+            {
+                _logger.LogWarning("Invalid recipe ID format: {RecipeId}", recipeId);
+                throw new ArgumentException("Invalid recipe ID format.", nameof(recipeId));
+            }
+
+            // Query repository to fetch recipe for ownership verification
+            var recipe = await _recipeRepository.GetByIdAsync(recipeId);
+
+            // Check if recipe exists
+            if (recipe == null)
+            {
+                _logger.LogWarning("Recipe {RecipeId} not found", recipeId);
+                throw new KeyNotFoundException("Recipe not found.");
+            }
+
+            // Verify ownership by comparing user IDs
+            if (recipe.UserId != userId.ToString())
+            {
+                _logger.LogWarning(
+                    "User {UserId} attempted to delete recipe {RecipeId} owned by {OwnerId}",
+                    userId, recipeId, recipe.UserId);
+                throw new KeyNotFoundException("Recipe not found.");
+            }
+
+            // Perform the deletion
+            await _recipeRepository.DeleteAsync(recipeId);
+
+            _logger.LogInformation("Recipe {RecipeId} successfully deleted by user {UserId}", recipeId, userId);
+        }
+        catch (ArgumentException)
+        {
+            // Re-throw validation errors
+            throw;
+        }
+        catch (KeyNotFoundException)
+        {
+            // Re-throw not found errors (including unauthorized access)
+            throw;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex,
+                "Unexpected error while deleting recipe {RecipeId} for user {UserId}",
+                recipeId, userId);
+            throw;
+        }
+    }
 }
