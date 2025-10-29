@@ -36,4 +36,14 @@ public interface IRecipeService
     /// <exception cref="ArgumentException">Thrown when generation is not found</exception>
     /// <exception cref="InvalidOperationException">Thrown when generation is already accepted or has no recipe text</exception>
     Task<RecipeAcceptResponseDto> AcceptGeneratedRecipeAsync(Guid generationId, Guid userId);
+
+    /// <summary>
+    /// Rejects a previously generated AI recipe by setting a reject reason
+    /// </summary>
+    /// <param name="generationId">The ID of the recipe generation to reject</param>
+    /// <param name="rejectReasonId">The ID of the reject reason</param>
+    /// <param name="userId">The ID of the user rejecting the recipe</param>
+    /// <exception cref="ArgumentException">Thrown when generation is not found or does not belong to the user</exception>
+    /// <exception cref="InvalidOperationException">Thrown when generation is already rejected</exception>
+    Task RejectGeneratedRecipeAsync(Guid generationId, short rejectReasonId, Guid userId);
 }

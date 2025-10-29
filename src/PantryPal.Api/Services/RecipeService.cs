@@ -303,4 +303,57 @@ Please create a detailed recipe in markdown format with ingredients, instruction
             throw;
         }
     }
+
+    /// <inheritdoc />
+    public async Task RejectGeneratedRecipeAsync(Guid generationId, short rejectReasonId, Guid userId)
+    {
+        try
+        {
+            _logger.LogInformation("Starting recipe rejection for generation {GenerationId} with reason {RejectReasonId} by user {UserId}",
+                generationId, rejectReasonId, userId);
+
+            // Step 1: Retrieve generation record
+            var generation = await _recipesGenerationsRepository.GetByIdAsync(generationId, userId);
+
+            // Step 2: Validate generation exists and belongs to user
+            if (generation == null)
+            {
+                _logger.LogWarning("Generation {GenerationId} not found for user {UserId}",
+                    generationId, userId);
+                throw new ArgumentException("Generation not found");
+            }
+
+            // Step 3: Validate not already rejected
+            if (generation.RejectReasonId.HasValue)
+            {
+                _logger.LogWarning("Generation {GenerationId} already rejected with reason {ExistingReasonId} for user {UserId}",
+                    generationId, generation.RejectReasonId.Value, userId);
+                throw new InvalidOperationException("Already rejected");
+            }
+
+            // Step 4: Update generation with reject reason
+            await _recipesGenerationsRepository.UpdateRejectReasonAsync(generationId, rejectReasonId);
+
+            _logger.LogInformation(
+                "Successfully rejected generation {GenerationId} with reason {RejectReasonId} for user {UserId}",
+                generationId, rejectReasonId, userId);
+        }
+        catch (ArgumentException)
+        {
+            // Re-throw generation not found
+            throw;
+        }
+        catch (InvalidOperationException)
+        {
+            // Re-throw validation errors (already rejected)
+            throw;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex,
+                "Unexpected error while rejecting generation {GenerationId} for user {UserId}",
+                generationId, userId);
+            throw;
+        }
+    }
 }

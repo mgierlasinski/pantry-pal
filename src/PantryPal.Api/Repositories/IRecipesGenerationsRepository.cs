@@ -36,5 +36,13 @@ public interface IRecipesGenerationsRepository
     /// <param name="recipeId">The ID of the created recipe</param>
     /// <returns>The updated generation record</returns>
     Task<RecipesGenerationsSelect> MarkAsAcceptedAsync(Guid generationId, Guid recipeId);
+
+    /// <summary>
+    /// Updates the reject reason for a recipe generation
+    /// </summary>
+    /// <param name="generationId">The ID of the generation to update</param>
+    /// <param name="rejectReasonId">The reject reason ID to set</param>
+    /// <returns>The updated generation record</returns>
+    Task<RecipesGenerationsSelect> UpdateRejectReasonAsync(Guid generationId, short rejectReasonId);
 }
 

@@ -235,3 +235,60 @@ POST {{PantryPal.Api_HostAddress}}/recipes/00000000-0000-0000-0000-999999999999/
 # Returns the new recipe ID and timestamp when successfully accepted.
 
 ###
+
+# POST /recipes/{generationId}/reject - Reject a generated recipe with a reason
+# Note: Replace @ExistingGenerationId with a valid generation ID from POST /recipes/generate response
+POST {{PantryPal.Api_HostAddress}}/recipes/{{ExistingGenerationId}}/reject
+Content-Type: application/json
+
+{
+  "rejectReasonId": 1
+}
+
+###
+
+# POST /recipes/{generationId}/reject - Error: generation not found
+POST {{PantryPal.Api_HostAddress}}/recipes/00000000-0000-0000-0000-999999999999/reject
+Content-Type: application/json
+
+{
+  "rejectReasonId": 1
+}
+
+###
+
+# POST /recipes/{generationId}/reject - Error: invalid reject reason ID
+# Note: Replace @ExistingGenerationId with a valid generation ID from POST /recipes/generate response
+POST {{PantryPal.Api_HostAddress}}/recipes/{{ExistingGenerationId}}/reject
+Content-Type: application/json
+
+{
+  "rejectReasonId": 999
+}
+
+###
+
+# POST /recipes/{generationId}/reject - Error: already rejected (409 Conflict)
+# Note: This will fail if trying to reject the same generation twice
+# To test: run the same reject request twice with the same valid generation ID
+
+###
+
+# Note: Error scenarios for POST /recipes/{generationId}/reject
+#
+# 204 No Content - Success
+# Returns no content when successfully rejected.
+#
+# 404 Not Found - "Generation not found"
+# This occurs when the generation ID doesn't exist or doesn't belong to the user.
+#
+# 400 Bad Request - Validation errors
+# This occurs when rejectReasonId is invalid (doesn't exist in recipe_reject_reasons table).
+#
+# 409 Conflict - "Already rejected"
+# This occurs when attempting to reject a generation that has already been rejected.
+#
+# 500 Internal Server Error - Unexpected errors
+# This occurs for database or other server-side errors.
+
+###

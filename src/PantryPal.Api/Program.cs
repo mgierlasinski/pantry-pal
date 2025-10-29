@@ -43,6 +43,7 @@ builder.Services.AddScoped<IPantryRepository, PantryRepository>();
 builder.Services.AddScoped<IRecipeRepository, RecipeRepository>();
 builder.Services.AddScoped<IUserPreferencesRepository, UserPreferencesRepository>();
 builder.Services.AddScoped<IRecipesGenerationsRepository, RecipesGenerationsRepository>();
+builder.Services.AddScoped<IRecipeRejectReasonsRepository, RecipeRejectReasonsRepository>();
 
 // Register services
 builder.Services.AddScoped<IPantryService, PantryService>();
@@ -435,6 +436,64 @@ app.MapPost("/recipes/{generationId}/accept", async (
     catch (Exception ex)
     {
         logger.LogError(ex, "Unhandled exception in POST /recipes/{GenerationId}/accept endpoint", generationId);
+        return Results.Problem(
+            title: "Internal Server Error",
+            detail: "An error occurred while processing your request.",
+            statusCode: 500);
+    }
+}); // TODO: Add .RequireAuthorization() when authentication is enabled
+
+// POST /recipes/{generationId}/reject endpoint
+app.MapPost("/recipes/{generationId}/reject", async (
+    Guid generationId,
+    RecipeRejectRequestDto request,
+    IValidator<RecipeRejectRequestDto> validator,
+    IRecipeService recipeService,
+    ILogger<Program> logger) =>
+{
+    // Validate request body using FluentValidation
+    var validationResult = await validator.ValidateAsync(request);
+    if (!validationResult.IsValid)
+    {
+        logger.LogWarning("Validation failed for POST /recipes/{GenerationId}/reject: {Errors}",
+            generationId, string.Join(", ", validationResult.Errors.Select(e => e.ErrorMessage)));
+        return Results.ValidationProblem(validationResult.ToDictionary());
+    }
+
+    try
+    {
+        // TODO: Extract userId from authenticated user when authentication is enabled
+        // var userIdClaim = httpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        // if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+        // {
+        //     logger.LogWarning("Unable to extract valid user ID from claims");
+        //     return Results.Unauthorized();
+        // }
+
+        // TEMPORARY: Use a hardcoded userId for testing until authentication is implemented
+        var userId = Guid.Parse(DefaultUserId);
+        logger.LogWarning("Using hardcoded userId for testing. Authentication not yet enabled.");
+
+        await recipeService.RejectGeneratedRecipeAsync(generationId, request.RejectReasonId, userId);
+
+        logger.LogInformation("Successfully rejected recipe generation {GenerationId} with reason {RejectReasonId} for user {UserId}",
+            generationId, request.RejectReasonId, userId);
+
+        return Results.NoContent();
+    }
+    catch (ArgumentException ex) when (ex.Message.Contains("not found"))
+    {
+        logger.LogWarning(ex, "Generation {GenerationId} not found", generationId);
+        return Results.NotFound(new { error = "Generation not found" });
+    }
+    catch (InvalidOperationException ex) when (ex.Message.Contains("Already rejected"))
+    {
+        logger.LogWarning(ex, "Generation {GenerationId} already rejected", generationId);
+        return Results.Conflict(new { error = "Already rejected" });
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "Unhandled exception in POST /recipes/{GenerationId}/reject endpoint", generationId);
         return Results.Problem(
             title: "Internal Server Error",
             detail: "An error occurred while processing your request.",

@@ -176,5 +176,56 @@ public class RecipesGenerationsRepository : IRecipesGenerationsRepository
             throw;
         }
     }
+
+    /// <inheritdoc />
+    public async Task<RecipesGenerationsSelect> UpdateRejectReasonAsync(Guid generationId, short rejectReasonId)
+    {
+        try
+        {
+            var updateModel = new RecipesGenerationsUpdate
+            {
+                Id = generationId.ToString(),
+                RejectReasonId = rejectReasonId
+            };
+
+            var response = await _supabaseClient
+                .From<RecipesGenerationsUpdate>()
+                .Filter("id", Supabase.Postgrest.Constants.Operator.Equals, generationId.ToString())
+                .Update(updateModel);
+
+            if (!response.Models.Any())
+            {
+                throw new ArgumentException("Recipe generation not found");
+            }
+
+            var updatedGeneration = response.Models.First();
+
+            // Convert back to select model for consistency
+            var result = new RecipesGenerationsSelect
+            {
+                Id = updatedGeneration.Id,
+                UserId = updatedGeneration.UserId,
+                Model = updatedGeneration.Model,
+                DurationMs = updatedGeneration.DurationMs ?? 0,
+                ErrorCode = updatedGeneration.ErrorCode,
+                ErrorMessage = updatedGeneration.ErrorMessage,
+                GeneratedRecipeId = updatedGeneration.GeneratedRecipeId,
+                GeneratedRecipeText = updatedGeneration.GeneratedRecipeText,
+                RejectReasonId = updatedGeneration.RejectReasonId,
+                CreatedAt = updatedGeneration.CreatedAt
+            };
+
+            _logger.LogInformation("Updated recipe generation {GenerationId} with reject reason {RejectReasonId}",
+                generationId, rejectReasonId);
+
+            return result;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error updating reject reason for recipe generation {GenerationId}",
+                generationId);
+            throw;
+        }
+    }
 }
 

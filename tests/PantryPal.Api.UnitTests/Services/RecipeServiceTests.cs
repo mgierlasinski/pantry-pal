@@ -467,5 +467,159 @@ public class RecipeServiceTests
         _mockRecipesGenerationsRepository.Verify(r => r.GetByIdAsync(generationId, user2), Times.Once);
         _mockRecipeRepository.Verify(r => r.CreateRecipeAsync(It.IsAny<RecipesInsert>()), Times.Never);
     }
+
+    [Fact]
+    public async Task RejectGeneratedRecipeAsync_WithValidGeneration_ReturnsSuccessfully()
+    {
+        // Arrange
+        var generationId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var rejectReasonId = (short)1;
+
+        var mockGeneration = new RecipesGenerationsSelect
+        {
+            Id = generationId.ToString(),
+            UserId = userId.ToString(),
+            Model = "mock-gpt-4",
+            DurationMs = 1000,
+            GeneratedRecipeText = "# Test Recipe\n\nIngredients:\n- Test ingredient",
+            GeneratedRecipeId = null,
+            CreatedAt = "2024-10-29T11:00:00Z",
+            ErrorCode = null,
+            ErrorMessage = null,
+            RejectReasonId = null // Not rejected yet
+        };
+
+        var updatedGeneration = new RecipesGenerationsSelect
+        {
+            Id = generationId.ToString(),
+            UserId = userId.ToString(),
+            Model = "mock-gpt-4",
+            DurationMs = 1000,
+            GeneratedRecipeText = "# Test Recipe\n\nIngredients:\n- Test ingredient",
+            GeneratedRecipeId = null,
+            CreatedAt = "2024-10-29T11:00:00Z",
+            ErrorCode = null,
+            ErrorMessage = null,
+            RejectReasonId = rejectReasonId // Now rejected
+        };
+
+        _mockRecipesGenerationsRepository
+            .Setup(r => r.GetByIdAsync(generationId, userId))
+            .ReturnsAsync(mockGeneration);
+
+        _mockRecipesGenerationsRepository
+            .Setup(r => r.UpdateRejectReasonAsync(generationId, rejectReasonId))
+            .ReturnsAsync(updatedGeneration);
+
+        // Act
+        await _service.RejectGeneratedRecipeAsync(generationId, rejectReasonId, userId);
+
+        // Assert
+        _mockRecipesGenerationsRepository.Verify(r => r.GetByIdAsync(generationId, userId), Times.Once);
+        _mockRecipesGenerationsRepository.Verify(r => r.UpdateRejectReasonAsync(generationId, rejectReasonId), Times.Once);
+    }
+
+    [Fact]
+    public async Task RejectGeneratedRecipeAsync_WithGenerationNotFound_ThrowsArgumentException()
+    {
+        // Arrange
+        var generationId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var rejectReasonId = (short)1;
+
+        _mockRecipesGenerationsRepository
+            .Setup(r => r.GetByIdAsync(generationId, userId))
+            .ReturnsAsync((RecipesGenerationsSelect?)null);
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<ArgumentException>(() =>
+            _service.RejectGeneratedRecipeAsync(generationId, rejectReasonId, userId));
+
+        Assert.Equal("Generation not found", exception.Message);
+
+        _mockRecipesGenerationsRepository.Verify(r => r.GetByIdAsync(generationId, userId), Times.Once);
+        _mockRecipesGenerationsRepository.Verify(r => r.UpdateRejectReasonAsync(It.IsAny<Guid>(), It.IsAny<short>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task RejectGeneratedRecipeAsync_WithAlreadyRejectedGeneration_ThrowsInvalidOperationException()
+    {
+        // Arrange
+        var generationId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var rejectReasonId = (short)1;
+        var existingRejectReasonId = (short)2;
+
+        var mockGeneration = new RecipesGenerationsSelect
+        {
+            Id = generationId.ToString(),
+            UserId = userId.ToString(),
+            Model = "mock-gpt-4",
+            DurationMs = 1000,
+            GeneratedRecipeText = "# Test Recipe\n\nIngredients:\n- Test ingredient",
+            GeneratedRecipeId = null,
+            CreatedAt = "2024-10-29T11:00:00Z",
+            ErrorCode = null,
+            ErrorMessage = null,
+            RejectReasonId = existingRejectReasonId // Already rejected
+        };
+
+        _mockRecipesGenerationsRepository
+            .Setup(r => r.GetByIdAsync(generationId, userId))
+            .ReturnsAsync(mockGeneration);
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            _service.RejectGeneratedRecipeAsync(generationId, rejectReasonId, userId));
+
+        Assert.Equal("Already rejected", exception.Message);
+
+        _mockRecipesGenerationsRepository.Verify(r => r.GetByIdAsync(generationId, userId), Times.Once);
+        _mockRecipesGenerationsRepository.Verify(r => r.UpdateRejectReasonAsync(It.IsAny<Guid>(), It.IsAny<short>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task RejectGeneratedRecipeAsync_WithOtherUsersGeneration_ThrowsArgumentException()
+    {
+        // Arrange
+        var generationId = Guid.NewGuid();
+        var user1 = Guid.NewGuid(); // Owner of the generation
+        var user2 = Guid.NewGuid(); // Trying to reject user1's generation
+        var rejectReasonId = (short)1;
+
+        var mockGeneration = new RecipesGenerationsSelect
+        {
+            Id = generationId.ToString(),
+            UserId = user1.ToString(), // Belongs to user1
+            Model = "mock-gpt-4",
+            DurationMs = 1000,
+            GeneratedRecipeText = "# Test Recipe\n\nIngredients:\n- Test ingredient",
+            GeneratedRecipeId = null,
+            CreatedAt = "2024-10-29T11:00:00Z",
+            ErrorCode = null,
+            ErrorMessage = null,
+            RejectReasonId = null
+        };
+
+        // Setup returns generation for user1
+        _mockRecipesGenerationsRepository
+            .Setup(r => r.GetByIdAsync(generationId, user1))
+            .ReturnsAsync(mockGeneration);
+
+        // Setup returns null for user2 (not their generation)
+        _mockRecipesGenerationsRepository
+            .Setup(r => r.GetByIdAsync(generationId, user2))
+            .ReturnsAsync((RecipesGenerationsSelect?)null);
+
+        // Act & Assert - user2 cannot access user1's generation
+        var exception = await Assert.ThrowsAsync<ArgumentException>(() =>
+            _service.RejectGeneratedRecipeAsync(generationId, rejectReasonId, user2));
+
+        Assert.Equal("Generation not found", exception.Message);
+
+        _mockRecipesGenerationsRepository.Verify(r => r.GetByIdAsync(generationId, user2), Times.Once);
+        _mockRecipesGenerationsRepository.Verify(r => r.UpdateRejectReasonAsync(It.IsAny<Guid>(), It.IsAny<short>()), Times.Never);
+    }
 }
 
