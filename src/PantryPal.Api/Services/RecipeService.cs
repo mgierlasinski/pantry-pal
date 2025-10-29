@@ -223,4 +223,84 @@ Please create a detailed recipe in markdown format with ingredients, instruction
             throw;
         }
     }
+
+    /// <inheritdoc />
+    public async Task<RecipeAcceptResponseDto> AcceptGeneratedRecipeAsync(Guid generationId, Guid userId)
+    {
+        try
+        {
+            _logger.LogInformation("Starting recipe acceptance for generation {GenerationId} by user {UserId}",
+                generationId, userId);
+
+            // Step 1: Retrieve generation record
+            var generation = await _recipesGenerationsRepository.GetByIdAsync(generationId, userId);
+
+            // Step 2: Validate generation exists
+            if (generation == null)
+            {
+                _logger.LogWarning("Generation {GenerationId} not found for user {UserId}",
+                    generationId, userId);
+                throw new ArgumentException("Generation not found");
+            }
+
+            // Step 3: Validate not already accepted
+            if (!string.IsNullOrEmpty(generation.GeneratedRecipeId))
+            {
+                _logger.LogWarning("Generation {GenerationId} already accepted for user {UserId}",
+                    generationId, userId);
+                throw new InvalidOperationException("Already accepted");
+            }
+
+            // Step 4: Validate recipe text exists
+            if (string.IsNullOrWhiteSpace(generation.GeneratedRecipeText))
+            {
+                _logger.LogWarning("Generation {GenerationId} has no recipe text for user {UserId}",
+                    generationId, userId);
+                throw new InvalidOperationException("No recipe text available");
+            }
+
+            // Step 5: Create recipe in recipes table
+            var recipeInsert = new RecipesInsert
+            {
+                UserId = userId.ToString(),
+                RecipeText = generation.GeneratedRecipeText
+            };
+
+            var createdRecipe = await _recipeRepository.CreateRecipeAsync(recipeInsert);
+
+            _logger.LogInformation("Created recipe {RecipeId} from generation {GenerationId}",
+                createdRecipe.Id, generationId);
+
+            // Step 6: Mark generation as accepted (link to recipe)
+            var recipeId = Guid.Parse(createdRecipe.Id);
+            await _recipesGenerationsRepository.MarkAsAcceptedAsync(generationId, recipeId);
+
+            _logger.LogInformation(
+                "Successfully accepted generation {GenerationId} and created recipe {RecipeId} for user {UserId}",
+                generationId, createdRecipe.Id, userId);
+
+            // Step 7: Return response
+            return new RecipeAcceptResponseDto(
+                RecipeId: createdRecipe.Id,
+                SavedAt: createdRecipe.CreatedAt
+            );
+        }
+        catch (ArgumentException)
+        {
+            // Re-throw generation not found
+            throw;
+        }
+        catch (InvalidOperationException)
+        {
+            // Re-throw validation errors (already accepted, no recipe text)
+            throw;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex,
+                "Unexpected error while accepting generation {GenerationId} for user {UserId}",
+                generationId, userId);
+            throw;
+        }
+    }
 }

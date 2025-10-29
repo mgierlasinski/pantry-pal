@@ -100,5 +100,81 @@ public class RecipesGenerationsRepository : IRecipesGenerationsRepository
             throw;
         }
     }
+
+    /// <inheritdoc />
+    public async Task<RecipesGenerationsSelect?> GetByIdAsync(Guid generationId, Guid userId)
+    {
+        try
+        {
+            var response = await _supabaseClient
+                .From<RecipesGenerationsSelect>()
+                .Filter("id", Supabase.Postgrest.Constants.Operator.Equals, generationId.ToString())
+                .Filter("user_id", Supabase.Postgrest.Constants.Operator.Equals, userId.ToString())
+                .Single();
+
+            _logger.LogInformation("Retrieved recipe generation {GenerationId} for user {UserId}",
+                generationId, userId);
+
+            return response;
+        }
+        catch (Exception ex)
+        {
+            // If not found, Supabase may throw an exception or return null
+            _logger.LogWarning(ex, "Recipe generation {GenerationId} not found for user {UserId}",
+                generationId, userId);
+            return null;
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task<RecipesGenerationsSelect> MarkAsAcceptedAsync(Guid generationId, Guid recipeId)
+    {
+        try
+        {
+            var updateModel = new RecipesGenerationsUpdate
+            {
+                Id = generationId.ToString(),
+                GeneratedRecipeId = recipeId.ToString()
+            };
+
+            var response = await _supabaseClient
+                .From<RecipesGenerationsUpdate>()
+                .Filter("id", Supabase.Postgrest.Constants.Operator.Equals, generationId.ToString())
+                .Update(updateModel);
+
+            if (!response.Models.Any())
+            {
+                throw new ArgumentException("Recipe generation not found");
+            }
+
+            var updatedGeneration = response.Models.First();
+
+            // Convert back to select model for consistency
+            var result = new RecipesGenerationsSelect
+            {
+                Id = updatedGeneration.Id,
+                UserId = updatedGeneration.UserId,
+                Model = updatedGeneration.Model,
+                DurationMs = updatedGeneration.DurationMs ?? 0,
+                ErrorCode = updatedGeneration.ErrorCode,
+                ErrorMessage = updatedGeneration.ErrorMessage,
+                GeneratedRecipeId = updatedGeneration.GeneratedRecipeId,
+                GeneratedRecipeText = updatedGeneration.GeneratedRecipeText,
+                RejectReasonId = updatedGeneration.RejectReasonId,
+                CreatedAt = updatedGeneration.CreatedAt
+            };
+
+            _logger.LogInformation("Marked recipe generation {GenerationId} as accepted with recipe {RecipeId}",
+                generationId, recipeId);
+
+            return result;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error marking recipe generation {GenerationId} as accepted",
+                generationId);
+            throw;
+        }
+    }
 }
 

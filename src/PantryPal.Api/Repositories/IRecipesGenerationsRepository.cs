@@ -20,5 +20,21 @@ public interface IRecipesGenerationsRepository
     /// <param name="model">The update model containing the generation data</param>
     /// <returns>The updated generation record</returns>
     Task<RecipesGenerationsSelect> UpdateGenerationAsync(RecipesGenerationsUpdate model);
+
+    /// <summary>
+    /// Retrieves a recipe generation record by ID for a specific user
+    /// </summary>
+    /// <param name="generationId">The ID of the generation to retrieve</param>
+    /// <param name="userId">The ID of the user who owns the generation</param>
+    /// <returns>The generation record if found, null otherwise</returns>
+    Task<RecipesGenerationsSelect?> GetByIdAsync(Guid generationId, Guid userId);
+
+    /// <summary>
+    /// Marks a generation as accepted by linking it to a created recipe
+    /// </summary>
+    /// <param name="generationId">The ID of the generation to mark as accepted</param>
+    /// <param name="recipeId">The ID of the created recipe</param>
+    /// <returns>The updated generation record</returns>
+    Task<RecipesGenerationsSelect> MarkAsAcceptedAsync(Guid generationId, Guid recipeId);
 }
 

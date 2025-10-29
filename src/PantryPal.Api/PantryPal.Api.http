@@ -1,5 +1,6 @@
 ﻿@PantryPal.Api_HostAddress = https://localhost:7154
 @ExistingPantryItem = 7b2e7457-8a9d-4cc4-807c-f7c2489008b5
+@ExistingGenerationId = 00000000-0000-0000-0000-000000000000
 
 # GET /pantry-items - Get pantry items with default pagination (page=1, pageSize=20, sort=created_at)
 GET {{PantryPal.Api_HostAddress}}/pantry-items
@@ -199,5 +200,38 @@ POST {{PantryPal.Api_HostAddress}}/recipes/generate
 # 500 Internal Server Error - "Failed to generate recipe. Please try again later."
 # This occurs when the AI service fails to generate a recipe.
 # To test: modify the MockAIRecipeGeneratorService to throw an exception.
+
+###
+
+# POST /recipes/{generationId}/accept - Accept a generated recipe and save it to recipes table
+# Note: Replace @ExistingGenerationId with a valid generation ID from POST /recipes/generate response
+POST {{PantryPal.Api_HostAddress}}/recipes/{{ExistingGenerationId}}/accept
+
+###
+
+# POST /recipes/{generationId}/accept - Error: generation not found
+POST {{PantryPal.Api_HostAddress}}/recipes/00000000-0000-0000-0000-999999999999/accept
+
+###
+
+# POST /recipes/{generationId}/accept - Error: already accepted (409 Conflict)
+# Note: This will fail if trying to accept the same generation twice
+# To test: run the same accept request twice with the same valid generation ID
+
+###
+
+# Note: Error scenarios for POST /recipes/{generationId}/accept
+#
+# 404 Not Found - "Generation not found"
+# This occurs when the generation ID doesn't exist or doesn't belong to the user.
+#
+# 409 Conflict - "Already accepted"
+# This occurs when attempting to accept a generation that has already been accepted.
+#
+# 400 Bad Request - "No recipe text available"
+# This occurs when the generation record exists but has no recipe text (error during generation).
+#
+# 201 Created - Success
+# Returns the new recipe ID and timestamp when successfully accepted.
 
 ###

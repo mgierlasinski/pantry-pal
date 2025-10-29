@@ -390,4 +390,56 @@ app.MapPost("/recipes/generate", async (
     }
 }); // TODO: Add .RequireAuthorization() when authentication is enabled
 
+// POST /recipes/{generationId}/accept endpoint
+app.MapPost("/recipes/{generationId}/accept", async (
+    Guid generationId,
+    IRecipeService recipeService,
+    ILogger<Program> logger) =>
+{
+    try
+    {
+        // TODO: Extract userId from authenticated user when authentication is enabled
+        // var userIdClaim = httpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        // if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+        // {
+        //     logger.LogWarning("Unable to extract valid user ID from claims");
+        //     return Results.Unauthorized();
+        // }
+
+        // TEMPORARY: Use a hardcoded userId for testing until authentication is implemented
+        var userId = Guid.Parse(DefaultUserId);
+        logger.LogWarning("Using hardcoded userId for testing. Authentication not yet enabled.");
+
+        var result = await recipeService.AcceptGeneratedRecipeAsync(generationId, userId);
+
+        logger.LogInformation("Successfully accepted recipe generation {GenerationId} and created recipe {RecipeId} for user {UserId}",
+            generationId, result.RecipeId, userId);
+
+        return Results.Created($"/recipes/{result.RecipeId}", result);
+    }
+    catch (ArgumentException ex) when (ex.Message.Contains("not found"))
+    {
+        logger.LogWarning(ex, "Generation {GenerationId} not found", generationId);
+        return Results.NotFound(new { error = "Generation not found" });
+    }
+    catch (InvalidOperationException ex) when (ex.Message.Contains("Already accepted"))
+    {
+        logger.LogWarning(ex, "Generation {GenerationId} already accepted", generationId);
+        return Results.Conflict(new { error = "Already accepted" });
+    }
+    catch (InvalidOperationException ex) when (ex.Message.Contains("No recipe text available"))
+    {
+        logger.LogWarning(ex, "Generation {GenerationId} has no recipe text", generationId);
+        return Results.BadRequest(new { error = "No recipe text available" });
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "Unhandled exception in POST /recipes/{GenerationId}/accept endpoint", generationId);
+        return Results.Problem(
+            title: "Internal Server Error",
+            detail: "An error occurred while processing your request.",
+            statusCode: 500);
+    }
+}); // TODO: Add .RequireAuthorization() when authentication is enabled
+
 app.Run();
