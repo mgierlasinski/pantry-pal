@@ -44,11 +44,13 @@ builder.Services.AddScoped<IRecipeRepository, RecipeRepository>();
 builder.Services.AddScoped<IUserPreferencesRepository, UserPreferencesRepository>();
 builder.Services.AddScoped<IRecipesGenerationsRepository, RecipesGenerationsRepository>();
 builder.Services.AddScoped<IRecipeRejectReasonsRepository, RecipeRejectReasonsRepository>();
+builder.Services.AddScoped<IDietTypesRepository, DietTypesRepository>();
 
 // Register services
 builder.Services.AddScoped<IPantryService, PantryService>();
 builder.Services.AddScoped<IRecipeService, RecipeService>();
 builder.Services.AddScoped<IUserPreferencesService, UserPreferencesService>();
+builder.Services.AddScoped<IDietTypesService, DietTypesService>();
 builder.Services.AddScoped<IAIRecipeGeneratorService, MockAIRecipeGeneratorService>();
 
 var app = builder.Build();
@@ -649,5 +651,28 @@ app.MapPost("/user-preferences", async (
             statusCode: 500);
     }
 }).Produces<UserPreferencesDto>(200).Produces(400).Produces(500); // TODO: Add .RequireAuthorization() when authentication is enabled
+
+// GET /diet-types endpoint
+app.MapGet("/diet-types", async (
+    IDietTypesService dietTypesService,
+    ILogger<Program> logger) =>
+{
+    try
+    {
+        var result = await dietTypesService.GetAllAsync();
+
+        logger.LogInformation("Successfully retrieved {Count} diet types", result.DietTypes.Count());
+
+        return Results.Ok(result);
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "Unhandled exception in GET /diet-types endpoint");
+        return Results.Problem(
+            title: "Internal Server Error",
+            detail: "An error occurred while processing your request.",
+            statusCode: 500);
+    }
+});
 
 app.Run();

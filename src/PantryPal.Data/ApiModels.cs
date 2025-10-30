@@ -177,3 +177,8 @@ public record RecipeRejectReasonDto(
     short Id,
     string Description
 );
+
+/// <summary>
+/// Response DTO for diet types list endpoint
+/// </summary>
+public record DietTypesResponseDto(IEnumerable<DietTypeDto> DietTypes);

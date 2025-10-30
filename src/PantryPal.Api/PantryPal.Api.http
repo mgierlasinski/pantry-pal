@@ -496,3 +496,27 @@ Content-Type: application/json
 # This occurs for database or other server-side errors.
 
 ###
+
+# GET /diet-types - Get all available diet types (no authentication required)
+GET {{PantryPal.Api_HostAddress}}/diet-types
+
+###
+
+# Note: Response scenarios for GET /diet-types
+#
+# 200 OK - Success
+# Returns DietTypesResponseDto with array of all available diet types.
+# Example response:
+# {
+#   "dietTypes": [
+#     { "id": 1, "name": "standard" },
+#     { "id": 2, "name": "vegetarian" },
+#     { "id": 3, "name": "vegan" },
+#     { "id": 4, "name": "gluten-free" }
+#   ]
+# }
+#
+# 500 Internal Server Error - Unexpected errors
+# This occurs for database or other server-side errors.
+
+###
