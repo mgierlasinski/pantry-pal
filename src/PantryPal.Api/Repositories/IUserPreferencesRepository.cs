@@ -19,14 +19,14 @@ public interface IUserPreferencesRepository
     /// </summary>
     /// <param name="dietTypeId">The diet type ID to check</param>
     /// <returns>True if the diet type exists, false otherwise</returns>
-    Task<bool> DietTypeExistsAsync(short dietTypeId);
+    Task<bool> DietTypeExistsAsync(int dietTypeId);
 
     /// <summary>
     /// Checks if a preferred cuisine with the given ID exists
     /// </summary>
     /// <param name="preferredCuisineId">The preferred cuisine ID to check</param>
     /// <returns>True if the preferred cuisine exists, false otherwise</returns>
-    Task<bool> PreferredCuisineExistsAsync(short preferredCuisineId);
+    Task<bool> PreferredCuisineExistsAsync(int preferredCuisineId);
 
     /// <summary>
     /// Creates or updates user preferences using upsert functionality

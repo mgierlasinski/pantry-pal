@@ -1,6 +1,6 @@
 ﻿@PantryPal.Api_HostAddress = https://localhost:7154
 @ExistingPantryItem = 7b2e7457-8a9d-4cc4-807c-f7c2489008b5
-@ExistingGenerationId = 00000000-0000-0000-0000-000000000000
+@ExistingGenerationId = 8030b6a4-00c4-4f11-b8ae-cc12c0141ca1
 
 # GET /pantry-items - Get pantry items with default pagination (page=1, pageSize=20, sort=created_at)
 GET {{PantryPal.Api_HostAddress}}/pantry-items
@@ -187,22 +187,6 @@ POST {{PantryPal.Api_HostAddress}}/recipes/generate
 
 ###
 
-# Note: Error scenarios for POST /recipes/generate
-# 
-# 400 Bad Request - "User preferences not set."
-# This occurs when the user has not configured their dietary preferences.
-# To test: ensure the test user has no preferences in the user_preferences table.
-#
-# 400 Bad Request - "Pantry is empty."
-# This occurs when the user has no pantry items.
-# To test: ensure the test user has no items in the pantry_items table.
-#
-# 500 Internal Server Error - "Failed to generate recipe. Please try again later."
-# This occurs when the AI service fails to generate a recipe.
-# To test: modify the MockAIRecipeGeneratorService to throw an exception.
-
-###
-
 # POST /recipes/{generationId}/accept - Accept a generated recipe and save it to recipes table
 # Note: Replace @ExistingGenerationId with a valid generation ID from POST /recipes/generate response
 POST {{PantryPal.Api_HostAddress}}/recipes/{{ExistingGenerationId}}/accept
@@ -211,28 +195,6 @@ POST {{PantryPal.Api_HostAddress}}/recipes/{{ExistingGenerationId}}/accept
 
 # POST /recipes/{generationId}/accept - Error: generation not found
 POST {{PantryPal.Api_HostAddress}}/recipes/00000000-0000-0000-0000-999999999999/accept
-
-###
-
-# POST /recipes/{generationId}/accept - Error: already accepted (409 Conflict)
-# Note: This will fail if trying to accept the same generation twice
-# To test: run the same accept request twice with the same valid generation ID
-
-###
-
-# Note: Error scenarios for POST /recipes/{generationId}/accept
-#
-# 404 Not Found - "Generation not found"
-# This occurs when the generation ID doesn't exist or doesn't belong to the user.
-#
-# 409 Conflict - "Already accepted"
-# This occurs when attempting to accept a generation that has already been accepted.
-#
-# 400 Bad Request - "No recipe text available"
-# This occurs when the generation record exists but has no recipe text (error during generation).
-#
-# 201 Created - Success
-# Returns the new recipe ID and timestamp when successfully accepted.
 
 ###
 
@@ -268,31 +230,6 @@ Content-Type: application/json
 
 ###
 
-# POST /recipes/{generationId}/reject - Error: already rejected (409 Conflict)
-# Note: This will fail if trying to reject the same generation twice
-# To test: run the same reject request twice with the same valid generation ID
-
-###
-
-# Note: Error scenarios for POST /recipes/{generationId}/reject
-#
-# 204 No Content - Success
-# Returns no content when successfully rejected.
-#
-# 404 Not Found - "Generation not found"
-# This occurs when the generation ID doesn't exist or doesn't belong to the user.
-#
-# 400 Bad Request - Validation errors
-# This occurs when rejectReasonId is invalid (doesn't exist in recipe_reject_reasons table).
-#
-# 409 Conflict - "Already rejected"
-# This occurs when attempting to reject a generation that has already been rejected.
-#
-# 500 Internal Server Error - Unexpected errors
-# This occurs for database or other server-side errors.
-
-###
-
 # DELETE /recipes/{id} - Success: delete existing recipe
 # Note: Replace @ExistingRecipeId with a valid recipe ID from POST /recipes/{generationId}/accept response
 DELETE {{PantryPal.Api_HostAddress}}/recipes/{{ExistingRecipeId}}
@@ -309,53 +246,10 @@ DELETE {{PantryPal.Api_HostAddress}}/recipes/00000000-0000-0000-0000-99999999999
 
 ###
 
-# Note: Error scenarios for DELETE /recipes/{id}
-#
-# 204 No Content - Success
-# Returns no content when successfully deleted.
-#
-# 400 Bad Request - "Invalid recipe ID format."
-# This occurs when the ID parameter is not a valid UUID format.
-#
-# 404 Not Found - "Recipe not found."
-# This occurs when the recipe doesn't exist or doesn't belong to the authenticated user.
-#
-# 500 Internal Server Error - Unexpected errors
-# This occurs for database or other server-side errors.
-
-###
-
 # GET /user-preferences - Get user preferences (requires authentication)
 # Note: Authentication not yet fully implemented in http file
 # TODO: Add Authorization header with Supabase JWT when authentication is enabled
 GET {{PantryPal.Api_HostAddress}}/user-preferences
-
-###
-
-# Note: Response scenarios for GET /user-preferences
-#
-# 200 OK - Success
-# Returns UserPreferencesDto with resolved diet type and cuisine names.
-# Example response:
-# {
-#   "userId": "uuid-string",
-#   "dietTypeId": 1,
-#   "dietTypeName": "vegetarian",
-#   "preferredCuisineId": 1,
-#   "preferredCuisineName": "Italian",
-#   "dislikedIngredients": "nuts, shellfish",
-#   "createdAt": "2025-10-29T10:00:00Z",
-#   "updatedAt": "2025-10-29T10:00:00Z"
-# }
-#
-# 401 Unauthorized - "Authentication required"
-# This occurs when no valid JWT token is provided or user is not authenticated.
-#
-# 404 Not Found - "User preferences not found"
-# This occurs when the authenticated user has not set their preferences yet.
-#
-# 500 Internal Server Error - Unexpected errors
-# This occurs for database or other server-side errors.
 
 ###
 
@@ -466,58 +360,8 @@ Content-Type: application/json
 
 ###
 
-# Note: Response scenarios for POST /user-preferences
-#
-# 200 OK - Success (upsert operation completed)
-# Returns UserPreferencesDto with resolved diet type and cuisine names.
-# Example response:
-# {
-#   "userId": "uuid-string",
-#   "dietTypeId": 1,
-#   "dietTypeName": "vegetarian",
-#   "preferredCuisineId": 1,
-#   "preferredCuisineName": "Italian",
-#   "dislikedIngredients": "nuts, shellfish",
-#   "createdAt": "2025-10-29T10:00:00Z",
-#   "updatedAt": "2025-10-29T10:00:00Z"
-# }
-#
-# 400 Bad Request - Validation errors
-# This occurs when:
-# - dietTypeId or preferredCuisineId is missing
-# - dietTypeId or preferredCuisineId doesn't exist in the database
-# - dislikedIngredients exceeds 1000 characters
-# - Invalid data types in request body
-#
-# 401 Unauthorized - "Authentication required"
-# This occurs when no valid JWT token is provided or user is not authenticated.
-#
-# 500 Internal Server Error - Unexpected errors
-# This occurs for database or other server-side errors.
-
-###
-
 # GET /diet-types - Get all available diet types (no authentication required)
 GET {{PantryPal.Api_HostAddress}}/diet-types
-
-###
-
-# Note: Response scenarios for GET /diet-types
-#
-# 200 OK - Success
-# Returns DietTypesResponseDto with array of all available diet types.
-# Example response:
-# {
-#   "dietTypes": [
-#     { "id": 1, "name": "standard" },
-#     { "id": 2, "name": "vegetarian" },
-#     { "id": 3, "name": "vegan" },
-#     { "id": 4, "name": "gluten-free" }
-#   ]
-# }
-#
-# 500 Internal Server Error - Unexpected errors
-# This occurs for database or other server-side errors.
 
 ###
 
@@ -526,48 +370,7 @@ GET {{PantryPal.Api_HostAddress}}/preferred-cuisines
 
 ###
 
-# Note: Response scenarios for GET /preferred-cuisines
-#
-# 200 OK - Success
-# Returns PreferredCuisinesResponseDto with array of all available preferred cuisines.
-# Example response:
-# {
-#   "preferredCuisines": [
-#     { "id": 1, "name": "Polish" },
-#     { "id": 2, "name": "Italian" },
-#     { "id": 3, "name": "Asian" },
-#     { "id": 4, "name": "Mexican" }
-#   ]
-# }
-#
-# 500 Internal Server Error - Unexpected errors
-# This occurs for database or other server-side errors.
-
-###
-
 # GET /recipe-reject-reasons - Get all available recipe reject reasons (authentication required)
 GET {{PantryPal.Api_HostAddress}}/recipe-reject-reasons
-
-###
-
-# Note: Response scenarios for GET /recipe-reject-reasons
-#
-# 200 OK - Success
-# Returns RecipeRejectReasonsResponseDto with array of all available recipe reject reasons.
-# Example response:
-# {
-#   "rejectReasons": [
-#     { "id": 1, "description": "I don't have these ingredients" },
-#     { "id": 2, "description": "I don't like this dish" },
-#     { "id": 3, "description": "Other" }
-#   ]
-# }
-#
-# 401 Unauthorized - Authentication required
-# This endpoint requires authentication. Include Bearer token in Authorization header.
-#
-# 500 Internal Server Error - Unexpected errors
-# This occurs for database or other server-side errors, including configuration errors
-# where no reject reasons are found in the database.
 
 ###

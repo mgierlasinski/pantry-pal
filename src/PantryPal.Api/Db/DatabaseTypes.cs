@@ -17,7 +17,7 @@ public class DietTypesSelect : BaseModel
 [Table("diet_types")]
 public class DietTypesInsert : BaseModel
 {
-    [Column("id")]
+    [PrimaryKey("id")]
     public short? Id { get; set; }
 
     [Column("name")]
@@ -27,7 +27,7 @@ public class DietTypesInsert : BaseModel
 [Table("diet_types")]
 public class DietTypesUpdate : BaseModel
 {
-    [Column("id")]
+    [PrimaryKey("id")]
     public short? Id { get; set; }
 
     [Column("name")]
@@ -47,7 +47,7 @@ public class PreferredCuisinesSelect : BaseModel
 [Table("preferred_cuisines")]
 public class PreferredCuisinesInsert : BaseModel
 {
-    [Column("id")]
+    [PrimaryKey("id")]
     public short? Id { get; set; }
 
     [Column("name")]
@@ -57,7 +57,7 @@ public class PreferredCuisinesInsert : BaseModel
 [Table("preferred_cuisines")]
 public class PreferredCuisinesUpdate : BaseModel
 {
-    [Column("id")]
+    [PrimaryKey("id")]
     public short? Id { get; set; }
 
     [Column("name")]
@@ -80,7 +80,7 @@ public class RecipeRejectReasonsInsert : BaseModel
     [Column("description")]
     public string Description { get; set; }
 
-    [Column("id")]
+    [PrimaryKey("id")]
     public short? Id { get; set; }
 }
 
@@ -90,7 +90,7 @@ public class RecipeRejectReasonsUpdate : BaseModel
     [Column("description")]
     public string? Description { get; set; }
 
-    [Column("id")]
+    [PrimaryKey("id")]
     public short? Id { get; set; }
 }
 
@@ -182,16 +182,16 @@ public class RecipesSelect : BaseModel
 [Table("recipes")]
 public class RecipesInsert : BaseModel
 {
-    [Column("created_at")]
+    [Column("created_at", nullValueHandling: NullValueHandling.Ignore)]
     public string? CreatedAt { get; set; }
 
-    [Column("id")]
+    [PrimaryKey("id")]
     public string? Id { get; set; }
 
     [Column("recipe_text")]
     public string RecipeText { get; set; }
 
-    [Column("updated_at")]
+    [Column("updated_at", nullValueHandling: NullValueHandling.Ignore)]
     public string? UpdatedAt { get; set; }
 
     [Column("user_id")]
@@ -201,16 +201,16 @@ public class RecipesInsert : BaseModel
 [Table("recipes")]
 public class RecipesUpdate : BaseModel
 {
-    [Column("created_at")]
+    [Column("created_at", nullValueHandling: NullValueHandling.Ignore)]
     public string? CreatedAt { get; set; }
 
-    [Column("id")]
+    [PrimaryKey("id")]
     public string? Id { get; set; }
 
-    [Column("recipe_text")]
+    [Column("recipe_text", nullValueHandling: NullValueHandling.Ignore)]
     public string? RecipeText { get; set; }
 
-    [Column("updated_at")]
+    [Column("updated_at", nullValueHandling: NullValueHandling.Ignore)]
     public string? UpdatedAt { get; set; }
 
     [Column("user_id")]
@@ -254,31 +254,31 @@ public class RecipesGenerationsSelect : BaseModel
 [Table("recipes_generations")]
 public class RecipesGenerationsInsert : BaseModel
 {
-    [Column("created_at")]
+    [Column("created_at", nullValueHandling: NullValueHandling.Ignore)]
     public string? CreatedAt { get; set; }
 
     [Column("duration_ms")]
     public int DurationMs { get; set; }
 
-    [Column("error_code")]
+    [Column("error_code", nullValueHandling: NullValueHandling.Ignore)]
     public string? ErrorCode { get; set; }
 
-    [Column("error_message")]
+    [Column("error_message", nullValueHandling: NullValueHandling.Ignore)]
     public string? ErrorMessage { get; set; }
 
-    [Column("generated_recipe_id")]
+    [Column("generated_recipe_id", nullValueHandling: NullValueHandling.Ignore)]
     public string? GeneratedRecipeId { get; set; }
 
-    [Column("generated_recipe_text")]
+    [Column("generated_recipe_text", nullValueHandling: NullValueHandling.Ignore)]
     public string? GeneratedRecipeText { get; set; }
 
-    [Column("id")]
+    [PrimaryKey("id")]
     public string? Id { get; set; }
 
     [Column("model")]
     public string Model { get; set; }
 
-    [Column("reject_reason_id")]
+    [Column("reject_reason_id", nullValueHandling: NullValueHandling.Ignore)]
     public short? RejectReasonId { get; set; }
 
     [Column("user_id")]
@@ -288,34 +288,34 @@ public class RecipesGenerationsInsert : BaseModel
 [Table("recipes_generations")]
 public class RecipesGenerationsUpdate : BaseModel
 {
-    [Column("created_at")]
+    [Column("created_at", nullValueHandling: NullValueHandling.Ignore)]
     public string? CreatedAt { get; set; }
 
-    [Column("duration_ms")]
+    [Column("duration_ms", nullValueHandling: NullValueHandling.Ignore)]
     public int? DurationMs { get; set; }
 
-    [Column("error_code")]
+    [Column("error_code", nullValueHandling: NullValueHandling.Ignore)]
     public string? ErrorCode { get; set; }
 
-    [Column("error_message")]
+    [Column("error_message", nullValueHandling: NullValueHandling.Ignore)]
     public string? ErrorMessage { get; set; }
 
-    [Column("generated_recipe_id")]
+    [Column("generated_recipe_id", nullValueHandling: NullValueHandling.Ignore)]
     public string? GeneratedRecipeId { get; set; }
 
     [Column("generated_recipe_text")]
     public string? GeneratedRecipeText { get; set; }
 
-    [Column("id")]
+    [PrimaryKey("id")]
     public string? Id { get; set; }
 
-    [Column("model")]
+    [Column("model", nullValueHandling: NullValueHandling.Ignore)]
     public string? Model { get; set; }
 
-    [Column("reject_reason_id")]
+    [Column("reject_reason_id", nullValueHandling: NullValueHandling.Ignore)]
     public short? RejectReasonId { get; set; }
 
-    [Column("user_id")]
+    [Column("user_id", nullValueHandling: NullValueHandling.Ignore)]
     public string? UserId { get; set; }
 }
 
@@ -341,51 +341,53 @@ public class UserPreferencesSelect : BaseModel
     public string UserId { get; set; }
 
     // Joined properties for diet type and cuisine names
+    [JsonProperty("diet_types")]
     public DietTypesSelect? DietTypes { get; set; }
+    [JsonProperty("preferred_cuisines")]
     public PreferredCuisinesSelect? PreferredCuisines { get; set; }
 }
 
 [Table("user_preferences")]
 public class UserPreferencesInsert : BaseModel
 {
-    [Column("created_at")]
+    [Column("created_at", nullValueHandling: NullValueHandling.Ignore)]
     public string? CreatedAt { get; set; }
 
     [Column("diet_type_id")]
     public short DietTypeId { get; set; }
 
-    [Column("disliked_ingredients")]
+    [Column("disliked_ingredients", nullValueHandling: NullValueHandling.Ignore)]
     public string? DislikedIngredients { get; set; }
 
     [Column("preferred_cuisine_id")]
     public short PreferredCuisineId { get; set; }
 
-    [Column("updated_at")]
+    [Column("updated_at", nullValueHandling: NullValueHandling.Ignore)]
     public string? UpdatedAt { get; set; }
 
-    [Column("user_id")]
+    [PrimaryKey("user_id")]
     public string UserId { get; set; }
 }
 
 [Table("user_preferences")]
 public class UserPreferencesUpdate : BaseModel
 {
-    [Column("created_at")]
+    [Column("created_at", nullValueHandling: NullValueHandling.Ignore)]
     public string? CreatedAt { get; set; }
 
-    [Column("diet_type_id")]
+    [Column("diet_type_id", nullValueHandling: NullValueHandling.Ignore)]
     public short? DietTypeId { get; set; }
 
-    [Column("disliked_ingredients")]
+    [Column("disliked_ingredients", nullValueHandling: NullValueHandling.Ignore)]
     public string? DislikedIngredients { get; set; }
 
-    [Column("preferred_cuisine_id")]
+    [Column("preferred_cuisine_id", nullValueHandling: NullValueHandling.Ignore)]
     public short? PreferredCuisineId { get; set; }
 
-    [Column("updated_at")]
+    [Column("updated_at", nullValueHandling: NullValueHandling.Ignore)]
     public string? UpdatedAt { get; set; }
 
-    [Column("user_id")]
+    [PrimaryKey("user_id")]
     public string? UserId { get; set; }
 }
 

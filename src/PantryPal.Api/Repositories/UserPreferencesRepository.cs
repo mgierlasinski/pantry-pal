@@ -56,7 +56,7 @@ public class UserPreferencesRepository : IUserPreferencesRepository
     }
 
     /// <inheritdoc />
-    public async Task<bool> DietTypeExistsAsync(short dietTypeId)
+    public async Task<bool> DietTypeExistsAsync(int dietTypeId)
     {
         try
         {
@@ -80,7 +80,7 @@ public class UserPreferencesRepository : IUserPreferencesRepository
     }
 
     /// <inheritdoc />
-    public async Task<bool> PreferredCuisineExistsAsync(short preferredCuisineId)
+    public async Task<bool> PreferredCuisineExistsAsync(int preferredCuisineId)
     {
         try
         {

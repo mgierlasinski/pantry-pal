@@ -14,21 +14,11 @@ public class UserPreferencesCreateDtoValidator : AbstractValidator<UserPreferenc
     {
         RuleFor(dto => dto.DietTypeId)
             .GreaterThan((short)0)
-            .WithMessage("Diet type ID must be greater than 0")
-            .MustAsync(async (dietTypeId, cancellation) =>
-            {
-                return await userPreferencesRepository.DietTypeExistsAsync(dietTypeId);
-            })
-            .WithMessage("Diet type ID does not exist");
+            .WithMessage("Diet type ID must be greater than 0");
 
         RuleFor(dto => dto.PreferredCuisineId)
             .GreaterThan((short)0)
-            .WithMessage("Preferred cuisine ID must be greater than 0")
-            .MustAsync(async (preferredCuisineId, cancellation) =>
-            {
-                return await userPreferencesRepository.PreferredCuisineExistsAsync(preferredCuisineId);
-            })
-            .WithMessage("Preferred cuisine ID does not exist");
+            .WithMessage("Preferred cuisine ID must be greater than 0");
 
         RuleFor(dto => dto.DislikedIngredients)
             .MaximumLength(1000)

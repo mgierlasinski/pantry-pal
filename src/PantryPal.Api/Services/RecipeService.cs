@@ -83,8 +83,8 @@ public class RecipeService : IRecipeService
     /// <inheritdoc />
     public async Task<RecipeGenerateResponseDto> GenerateRecipeAsync(Guid userId)
     {
-        var generationId = Guid.NewGuid().ToString();
         var stopwatch = Stopwatch.StartNew();
+        string? generationId = null;
 
         try
         {
@@ -111,15 +111,14 @@ public class RecipeService : IRecipeService
             // Step 3: Create initial generation record (without recipe text yet)
             var generationInsert = new RecipesGenerationsInsert
             {
-                Id = generationId,
                 UserId = userId.ToString(),
                 Model = DefaultAIModel,
                 DurationMs = 0
             };
 
             var generation = await _recipesGenerationsRepository.CreateGenerationAsync(generationInsert);
-            _logger.LogInformation("Created generation record {GenerationId} for user {UserId}", 
-                generation.Id, userId);
+            generationId = generation.Id;
+            _logger.LogInformation("Created generation record {GenerationId} for user {UserId}", generation.Id, userId);
 
             // Step 4: Build AI prompt
             var ingredientsList = string.Join(", ", pantryItemsList.Select(p => p.Name));
@@ -145,24 +144,13 @@ Please create a detailed recipe in markdown format with ingredients, instruction
             {
                 recipeText = await _aiService.GenerateAsync(prompt);
                 stopwatch.Stop();
-                _logger.LogInformation("AI service successfully generated recipe in {Duration}ms", 
-                    stopwatch.ElapsedMilliseconds);
+                _logger.LogInformation("AI service successfully generated recipe in {Duration}ms", stopwatch.ElapsedMilliseconds);
             }
             catch (Exception aiEx)
             {
                 stopwatch.Stop();
                 _logger.LogError(aiEx, "AI service failed to generate recipe for user {UserId}", userId);
-
-                // Update generation record with error
-                var errorUpdate = new RecipesGenerationsUpdate
-                {
-                    Id = generationId,
-                    DurationMs = (int)stopwatch.ElapsedMilliseconds,
-                    ErrorCode = "AI_SERVICE_ERROR",
-                    ErrorMessage = aiEx.Message
-                };
-                await _recipesGenerationsRepository.UpdateGenerationAsync(errorUpdate);
-
+                await SetGenerationError(generationId, (int)stopwatch.ElapsedMilliseconds, "AI_SERVICE_ERROR", aiEx.Message);
                 throw new InvalidOperationException("Failed to generate recipe. Please try again later.", aiEx);
             }
 
@@ -197,30 +185,34 @@ Please create a detailed recipe in markdown format with ingredients, instruction
         catch (Exception ex)
         {
             stopwatch.Stop();
-            _logger.LogError(ex, 
-                "Unexpected error during recipe generation for user {UserId}", 
-                userId);
-
-            // Attempt to update generation record with error
-            try
-            {
-                var errorUpdate = new RecipesGenerationsUpdate
-                {
-                    Id = generationId,
-                    DurationMs = (int)stopwatch.ElapsedMilliseconds,
-                    ErrorCode = "INTERNAL_ERROR",
-                    ErrorMessage = ex.Message
-                };
-                await _recipesGenerationsRepository.UpdateGenerationAsync(errorUpdate);
-            }
-            catch (Exception updateEx)
-            {
-                _logger.LogError(updateEx, 
-                    "Failed to update generation record {GenerationId} with error status", 
-                    generationId);
-            }
-
+            _logger.LogError(ex, "Unexpected error during recipe generation for user {UserId}", userId);
+            await SetGenerationError(generationId, (int)stopwatch.ElapsedMilliseconds, "INTERNAL_ERROR", ex.Message);
             throw;
+        }
+    }
+
+    private async Task SetGenerationError(string? generationId, int durationMs, string errorCode, string errorMessage)
+    {
+        if (generationId == null)
+        {
+            return;
+        }
+        
+        // Attempt to update generation record with error
+        try
+        {
+            var errorUpdate = new RecipesGenerationsUpdate
+            {
+                Id = generationId,
+                DurationMs = durationMs,
+                ErrorCode = errorCode,
+                ErrorMessage = errorMessage
+            };
+            await _recipesGenerationsRepository.UpdateGenerationAsync(errorUpdate);
+        }
+        catch (Exception updateEx)
+        {
+            _logger.LogError(updateEx, "Failed to update generation record {GenerationId} with error status", generationId);
         }
     }
 
@@ -243,13 +235,8 @@ Please create a detailed recipe in markdown format with ingredients, instruction
                 throw new ArgumentException("Generation not found");
             }
 
-            // Step 3: Validate not already accepted
-            if (!string.IsNullOrEmpty(generation.GeneratedRecipeId))
-            {
-                _logger.LogWarning("Generation {GenerationId} already accepted for user {UserId}",
-                    generationId, userId);
-                throw new InvalidOperationException("Already accepted");
-            }
+            // Step 3: Validate not already accepted/rejected
+            await ValidateAlreadyAcceptedOrRejected(generationId, generation, userId);
 
             // Step 4: Validate recipe text exists
             if (string.IsNullOrWhiteSpace(generation.GeneratedRecipeText))
@@ -323,14 +310,9 @@ Please create a detailed recipe in markdown format with ingredients, instruction
                 throw new ArgumentException("Generation not found");
             }
 
-            // Step 3: Validate not already rejected
-            if (generation.RejectReasonId.HasValue)
-            {
-                _logger.LogWarning("Generation {GenerationId} already rejected with reason {ExistingReasonId} for user {UserId}",
-                    generationId, generation.RejectReasonId.Value, userId);
-                throw new InvalidOperationException("Already rejected");
-            }
-
+            // Step 3: Validate not already accepted/rejected
+            await ValidateAlreadyAcceptedOrRejected(generationId, generation, userId);
+            
             // Step 4: Update generation with reject reason
             await _recipesGenerationsRepository.UpdateRejectReasonAsync(generationId, rejectReasonId);
 
@@ -354,6 +336,25 @@ Please create a detailed recipe in markdown format with ingredients, instruction
                 "Unexpected error while rejecting generation {GenerationId} for user {UserId}",
                 generationId, userId);
             throw;
+        }
+    }
+
+    private async Task ValidateAlreadyAcceptedOrRejected(Guid generationId, RecipesGenerationsSelect generation, Guid userId)
+    {
+        // Validate not already accepted
+        if (!string.IsNullOrEmpty(generation.GeneratedRecipeId))
+        {
+            _logger.LogWarning("Generation {GenerationId} already accepted for user {UserId}",
+                generationId, userId);
+            throw new InvalidOperationException("Already accepted");
+        }
+
+        // Validate not already rejected
+        if (generation.RejectReasonId.HasValue)
+        {
+            _logger.LogWarning("Generation {GenerationId} already rejected with reason {ExistingReasonId} for user {UserId}",
+                generationId, generation.RejectReasonId.Value, userId);
+            throw new InvalidOperationException("Already rejected");
         }
     }
 

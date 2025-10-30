@@ -434,6 +434,11 @@ app.MapPost("/recipes/{generationId}/accept", async (
         logger.LogWarning(ex, "Generation {GenerationId} already accepted", generationId);
         return Results.Conflict(new { error = "Already accepted" });
     }
+    catch (InvalidOperationException ex) when (ex.Message.Contains("Already rejected"))
+    {
+        logger.LogWarning(ex, "Generation {GenerationId} already rejected", generationId);
+        return Results.Conflict(new { error = "Already rejected" });
+    }
     catch (InvalidOperationException ex) when (ex.Message.Contains("No recipe text available"))
     {
         logger.LogWarning(ex, "Generation {GenerationId} has no recipe text", generationId);
@@ -491,6 +496,11 @@ app.MapPost("/recipes/{generationId}/reject", async (
     {
         logger.LogWarning(ex, "Generation {GenerationId} not found", generationId);
         return Results.NotFound(new { error = "Generation not found" });
+    }
+    catch (InvalidOperationException ex) when (ex.Message.Contains("Already accepted"))
+    {
+        logger.LogWarning(ex, "Generation {GenerationId} already accepted", generationId);
+        return Results.Conflict(new { error = "Already accepted" });
     }
     catch (InvalidOperationException ex) when (ex.Message.Contains("Already rejected"))
     {
