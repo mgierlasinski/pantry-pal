@@ -520,3 +520,27 @@ GET {{PantryPal.Api_HostAddress}}/diet-types
 # This occurs for database or other server-side errors.
 
 ###
+
+# GET /preferred-cuisines - Get all available preferred cuisines (no authentication required)
+GET {{PantryPal.Api_HostAddress}}/preferred-cuisines
+
+###
+
+# Note: Response scenarios for GET /preferred-cuisines
+#
+# 200 OK - Success
+# Returns PreferredCuisinesResponseDto with array of all available preferred cuisines.
+# Example response:
+# {
+#   "preferredCuisines": [
+#     { "id": 1, "name": "Polish" },
+#     { "id": 2, "name": "Italian" },
+#     { "id": 3, "name": "Asian" },
+#     { "id": 4, "name": "Mexican" }
+#   ]
+# }
+#
+# 500 Internal Server Error - Unexpected errors
+# This occurs for database or other server-side errors.
+
+###

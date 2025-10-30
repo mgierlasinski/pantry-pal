@@ -45,12 +45,14 @@ builder.Services.AddScoped<IUserPreferencesRepository, UserPreferencesRepository
 builder.Services.AddScoped<IRecipesGenerationsRepository, RecipesGenerationsRepository>();
 builder.Services.AddScoped<IRecipeRejectReasonsRepository, RecipeRejectReasonsRepository>();
 builder.Services.AddScoped<IDietTypesRepository, DietTypesRepository>();
+builder.Services.AddScoped<IPreferredCuisinesRepository, PreferredCuisinesRepository>();
 
 // Register services
 builder.Services.AddScoped<IPantryService, PantryService>();
 builder.Services.AddScoped<IRecipeService, RecipeService>();
 builder.Services.AddScoped<IUserPreferencesService, UserPreferencesService>();
 builder.Services.AddScoped<IDietTypesService, DietTypesService>();
+builder.Services.AddScoped<IPreferredCuisinesService, PreferredCuisinesService>();
 builder.Services.AddScoped<IAIRecipeGeneratorService, MockAIRecipeGeneratorService>();
 
 var app = builder.Build();
@@ -674,5 +676,27 @@ app.MapGet("/diet-types", async (
             statusCode: 500);
     }
 });
+
+app.MapGet("/preferred-cuisines", async (
+    IPreferredCuisinesService preferredCuisinesService,
+    ILogger<Program> logger) =>
+{
+    try
+    {
+        var result = await preferredCuisinesService.GetAllAsync();
+
+        logger.LogInformation("Successfully retrieved {Count} preferred cuisines", result.PreferredCuisines.Count());
+
+        return Results.Ok(result);
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "Unhandled exception in GET /preferred-cuisines endpoint");
+        return Results.Problem(
+            title: "Internal Server Error",
+            detail: "An error occurred while processing your request.",
+            statusCode: 500);
+    }
+}).Produces<PreferredCuisinesResponseDto>(200);
 
 app.Run();

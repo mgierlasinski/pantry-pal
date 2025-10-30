@@ -163,6 +163,11 @@ public record DietTypeDto(
 );
 
 /// <summary>
+/// Response DTO for diet types list endpoint
+/// </summary>
+public record DietTypesResponseDto(IEnumerable<DietTypeDto> DietTypes);
+
+/// <summary>
 /// DTO for preferred cuisines (derived from PreferredCuisinesSelect)
 /// </summary>
 public record PreferredCuisineDto(
@@ -171,14 +176,14 @@ public record PreferredCuisineDto(
 );
 
 /// <summary>
+/// Response DTO for preferred cuisines list endpoint
+/// </summary>
+public record PreferredCuisinesResponseDto(IEnumerable<PreferredCuisineDto> PreferredCuisines);
+
+/// <summary>
 /// DTO for recipe reject reasons (derived from RecipeRejectReasonsSelect)
 /// </summary>
 public record RecipeRejectReasonDto(
     short Id,
     string Description
 );
-
-/// <summary>
-/// Response DTO for diet types list endpoint
-/// </summary>
-public record DietTypesResponseDto(IEnumerable<DietTypeDto> DietTypes);
