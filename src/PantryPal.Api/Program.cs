@@ -53,6 +53,7 @@ builder.Services.AddScoped<IRecipeService, RecipeService>();
 builder.Services.AddScoped<IUserPreferencesService, UserPreferencesService>();
 builder.Services.AddScoped<IDietTypesService, DietTypesService>();
 builder.Services.AddScoped<IPreferredCuisinesService, PreferredCuisinesService>();
+builder.Services.AddScoped<IRecipeRejectReasonsService, RecipeRejectReasonsService>();
 builder.Services.AddScoped<IAIRecipeGeneratorService, MockAIRecipeGeneratorService>();
 
 var app = builder.Build();
@@ -698,5 +699,37 @@ app.MapGet("/preferred-cuisines", async (
             statusCode: 500);
     }
 }).Produces<PreferredCuisinesResponseDto>(200);
+
+// GET /recipe-reject-reasons endpoint
+app.MapGet("/recipe-reject-reasons", async (
+    IRecipeRejectReasonsService recipeRejectReasonsService,
+    ILogger<Program> logger) =>
+{
+    try
+    {
+        var rejectReasons = await recipeRejectReasonsService.GetAllAsync();
+
+        logger.LogInformation("Successfully retrieved {Count} recipe reject reasons", rejectReasons.Count());
+
+        var response = new RecipeRejectReasonsResponseDto(rejectReasons);
+        return Results.Ok(response);
+    }
+    catch (InvalidOperationException ex) when (ex.Message.Contains("Configuration error"))
+    {
+        logger.LogError(ex, "Configuration error: No reject reasons found in database");
+        return Results.Problem(
+            title: "Configuration Error",
+            detail: "No reject reasons are configured. Please contact support.",
+            statusCode: 500);
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "Unhandled exception in GET /recipe-reject-reasons endpoint");
+        return Results.Problem(
+            title: "Internal Server Error",
+            detail: "An error occurred while processing your request.",
+            statusCode: 500);
+    }
+}).Produces<RecipeRejectReasonsResponseDto>(200).Produces(500); // TODO: Add .RequireAuthorization() when authentication is enabled
 
 app.Run();

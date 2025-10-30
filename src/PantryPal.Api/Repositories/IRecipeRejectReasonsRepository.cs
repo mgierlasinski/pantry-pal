@@ -8,6 +8,12 @@ namespace PantryPal.Api.Repositories;
 public interface IRecipeRejectReasonsRepository
 {
     /// <summary>
+    /// Retrieves all reject reasons
+    /// </summary>
+    /// <returns>A collection of all reject reason records</returns>
+    Task<IEnumerable<RecipeRejectReasonsSelect>> GetAllAsync();
+
+    /// <summary>
     /// Retrieves a reject reason by ID
     /// </summary>
     /// <param name="id">The ID of the reject reason to retrieve</param>

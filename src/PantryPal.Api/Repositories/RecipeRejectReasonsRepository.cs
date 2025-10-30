@@ -16,6 +16,18 @@ public class RecipeRejectReasonsRepository : IRecipeRejectReasonsRepository
     }
 
     /// <inheritdoc />
+    public async Task<IEnumerable<RecipeRejectReasonsSelect>> GetAllAsync()
+    {
+        var response = await _supabaseClient
+            .From<RecipeRejectReasonsSelect>()
+            .Select("*")
+            .Order("id", Supabase.Postgrest.Constants.Ordering.Ascending)
+            .Get();
+
+        return response.Models;
+    }
+
+    /// <inheritdoc />
     public async Task<RecipeRejectReasonsSelect?> GetByIdAsync(short id)
     {
         var response = await _supabaseClient

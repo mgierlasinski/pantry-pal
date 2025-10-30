@@ -544,3 +544,30 @@ GET {{PantryPal.Api_HostAddress}}/preferred-cuisines
 # This occurs for database or other server-side errors.
 
 ###
+
+# GET /recipe-reject-reasons - Get all available recipe reject reasons (authentication required)
+GET {{PantryPal.Api_HostAddress}}/recipe-reject-reasons
+
+###
+
+# Note: Response scenarios for GET /recipe-reject-reasons
+#
+# 200 OK - Success
+# Returns RecipeRejectReasonsResponseDto with array of all available recipe reject reasons.
+# Example response:
+# {
+#   "rejectReasons": [
+#     { "id": 1, "description": "I don't have these ingredients" },
+#     { "id": 2, "description": "I don't like this dish" },
+#     { "id": 3, "description": "Other" }
+#   ]
+# }
+#
+# 401 Unauthorized - Authentication required
+# This endpoint requires authentication. Include Bearer token in Authorization header.
+#
+# 500 Internal Server Error - Unexpected errors
+# This occurs for database or other server-side errors, including configuration errors
+# where no reject reasons are found in the database.
+
+###
