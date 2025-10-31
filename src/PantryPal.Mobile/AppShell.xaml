@@ -19,11 +19,11 @@
         </ShellContent>
 
         <ShellContent
-            Title="Home"
-            ContentTemplate="{DataTemplate views:MainPage}"
-            Route="MainPage">
+            Title="Saved Recipes"
+            ContentTemplate="{DataTemplate views:SavedRecipesPage}"
+            Route="SavedRecipesPage">
             <ShellContent.Icon>
-                <FontImageSource FontFamily="{x:Static const:MaterialFont.Outlined}" Glyph="{x:Static m:MaterialOutlined.Home}" />
+                <FontImageSource FontFamily="{x:Static const:MaterialFont.Outlined}" Glyph="{x:Static m:MaterialOutlined.Restaurant_menu}" />
             </ShellContent.Icon>
         </ShellContent>
     </TabBar>

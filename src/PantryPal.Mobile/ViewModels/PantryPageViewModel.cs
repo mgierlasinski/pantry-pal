@@ -36,15 +36,6 @@ public partial class PantryPageViewModel : ObservableObject
     [NotifyPropertyChangedFor(nameof(IsNotEmpty))]
     private bool _isEmpty = true;
 
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(HasError))]
-    private string _errorMessage = string.Empty;
-
-    [ObservableProperty]
-    private bool _showErrorSnackbar;
-
-    public bool HasError => !string.IsNullOrEmpty(ErrorMessage);
-
     // Dialog properties
     [ObservableProperty]
     private string _dialogItemName = string.Empty;
@@ -75,7 +66,6 @@ public partial class PantryPageViewModel : ObservableObject
         try
         {
             IsBusy = true;
-            ErrorMessage = string.Empty;
 
             var response = await _pantryService.GetPantryItemsAsync(Page, PageSize, SortField);
             
@@ -92,18 +82,15 @@ public partial class PantryPageViewModel : ObservableObject
         }
         catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Unauthorized)
         {
-            ErrorMessage = "Session expired. Please log in again.";
             await Shell.Current.GoToAsync("//LoginPage");
         }
         catch (HttpRequestException ex)
         {
-            ErrorMessage = $"Network error: {ex.Message}";
-            ShowErrorSnackbar = true;
+            await Toast.Make($"Network error: {ex.Message}").Show();
         }
         catch (Exception ex)
         {
-            ErrorMessage = $"Failed to load items: {ex.Message}";
-            ShowErrorSnackbar = true;
+            await Toast.Make($"Failed to load items: {ex.Message}").Show();
         }
         finally
         {
@@ -133,7 +120,6 @@ public partial class PantryPageViewModel : ObservableObject
         try
         {
             IsBusy = true;
-            ErrorMessage = string.Empty;
 
             var createDto = new PantryItemCreateDto(DialogItemName.Trim());
             var newItem = await _pantryService.CreatePantryItemAsync(createDto);
@@ -148,23 +134,19 @@ public partial class PantryPageViewModel : ObservableObject
         }
         catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Conflict)
         {
-            ErrorMessage = "An item with this name already exists.";
-            await Shell.Current.DisplayAlert("Duplicate Item", ErrorMessage, "OK");
+            await Shell.Current.DisplayAlert("Duplicate Item", "An item with this name already exists.", "OK");
         }
         catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Unauthorized)
         {
-            ErrorMessage = "Session expired. Please log in again.";
             await Shell.Current.GoToAsync("//LoginPage");
         }
         catch (HttpRequestException ex)
         {
-            ErrorMessage = $"Network error: {ex.Message}";
-            ShowErrorSnackbar = true;
+            await Toast.Make($"Network error: {ex.Message}").Show();
         }
         catch (Exception ex)
         {
-            ErrorMessage = $"Failed to add item: {ex.Message}";
-            ShowErrorSnackbar = true;
+            await Toast.Make($"Failed to add item: {ex.Message}").Show();
         }
         finally
         {
@@ -193,7 +175,6 @@ public partial class PantryPageViewModel : ObservableObject
         try
         {
             IsBusy = true;
-            ErrorMessage = string.Empty;
 
             var updateDto = new PantryItemUpdateDto(Name: DialogItemName.Trim());
             var updatedItem = await _pantryService.UpdatePantryItemAsync(SelectedItemId, updateDto);
@@ -210,23 +191,19 @@ public partial class PantryPageViewModel : ObservableObject
         }
         catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Conflict)
         {
-            ErrorMessage = "An item with this name already exists.";
-            await Shell.Current.DisplayAlert("Duplicate Item", ErrorMessage, "OK");
+            await Shell.Current.DisplayAlert("Duplicate Item", "An item with this name already exists.", "OK");
         }
         catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Unauthorized)
         {
-            ErrorMessage = "Session expired. Please log in again.";
             await Shell.Current.GoToAsync("//LoginPage");
         }
         catch (HttpRequestException ex)
         {
-            ErrorMessage = $"Network error: {ex.Message}";
-            ShowErrorSnackbar = true;
+            await Toast.Make($"Network error: {ex.Message}").Show();
         }
         catch (Exception ex)
         {
-            ErrorMessage = $"Failed to update item: {ex.Message}";
-            ShowErrorSnackbar = true;
+            await Toast.Make($"Failed to update item: {ex.Message}").Show();
         }
         finally
         {
@@ -243,7 +220,6 @@ public partial class PantryPageViewModel : ObservableObject
         try
         {
             IsBusy = true;
-            ErrorMessage = string.Empty;
 
             await _pantryService.DeletePantryItemAsync(SelectedItemId);
 
@@ -259,18 +235,15 @@ public partial class PantryPageViewModel : ObservableObject
         }
         catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Unauthorized)
         {
-            ErrorMessage = "Session expired. Please log in again.";
             await Shell.Current.GoToAsync("//LoginPage");
         }
         catch (HttpRequestException ex)
         {
-            ErrorMessage = $"Network error: {ex.Message}";
-            ShowErrorSnackbar = true;
+            await Toast.Make($"Network error: {ex.Message}").Show();
         }
         catch (Exception ex)
         {
-            ErrorMessage = $"Failed to delete item: {ex.Message}";
-            ShowErrorSnackbar = true;
+            await Toast.Make($"Failed to delete item: {ex.Message}").Show();
         }
         finally
         {
@@ -294,7 +267,6 @@ public partial class PantryPageViewModel : ObservableObject
         try
         {
             IsBusy = true;
-            ErrorMessage = string.Empty;
 
             var updateDto = new PantryItemUpdateDto(IsFavorite: item.IsFavorite);
             var updatedItem = await _pantryService.UpdatePantryItemAsync(itemId, updateDto);
@@ -304,20 +276,17 @@ public partial class PantryPageViewModel : ObservableObject
         catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Unauthorized)
         {
             item.IsFavorite = originalState;
-            ErrorMessage = "Session expired. Please log in again.";
             await Shell.Current.GoToAsync("//LoginPage");
         }
         catch (HttpRequestException ex)
         {
             item.IsFavorite = originalState;
-            ErrorMessage = $"Network error: {ex.Message}";
-            ShowErrorSnackbar = true;
+            await Toast.Make($"Network error: {ex.Message}").Show();
         }
         catch (Exception ex)
         {
             item.IsFavorite = originalState;
-            ErrorMessage = $"Failed to update favorite status: {ex.Message}";
-            ShowErrorSnackbar = true;
+            await Toast.Make($"Failed to update favorite status: {ex.Message}").Show();
         }
         finally
         {
@@ -404,8 +373,7 @@ public partial class PantryPageViewModel : ObservableObject
     [RelayCommand]
     public void DismissError()
     {
-        ErrorMessage = string.Empty;
-        ShowErrorSnackbar = false;
+        // No longer needed since we use Toast.Make directly
     }
 
     [RelayCommand]
@@ -445,13 +413,5 @@ public partial class PantryPageViewModel : ObservableObject
         return viewModel;
     }
 
-    partial void OnErrorMessageChanged(string value)
-    {
-        if (!string.IsNullOrEmpty(value))
-        {
-            var toast = Toast.Make(value);
-            toast.Show();
-        }
-    }
 }
 

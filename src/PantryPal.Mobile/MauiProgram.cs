@@ -63,11 +63,13 @@ public static class MauiProgram
         services.AddTransient<MainViewModel>();
         services.AddTransient<PantryPageViewModel>();
         services.AddTransient<RecipeGenerationViewModel>();
+        services.AddTransient<SavedRecipesViewModel>();
     }
 
     private static void RegisterViews(IServiceCollection services)
     {
         services.AddTransient<PantryPage>();
         services.AddTransient<RecipeGenerationPage>();
+        services.AddTransient<SavedRecipesPage>();
     }
 }

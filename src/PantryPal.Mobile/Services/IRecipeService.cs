@@ -3,7 +3,7 @@ using PantryPal.Data;
 namespace PantryPal.Mobile.Services;
 
 /// <summary>
-/// Service for managing recipe generation and acceptance/rejection
+/// Service for managing recipe generation, acceptance/rejection, and saved recipes
 /// </summary>
 public interface IRecipeService
 {
@@ -26,5 +26,15 @@ public interface IRecipeService
     /// Rejects a generated recipe with a specified reason
     /// </summary>
     Task RejectRecipeAsync(string generationId, RecipeRejectRequestDto payload);
+
+    /// <summary>
+    /// Gets paginated list of saved recipes
+    /// </summary>
+    Task<RecipesPaginatedResponseDto> GetRecipesAsync(int page, int pageSize);
+
+    /// <summary>
+    /// Deletes a saved recipe by ID
+    /// </summary>
+    Task DeleteRecipeAsync(string id);
 }
 

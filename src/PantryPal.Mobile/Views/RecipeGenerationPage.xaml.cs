@@ -4,7 +4,7 @@ namespace PantryPal.Mobile.Views;
 
 public partial class RecipeGenerationPage : ContentPage
 {
-    private RecipeGenerationViewModel _viewModel;
+    private readonly RecipeGenerationViewModel _viewModel;
 
     public RecipeGenerationPage(RecipeGenerationViewModel viewModel)
     {

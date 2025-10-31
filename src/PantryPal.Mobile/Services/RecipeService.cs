@@ -50,8 +50,23 @@ public class RecipeService : IRecipeService
     {
         var json = JsonSerializer.Serialize(payload);
         var content = new StringContent(json, Encoding.UTF8, "application/json");
-        
+
         var response = await _httpClient.PostAsync($"{_baseUrl}/recipes/{generationId}/reject", content);
+        response.EnsureSuccessStatusCode();
+    }
+
+    public async Task<RecipesPaginatedResponseDto> GetRecipesAsync(int page, int pageSize)
+    {
+        var response = await _httpClient.GetAsync($"{_baseUrl}/recipes?page={page}&pageSize={pageSize}");
+        response.EnsureSuccessStatusCode();
+
+        var result = await response.Content.ReadFromJsonAsync<RecipesPaginatedResponseDto>();
+        return result ?? throw new InvalidOperationException("Failed to deserialize response");
+    }
+
+    public async Task DeleteRecipeAsync(string id)
+    {
+        var response = await _httpClient.DeleteAsync($"{_baseUrl}/recipes/{id}");
         response.EnsureSuccessStatusCode();
     }
 }

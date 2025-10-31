@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:m="clr-namespace:UraniumUI.Icons.MaterialSymbols;assembly=UraniumUI.Icons.MaterialSymbols"
+             xmlns:const="clr-namespace:PantryPal.Mobile.Constants"
+             xmlns:models="clr-namespace:PantryPal.Mobile.Models"
+             xmlns:viewModels="clr-namespace:PantryPal.Mobile.ViewModels"
+             x:Class="PantryPal.Mobile.Views.SavedRecipesPage"
+             x:DataType="viewModels:SavedRecipesViewModel"
+             x:Name="RootPage"
+             Title="Saved Recipes">
+
+    <!-- Initial loading indicator -->
+    <ContentPage.Content>
+        <Grid>
+            <!-- Loading Overlay for initial load -->
+            <Grid IsVisible="{Binding IsLoading}"
+                  BackgroundColor="#80000000"
+                  ZIndex="1000">
+                <VerticalStackLayout VerticalOptions="Center"
+                                    HorizontalOptions="Center"
+                                    Spacing="16">
+                    <ActivityIndicator IsRunning="{Binding IsLoading}"
+                                      Color="{DynamicResource Primary}"
+                                      WidthRequest="48"
+                                      HeightRequest="48" />
+                    <Label Text="Loading recipes..."
+                           TextColor="White"
+                           FontSize="16"
+                           HorizontalOptions="Center" />
+                </VerticalStackLayout>
+            </Grid>
+
+            <!-- Main Content -->
+            <CollectionView ItemsSource="{Binding Recipes}"
+                            SelectionMode="None"
+                            RemainingItemsThreshold="5"
+                            RemainingItemsThresholdReachedCommand="{Binding LoadMoreItemsCommand}"
+                            AutomationId="SavedRecipesList">
+
+                <!-- Empty View -->
+                <CollectionView.EmptyView>
+                    <VerticalStackLayout Spacing="20"
+                                        Padding="40"
+                                        VerticalOptions="Center"
+                                        HorizontalOptions="Center">
+                        <Label FontFamily="{x:Static const:MaterialFont.Outlined}"
+                               FontSize="64"
+                               HorizontalOptions="Center"
+                               TextColor="{DynamicResource Gray400}">
+                            <Label.Text>
+                                <x:Static Member="m:MaterialOutlined.Restaurant_menu" />
+                            </Label.Text>
+                        </Label>
+                        <Label Text="You haven't saved any recipes yet"
+                               FontSize="20"
+                               FontAttributes="Bold"
+                               HorizontalOptions="Center"
+                               TextColor="{DynamicResource Gray600}" />
+                        <Label Text="Generate and save recipes to see them here"
+                               FontSize="14"
+                               HorizontalOptions="Center"
+                               HorizontalTextAlignment="Center"
+                               TextColor="{DynamicResource Gray500}" />
+                    </VerticalStackLayout>
+                </CollectionView.EmptyView>
+
+                <!-- Item Template -->
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="models:SavedRecipeItemViewModel">
+                        <SwipeView>
+                            <SwipeView.RightItems>
+                                <SwipeItems>
+                                    <SwipeItem Text="Delete"
+                                              BackgroundColor="{DynamicResource Danger}"
+                                              Command="{Binding DeleteCommand}"
+                                              CommandParameter="{Binding Id}"
+                                              AutomationId="{Binding Id, StringFormat='DeleteRecipe_{0}'}" />
+                                </SwipeItems>
+                            </SwipeView.RightItems>
+
+                            <Border StrokeThickness="0"
+                                   BackgroundColor="{DynamicResource White}"
+                                   Margin="8,4">
+                                <Border.Shadow>
+                                    <Shadow Brush="Black" Opacity="0.05" Radius="4" Offset="0,2" />
+                                </Border.Shadow>
+
+                                <VerticalStackLayout Padding="16,12"
+                                                    Spacing="4">
+                                    <!-- Recipe Title -->
+                                    <Label Text="{Binding Title}"
+                                           FontSize="16"
+                                           FontAttributes="Bold"
+                                           TextColor="{DynamicResource Gray900}"
+                                           LineBreakMode="TailTruncation"
+                                           MaxLines="2"
+                                           AutomationId="{Binding Id, StringFormat='RecipeTitle_{0}'}" />
+
+                                    <!-- Saved Date -->
+                                    <Label Text="{Binding SavedDate}"
+                                           FontSize="14"
+                                           TextColor="{DynamicResource Gray500}"
+                                           AutomationId="{Binding Id, StringFormat='RecipeDate_{0}'}" />
+                                </VerticalStackLayout>
+                            </Border>
+                        </SwipeView>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+
+                <!-- Loading more indicator -->
+                <CollectionView.Footer>
+                    <VerticalStackLayout IsVisible="{Binding IsLoadingMore}"
+                                        Padding="16"
+                                        Spacing="8"
+                                        HorizontalOptions="Center">
+                        <ActivityIndicator IsRunning="{Binding IsLoadingMore}"
+                                          Color="{DynamicResource Primary}"
+                                          WidthRequest="24"
+                                          HeightRequest="24" />
+                        <Label Text="Loading more recipes..."
+                               FontSize="14"
+                               TextColor="{DynamicResource Gray500}"
+                               HorizontalOptions="Center" />
+                    </VerticalStackLayout>
+                </CollectionView.Footer>
+
+            </CollectionView>
+        </Grid>
+    </ContentPage.Content>
+
+</ContentPage>
