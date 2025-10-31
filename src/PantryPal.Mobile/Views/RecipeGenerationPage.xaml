@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewModels="clr-namespace:PantryPal.Mobile.ViewModels"
+             xmlns:markdown="clr-namespace:Indiko.Maui.Controls.Markdown;assembly=Indiko.Maui.Controls.Markdown"
+             Shell.PresentationMode="Modal"
+             x:Class="PantryPal.Mobile.Views.RecipeGenerationPage"
+             x:DataType="viewModels:RecipeGenerationViewModel"
+             Title="Recipe Generation">
+
+    <Grid RowDefinitions="*,Auto" Padding="0">
+        
+        <!-- Loading State -->
+        <Grid Grid.RowSpan="2"
+              IsVisible="{Binding IsLoading}"
+              BackgroundColor="{DynamicResource White}"
+              ZIndex="1000">
+            <VerticalStackLayout VerticalOptions="Center"
+                                HorizontalOptions="Center"
+                                Spacing="20"
+                                Padding="40">
+                <ActivityIndicator IsRunning="{Binding IsLoading}"
+                                  Color="{DynamicResource Primary}"
+                                  WidthRequest="64"
+                                  HeightRequest="64" />
+                <Label Text="Generating your recipe..."
+                       FontSize="18"
+                       FontAttributes="Bold"
+                       HorizontalOptions="Center"
+                       TextColor="{DynamicResource Gray900}" />
+                <Label Text="This may take a few moments"
+                       FontSize="14"
+                       HorizontalOptions="Center"
+                       TextColor="{DynamicResource Gray600}" />
+            </VerticalStackLayout>
+        </Grid>
+        
+        <!-- Recipe Content -->
+        <ScrollView Grid.Row="0"
+                    IsVisible="{Binding ShowRecipeContent}"
+                    Padding="16">
+            <markdown:MarkdownView MarkdownText="{Binding RecipeText}" 
+                                   VerticalOptions="Start" />
+        </ScrollView>
+
+        <!-- Action Buttons -->
+        <VerticalStackLayout Grid.Row="1"
+                             IsVisible="{Binding ShowRecipeContent}"
+                             Spacing="12"
+                             Padding="16"
+                             HorizontalOptions="Fill">
+            
+            <Button Text="Reject"
+                    Command="{Binding RejectCommand}"
+                    BackgroundColor="{DynamicResource Gray200}"
+                    TextColor="{DynamicResource Gray900}"
+                    FontAttributes="Bold"
+                    HeightRequest="56"
+                    CornerRadius="12"
+                    HorizontalOptions="FillAndExpand"
+                    AutomationId="RejectRecipeButton" />
+
+            <Button Text="Accept"
+                    Command="{Binding AcceptCommand}"
+                    BackgroundColor="{DynamicResource Primary}"
+                    TextColor="White"
+                    FontAttributes="Bold"
+                    HeightRequest="56"
+                    CornerRadius="12"
+                    HorizontalOptions="FillAndExpand"
+                    AutomationId="AcceptRecipeButton" />
+            
+        </VerticalStackLayout>
+        
+    </Grid>
+
+</ContentPage>
+

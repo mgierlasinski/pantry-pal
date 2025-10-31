@@ -398,8 +398,7 @@ public partial class PantryPageViewModel : ObservableObject
             return;
         }
 
-        // TODO: Navigate to recipe generation page when implemented
-        await Shell.Current.DisplayAlert("Coming Soon", "Recipe generation will be implemented in a future version.", "OK");
+        await Shell.Current.GoToAsync(nameof(Views.RecipeGenerationPage), true);
     }
 
     [RelayCommand]
