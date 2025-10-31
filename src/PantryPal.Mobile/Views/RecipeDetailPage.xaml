@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewModels="clr-namespace:PantryPal.Mobile.ViewModels"
+             xmlns:markdown="clr-namespace:Indiko.Maui.Controls.Markdown;assembly=Indiko.Maui.Controls.Markdown"
+             x:Class="PantryPal.Mobile.Views.RecipeDetailPage"
+             x:DataType="viewModels:RecipeDetailViewModel"
+             Title="{Binding RecipeTitle}">
+
+    <ContentPage.Content>
+        <Grid RowDefinitions="*, Auto">
+            <!-- Scrollable Content Area -->
+            <ScrollView Grid.Row="0">
+                <markdown:MarkdownView MarkdownText="{Binding RecipeMarkdownContent}"
+                                       Margin="16"
+                                       AutomationId="RecipeMarkdownView" />
+            </ScrollView>
+
+            <!-- Close Button -->
+            <Button Grid.Row="1"
+                    Text="Close"
+                    Command="{Binding CloseCommand}"
+                    Margin="16,8,16,16"
+                    HorizontalOptions="Fill"
+                    AutomationId="CloseButton" />
+        </Grid>
+    </ContentPage.Content>
+
+</ContentPage>

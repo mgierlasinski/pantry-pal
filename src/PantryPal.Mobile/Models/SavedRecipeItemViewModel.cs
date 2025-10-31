@@ -1,6 +1,5 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using PantryPal.Data;
-using System.Windows.Input;
 
 namespace PantryPal.Mobile.Models;
 
@@ -28,9 +27,10 @@ public partial class SavedRecipeItemViewModel : ObservableObject
     private string _savedDate = string.Empty;
 
     /// <summary>
-    /// Command to delete this recipe item
+    /// The full recipe text in Markdown format
     /// </summary>
-    public ICommand? DeleteCommand { get; set; }
+    [ObservableProperty]
+    private string _recipeText = string.Empty;
 
     /// <summary>
     /// Constructor that takes a RecipeDto and performs the necessary mapping
@@ -42,6 +42,7 @@ public partial class SavedRecipeItemViewModel : ObservableObject
         Id = recipeDto.Id;
         Title = ExtractTitle(recipeDto.RecipeText);
         SavedDate = FormatSavedDate(recipeDto.CreatedAt);
+        RecipeText = recipeDto.RecipeText;
     }
 
     /// <summary>

@@ -73,7 +73,7 @@
                                 <SwipeItems>
                                     <SwipeItem Text="Delete"
                                               BackgroundColor="{DynamicResource Danger}"
-                                              Command="{Binding DeleteCommand}"
+                                              Command="{Binding Source={x:Reference RootPage}, Path=BindingContext.DeleteRecipeCommand}"
                                               CommandParameter="{Binding Id}"
                                               AutomationId="{Binding Id, StringFormat='DeleteRecipe_{0}'}" />
                                 </SwipeItems>
@@ -85,6 +85,10 @@
                                 <Border.Shadow>
                                     <Shadow Brush="Black" Opacity="0.05" Radius="4" Offset="0,2" />
                                 </Border.Shadow>
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding Source={x:Reference RootPage}, Path=BindingContext.SelectRecipeCommand}"
+                                                          CommandParameter="{Binding}" />
+                                </Border.GestureRecognizers>
 
                                 <VerticalStackLayout Padding="16,12"
                                                     Spacing="4">

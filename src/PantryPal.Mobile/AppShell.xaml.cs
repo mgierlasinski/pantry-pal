@@ -10,6 +10,7 @@ public partial class AppShell : Shell
         
         // Register routes for navigation
         Routing.RegisterRoute(nameof(PantryPage), typeof(PantryPage));
+        Routing.RegisterRoute(nameof(RecipeDetailPage), typeof(RecipeDetailPage));
         Routing.RegisterRoute(nameof(RecipeGenerationPage), typeof(RecipeGenerationPage));
     }
 }

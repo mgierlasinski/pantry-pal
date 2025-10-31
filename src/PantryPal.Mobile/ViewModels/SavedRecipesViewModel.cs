@@ -63,7 +63,7 @@ public partial class SavedRecipesViewModel : ObservableObject
 
             foreach (var recipeDto in response.Items)
             {
-                var recipeViewModel = CreateRecipeItemViewModel(recipeDto);
+                var recipeViewModel = new SavedRecipeItemViewModel(recipeDto);
                 Recipes.Add(recipeViewModel);
             }
         }
@@ -103,7 +103,7 @@ public partial class SavedRecipesViewModel : ObservableObject
 
             foreach (var recipeDto in response.Items)
             {
-                var recipeViewModel = CreateRecipeItemViewModel(recipeDto);
+                var recipeViewModel = new SavedRecipeItemViewModel(recipeDto);
                 Recipes.Add(recipeViewModel);
             }
         }
@@ -192,23 +192,22 @@ public partial class SavedRecipesViewModel : ObservableObject
     private bool CanLoadMoreItems() => !IsBusy && Recipes.Count < _totalItems;
 
     /// <summary>
+    /// Command executed when a recipe is selected for viewing details
+    /// </summary>
+    [RelayCommand]
+    public async Task SelectRecipeAsync(SavedRecipeItemViewModel selectedRecipe)
+    {
+        if (selectedRecipe == null || IsBusy)
+            return;
+
+        await Shell.Current.GoToAsync("RecipeDetailPage", new Dictionary<string, object>
+        {
+            { "Recipe", selectedRecipe }
+        });
+    }
+
+    /// <summary>
     /// Determines if a recipe can be deleted
     /// </summary>
     private bool CanDeleteRecipe(string recipeId) => !IsBusy && !string.IsNullOrEmpty(recipeId);
-
-    /// <summary>
-    /// Creates a SavedRecipeItemViewModel with assigned commands
-    /// </summary>
-    private SavedRecipeItemViewModel CreateRecipeItemViewModel(RecipeDto recipeDto)
-    {
-        var viewModel = new SavedRecipeItemViewModel(recipeDto);
-
-        viewModel.DeleteCommand = new RelayCommand<string>(async (id) =>
-        {
-            if (!string.IsNullOrEmpty(id))
-                await DeleteRecipeAsync(id);
-        });
-
-        return viewModel;
-    }
 }
