@@ -56,12 +56,16 @@ public static class MauiProgram
         });
         services.AddSingleton<IPantryService, PantryService>();
         services.AddSingleton<IRecipeService, RecipeService>();
+        services.AddSingleton<IUserPreferencesService, UserPreferencesService>();
+        services.AddSingleton<IDietTypesService, DietTypesService>();
+        services.AddSingleton<IPreferredCuisinesService, PreferredCuisinesService>();
     }
 
     private static void RegisterViewModels(IServiceCollection services)
     {
         services.AddTransient<MainViewModel>();
         services.AddTransient<PantryPageViewModel>();
+        services.AddTransient<ProfileViewModel>();
         services.AddTransient<RecipeGenerationViewModel>();
         services.AddTransient<RecipeDetailViewModel>();
         services.AddTransient<SavedRecipesViewModel>();
@@ -70,6 +74,7 @@ public static class MauiProgram
     private static void RegisterViews(IServiceCollection services)
     {
         services.AddTransient<PantryPage>();
+        services.AddTransient<ProfilePage>();
         services.AddTransient<RecipeDetailPage>();
         services.AddTransient<RecipeGenerationPage>();
         services.AddTransient<SavedRecipesPage>();

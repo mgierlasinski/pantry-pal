@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
+             xmlns:viewModels="clr-namespace:PantryPal.Mobile.ViewModels"
+             xmlns:converters="clr-namespace:PantryPal.Mobile.Converters"
+             x:Class="PantryPal.Mobile.Views.ProfilePage"
+             x:DataType="viewModels:ProfileViewModel"
+             Title="Profile Settings">
+
+    <ContentPage.Resources>
+        <converters:InverseBoolConverter x:Key="InverseBoolConverter" />
+    </ContentPage.Resources>
+
+    <ScrollView>
+        <VerticalStackLayout Padding="24" Spacing="0">
+
+            <!-- Loading Indicator -->
+            <ActivityIndicator IsRunning="{Binding IsLoading}"
+                             IsVisible="{Binding IsLoading}"
+                             Color="{DynamicResource Primary}"
+                             HorizontalOptions="Center"
+                             VerticalOptions="Center"
+                             Margin="0,20,0,20"
+                             WidthRequest="48"
+                             HeightRequest="48" />
+
+            <!-- Diet Type Picker -->
+            <VerticalStackLayout Margin="0,0,0,16">
+                <Label Text="Diet Type" FontSize="16" FontAttributes="Bold" />
+                <Picker ItemsSource="{Binding DietTypes}"
+                        SelectedItem="{Binding SelectedDietType}"
+                        ItemDisplayBinding="{Binding Name}"
+                        IsEnabled="{Binding IsLoading, Converter={StaticResource InverseBoolConverter}}" />
+            </VerticalStackLayout>
+
+            <!-- Preferred Cuisine Picker -->
+            <VerticalStackLayout Margin="0,0,0,16">
+                <Label Text="Preferred Cuisine" FontSize="16" FontAttributes="Bold" />
+                <Picker ItemsSource="{Binding PreferredCuisines}"
+                        SelectedItem="{Binding SelectedPreferredCuisine}"
+                        ItemDisplayBinding="{Binding Name}"
+                        IsEnabled="{Binding IsLoading, Converter={StaticResource InverseBoolConverter}}" />
+            </VerticalStackLayout>
+
+            <!-- Disliked Ingredients Editor -->
+            <VerticalStackLayout Margin="0,0,0,16">
+                <Label Text="Disliked Ingredients" FontSize="16" FontAttributes="Bold" />
+                <Editor Text="{Binding DislikedIngredients}"
+                        Placeholder="List any ingredients you dislike (optional)"
+                        IsEnabled="{Binding IsLoading, Converter={StaticResource InverseBoolConverter}}"
+                        HeightRequest="120"
+                        AutoSize="TextChanges" />
+            </VerticalStackLayout>
+
+            <!-- Save Button -->
+            <Button Text="Save Preferences"
+                    Command="{Binding SavePreferencesCommand}"
+                    IsEnabled="{Binding SavePreferencesCommand.IsRunning, Converter={StaticResource InverseBoolConverter}}"
+                    BackgroundColor="{DynamicResource Primary}"
+                    TextColor="White"
+                    FontAttributes="Bold"
+                    HeightRequest="56"
+                    CornerRadius="12"
+                    Margin="0,16,0,0"
+                    HorizontalOptions="Fill" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

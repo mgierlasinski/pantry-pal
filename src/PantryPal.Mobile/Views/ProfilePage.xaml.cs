@@ -2,9 +2,9 @@ using PantryPal.Mobile.ViewModels;
 
 namespace PantryPal.Mobile.Views;
 
-public partial class RecipeGenerationPage : ContentPage
+public partial class ProfilePage : ContentPage
 {
-    public RecipeGenerationPage(RecipeGenerationViewModel viewModel)
+    public ProfilePage(ProfileViewModel viewModel)
     {
         InitializeComponent();
         BindingContext = viewModel;
@@ -14,10 +14,9 @@ public partial class RecipeGenerationPage : ContentPage
     {
         base.OnNavigatedTo(args);
 
-        if (BindingContext is RecipeGenerationViewModel viewModel)
+        if (BindingContext is ProfileViewModel viewModel)
         {
-            await viewModel.LoadDataCommand.ExecuteAsync(null);
+            await viewModel.LoadPreferencesCommand.ExecuteAsync(null);
         }
     }
 }
-

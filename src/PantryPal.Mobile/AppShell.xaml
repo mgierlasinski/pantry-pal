@@ -26,6 +26,15 @@
                 <FontImageSource FontFamily="{x:Static const:MaterialFont.Outlined}" Glyph="{x:Static m:MaterialOutlined.Restaurant_menu}" />
             </ShellContent.Icon>
         </ShellContent>
+
+        <ShellContent
+            Title="Profile"
+            ContentTemplate="{DataTemplate views:ProfilePage}"
+            Route="ProfilePage">
+            <ShellContent.Icon>
+                <FontImageSource FontFamily="{x:Static const:MaterialFont.Outlined}" Glyph="{x:Static m:MaterialOutlined.Person}" />
+            </ShellContent.Icon>
+        </ShellContent>
     </TabBar>
 
 </Shell>

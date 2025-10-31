@@ -40,6 +40,7 @@ public partial class RecipeGenerationViewModel : ObservableObject
     /// <summary>
     /// Triggered when the page appears. Loads reject reasons and generates a recipe
     /// </summary>
+    [RelayCommand]
     public async Task LoadDataAsync()
     {
         if (!IsLoading)
