@@ -69,6 +69,24 @@ public record RecipesPaginatedResponseDto(
 );
 
 // ================================
+// AI Recipe Generation DTOs
+// ================================
+
+/// <summary>
+/// DTO for structured recipe responses from AI service
+/// Matches the JSON schema used for OpenRouter API responses
+/// </summary>
+public record AIRecipeDto(
+    string RecipeName,
+    string Description,
+    int PrepTimeMinutes,
+    int CookTimeMinutes,
+    int Servings,
+    List<string> Ingredients,
+    List<string> Instructions
+);
+
+// ================================
 // Recipe Generation DTOs
 // ================================
 

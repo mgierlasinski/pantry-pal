@@ -1,7 +1,10 @@
 using FluentValidation;
+using Microsoft.Extensions.Options;
 using PantryPal.Api.Repositories;
 using PantryPal.Api.Services;
+using PantryPal.Api.Services.OpenRouter;
 using PantryPal.Data;
+using Polly;
 using Supabase;
 using System.Security.Claims;
 
@@ -18,6 +21,27 @@ builder.Services.AddSingleton(provider =>
 
     return new Client(url, key, options);
 });
+
+// Configure OpenRouter options
+builder.Services.Configure<OpenRouterOptions>(
+    builder.Configuration.GetSection(OpenRouterOptions.SectionName));
+
+// Configure OpenRouter HttpClient with retry policy
+builder.Services.AddHttpClient<IOpenRouterService, OpenRouterService>((serviceProvider, client) =>
+{
+    var options = serviceProvider.GetRequiredService<IOptions<OpenRouterOptions>>().Value;
+    client.BaseAddress = new Uri(options.BaseUrl);
+    client.DefaultRequestHeaders.Authorization = new("Bearer", options.ApiKey);
+    client.DefaultRequestHeaders.Add("HTTP-Referer", options.SiteName);
+    client.DefaultRequestHeaders.Add("X-Title", "PantryPal");
+})
+.AddPolicyHandler(Policy<HttpResponseMessage>
+    .Handle<HttpRequestException>()
+    .OrResult(response => !response.IsSuccessStatusCode)
+    .WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt))));
+
+// Register OpenRouter service
+builder.Services.AddScoped<IOpenRouterService, OpenRouterService>();
 
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 
@@ -54,7 +78,7 @@ builder.Services.AddScoped<IUserPreferencesService, UserPreferencesService>();
 builder.Services.AddScoped<IDietTypesService, DietTypesService>();
 builder.Services.AddScoped<IPreferredCuisinesService, PreferredCuisinesService>();
 builder.Services.AddScoped<IRecipeRejectReasonsService, RecipeRejectReasonsService>();
-builder.Services.AddScoped<IAIRecipeGeneratorService, MockAIRecipeGeneratorService>();
+builder.Services.AddScoped<IAIRecipeGeneratorService, AIRecipeGeneratorService>();
 
 var app = builder.Build();
 

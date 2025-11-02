@@ -1,5 +1,7 @@
+using Microsoft.Extensions.Options;
 using PantryPal.Api.Db;
 using PantryPal.Api.Repositories;
+using PantryPal.Api.Services.OpenRouter;
 using PantryPal.Data;
 using System.Diagnostics;
 
@@ -16,8 +18,7 @@ public class RecipeService : IRecipeService
     private readonly IRecipesGenerationsRepository _recipesGenerationsRepository;
     private readonly IAIRecipeGeneratorService _aiService;
     private readonly ILogger<RecipeService> _logger;
-
-    private const string DefaultAIModel = "mock-gpt-4";
+    private readonly OpenRouterOptions _options;
 
     public RecipeService(
         IRecipeRepository recipeRepository,
@@ -25,7 +26,8 @@ public class RecipeService : IRecipeService
         IUserPreferencesRepository userPreferencesRepository,
         IRecipesGenerationsRepository recipesGenerationsRepository,
         IAIRecipeGeneratorService aiService,
-        ILogger<RecipeService> logger)
+        ILogger<RecipeService> logger,
+        IOptions<OpenRouterOptions> options)
     {
         _recipeRepository = recipeRepository;
         _pantryRepository = pantryRepository;
@@ -33,6 +35,7 @@ public class RecipeService : IRecipeService
         _recipesGenerationsRepository = recipesGenerationsRepository;
         _aiService = aiService;
         _logger = logger;
+        _options = options.Value ?? throw new ArgumentNullException(nameof(options));
     }
 
     /// <inheritdoc />
@@ -112,7 +115,7 @@ public class RecipeService : IRecipeService
             var generationInsert = new RecipesGenerationsInsert
             {
                 UserId = userId.ToString(),
-                Model = DefaultAIModel,
+                Model = _options.Model,
                 DurationMs = 0
             };
 
@@ -130,8 +133,8 @@ public class RecipeService : IRecipeService
 Ingredients: {ingredientsList}
 
 User Preferences:
-- Diet Type ID: {userPreferences.DietTypeId}
-- Preferred Cuisine ID: {userPreferences.PreferredCuisineId}
+- Diet Type: {userPreferences.DietTypes?.Name}
+- Preferred Cuisine: {userPreferences.PreferredCuisines?.Name}
 - Disliked Ingredients: {dislikedIngredients}
 
 Please create a detailed recipe in markdown format with ingredients, instructions, and notes.";
