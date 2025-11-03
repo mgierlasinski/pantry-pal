@@ -30,6 +30,7 @@ After a long day at work, users often lack the time and creativity to plan meals
 
 5. User Accounts & Authentication
    - Sign up and log in via email and password.
+   - Recover forgotten password.
    - Authentication backed by Supabase; data sync on server.
    - Access to pantry and saved recipes is restricted to authenticated users.
 
@@ -116,6 +117,11 @@ Out of scope for MVP:
 - US-011: User Authentication
   - Description: As a user, I want to sign up and log in via email and password so that my pantry and recipes are private.
   - Acceptance Criteria:
+    - Login and registration are done on dedicated pages.
+    - Logging in requires entering an email address and password.
+    - Registration requires providing an email address, password, and password confirmation.
+    - We do not use external login services (e.g., Google, GitHub).
+    - Password recovery should be possible.
     - Given valid credentials, when I sign up or log in, then I gain access to my data.
     - Invalid credentials show an error.
 

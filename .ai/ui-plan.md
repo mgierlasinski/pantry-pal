@@ -49,6 +49,20 @@ The PantryPal mobile application uses MAUI Shell with a bottom TabBar to organiz
   - Key components: UraniumUI `TextField`, `PasswordField`, `Button`.  
   - Considerations: Masked input; SemanticProperties for assistive tech; store JWT in SecureStorage.
 
+- **Register Modal**  
+  - View path: `src/PantryPal.Mobile/Views/RegisterPage.xaml`  
+  - Purpose: Register a new user with email, password, and confirmation.  
+  - Key information: Email field, password field, confirm password field; Sign Up button; validation errors for mismatch or invalid input.  
+  - Key components: UraniumUI `TextField`, `PasswordField` (twice for password and confirmation), `Button`.  
+  - Considerations: Validate that passwords match; provide user-friendly error messages for invalid emails or weak passwords; use SemanticProperties for accessibility; store JWT in SecureStorage upon successful registration.
+
+- **Forgot Password Modal**  
+  - View path: `src/PantryPal.Mobile/Views/ForgotPasswordPage.xaml`  
+  - Purpose: Allow users to initiate password recovery by entering their email.  
+  - Key information: Email field; Send Reset Link button; success message if email sent, error if email not found.  
+  - Key components: UraniumUI `TextField`, `Button`, `Label` for messages.  
+  - Considerations: Include a link or button back to Login; ensure email validation; handle API responses with appropriate alerts; add SemanticProperties for screen reader support.
+
 ## 3. User Journey Map
 
 1. App launch → if unauthenticated, display **Login Modal**.  
@@ -70,6 +84,8 @@ The PantryPal mobile application uses MAUI Shell with a bottom TabBar to organiz
   • Tab “Profile” → `//ProfilePage`  
 - **Modal routes** registered in Shell:  
   • `///LoginPage`  
+  • `///RegisterPage`  
+  • `///ForgotPasswordPage`  
   • `///RecipeGenerationPage`  
   • `///RecipeDetailPage`  
 - Navigation methods: `GoToAsync("///RecipeGenerationPage")`, `GoToAsync("//SavedRecipesPage")`, handle 401 by redirecting to `///LoginPage`.
