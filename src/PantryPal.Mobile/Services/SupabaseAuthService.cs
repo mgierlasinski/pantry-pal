@@ -1,61 +1,187 @@
 using CommunityToolkit.Mvvm.Messaging;
 using PantryPal.Mobile.Models;
+using Supabase;
+using Supabase.Gotrue;
+using System.Text.Json;
 
 namespace PantryPal.Mobile.Services;
 
 public class SupabaseAuthService : IAuthService
 {
-    private bool _isAuthenticated;
+    private readonly Supabase.Client _supabaseClient;
+    private const string SessionKey = "supabase_session";
 
-    public Task<bool> IsAuthenticatedAsync()
+    public SupabaseAuthService(Supabase.Client supabaseClient)
     {
-        // TODO: Implement actual authentication check with Supabase
-        return Task.FromResult(_isAuthenticated);
+        _supabaseClient = supabaseClient;
     }
 
-    public Task<AuthResult> LoginAsync(string email, string password)
+    public async Task<bool> IsAuthenticatedAsync()
     {
-        // TODO: Implement actual login with Supabase client
-        // For now, just simulate a successful login for demo purposes
-        if (!string.IsNullOrWhiteSpace(email) && !string.IsNullOrWhiteSpace(password))
+        try
         {
-            _isAuthenticated = true;
-            WeakReferenceMessenger.Default.Send(new AuthStateChangedMessage(true));
-            return Task.FromResult(AuthResult.Success());
+            // Try to restore session from secure storage
+            var sessionJson = await SecureStorage.GetAsync(SessionKey);
+            if (!string.IsNullOrEmpty(sessionJson))
+            {
+                var session = JsonSerializer.Deserialize<Session>(sessionJson);
+                if (session != null && !string.IsNullOrEmpty(session.AccessToken))
+                {
+                    // Try to set the session on the client and see if it succeeds
+                    var restoredSession = await _supabaseClient.Auth.SetSession(session.AccessToken, session.RefreshToken ?? string.Empty);
+                    if (restoredSession != null && !string.IsNullOrEmpty(restoredSession.AccessToken))
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            // If we reach here, no valid session was found
+            await ClearSessionAsync();
+            return false;
+        }
+        catch (Exception)
+        {
+            // If there's any error during session restoration, consider user not authenticated
+            await ClearSessionAsync();
+            return false;
+        }
+    }
+
+    public async Task<AuthResult> LoginAsync(string email, string password)
+    {
+        try
+        {
+            var response = await _supabaseClient.Auth.SignInWithPassword(email, password);
+
+            if (response != null && !string.IsNullOrEmpty(response.AccessToken))
+            {
+                // Save session to secure storage
+                await SaveSessionAsync(response);
+                WeakReferenceMessenger.Default.Send(new AuthStateChangedMessage(true));
+                return AuthResult.Success();
+            }
+
+            return AuthResult.Failure("Invalid email or password");
+        }
+        catch (Exception ex)
+        {
+            // Map common Supabase errors to user-friendly messages
+            var errorMessage = MapAuthError(ex);
+            return AuthResult.Failure(errorMessage);
+        }
+    }
+
+    public async Task<AuthResult> RegisterAsync(string email, string password)
+    {
+        try
+        {
+            var response = await _supabaseClient.Auth.SignUp(email, password);
+
+            if (response != null)
+            {
+                // For email confirmation flow, we don't immediately authenticate the user
+                // They need to confirm their email first
+                return AuthResult.Success();
+            }
+
+            return AuthResult.Failure("Registration failed");
+        }
+        catch (Exception ex)
+        {
+            var errorMessage = MapAuthError(ex);
+            return AuthResult.Failure(errorMessage);
+        }
+    }
+
+    public async Task<AuthResult> LogoutAsync()
+    {
+        try
+        {
+            await _supabaseClient.Auth.SignOut();
+            await ClearSessionAsync();
+            WeakReferenceMessenger.Default.Send(new AuthStateChangedMessage(false));
+            return AuthResult.Success();
+        }
+        catch (Exception)
+        {
+            // Even if logout fails on server, clear local session
+            await ClearSessionAsync();
+            WeakReferenceMessenger.Default.Send(new AuthStateChangedMessage(false));
+            return AuthResult.Success();
+        }
+    }
+
+    public async Task<AuthResult> SendPasswordResetEmailAsync(string email)
+    {
+        try
+        {
+            await _supabaseClient.Auth.ResetPasswordForEmail(email);
+            return AuthResult.Success();
+        }
+        catch (Exception ex)
+        {
+            var errorMessage = MapAuthError(ex);
+            return AuthResult.Failure(errorMessage);
+        }
+    }
+
+    private async Task SaveSessionAsync(Session session)
+    {
+        try
+        {
+            var sessionJson = JsonSerializer.Serialize(session);
+            await SecureStorage.SetAsync(SessionKey, sessionJson);
+        }
+        catch (Exception)
+        {
+            // If we can't save the session, continue without it
+            // The user will need to log in again next time
+        }
+    }
+
+    private Task ClearSessionAsync()
+    {
+        try
+        {
+            SecureStorage.Remove(SessionKey);
+        }
+        catch (Exception)
+        {
+            // Continue even if clearing fails
         }
 
-        return Task.FromResult(AuthResult.Failure("Invalid login credentials"));
+        return Task.CompletedTask;
     }
 
-    public Task<AuthResult> RegisterAsync(string email, string password)
+    private string MapAuthError(Exception ex)
     {
-        // TODO: Implement actual registration with Supabase client
-        // For now, just simulate a successful registration
-        if (!string.IsNullOrWhiteSpace(email) && !string.IsNullOrWhiteSpace(password))
+        // Map common Supabase authentication errors to user-friendly messages
+        var message = ex.Message.ToLowerInvariant();
+
+        if (message.Contains("invalid login credentials") ||
+            message.Contains("email not confirmed") ||
+            message.Contains("invalid email or password"))
         {
-            return Task.FromResult(AuthResult.Success());
+            return "Invalid email or password";
         }
 
-        return Task.FromResult(AuthResult.Failure("Registration failed"));
-    }
-
-    public Task<AuthResult> LogoutAsync()
-    {
-        // TODO: Implement actual logout with Supabase client
-        _isAuthenticated = false;
-        WeakReferenceMessenger.Default.Send(new AuthStateChangedMessage(false));
-        return Task.FromResult(AuthResult.Success());
-    }
-
-    public Task<AuthResult> SendPasswordResetEmailAsync(string email)
-    {
-        // TODO: Implement actual password reset with Supabase client
-        // For now, just simulate sending email
-        if (!string.IsNullOrWhiteSpace(email))
+        if (message.Contains("user already registered"))
         {
-            return Task.FromResult(AuthResult.Success());
+            return "An account with this email already exists";
         }
 
-        return Task.FromResult(AuthResult.Failure("Invalid email address"));
+        if (message.Contains("password should be at least"))
+        {
+            return "Password must be at least 6 characters long";
+        }
+
+        if (message.Contains("unable to validate email address"))
+        {
+            return "Please enter a valid email address";
+        }
+
+        // For any other errors, return a generic message
+        return "An unexpected error occurred. Please try again.";
     }
 }

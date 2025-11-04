@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Maui;
 using Indiko.Maui.Controls.Markdown;
 using Microsoft.Extensions.Logging;
+using PantryPal.Mobile.Extensions;
 using PantryPal.Mobile.Services;
 using PantryPal.Mobile.ViewModels;
 using PantryPal.Mobile.Views;
@@ -19,6 +20,10 @@ public static class MauiProgram
             .UseUraniumUI()
             .UseUraniumUIMaterial()
             .UseMarkdownView()
+            .ConfigureSettings("appsettings.json")
+#if DEBUG
+            .ConfigureSettings("appsettings.Development.json")
+#endif
             .ConfigureFonts(fonts =>
             {
                 fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
@@ -57,6 +62,8 @@ public static class MauiProgram
 #endif
             return new HttpClient(handler);
         });
+
+        services.AddSupabase();
         services.AddSingleton<IAuthService, SupabaseAuthService>();
         services.AddSingleton<IPantryService, PantryService>();
         services.AddSingleton<IRecipeService, RecipeService>();
