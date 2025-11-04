@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewModels="clr-namespace:PantryPal.Mobile.ViewModels"
+             xmlns:converters="clr-namespace:PantryPal.Mobile.Converters"
+             x:Class="PantryPal.Mobile.Views.RegisterPage"
+             x:DataType="viewModels:RegisterPageViewModel"
+             Title="Register">
+
+    <ContentPage.Resources>
+        <converters:InverseBoolConverter x:Key="InverseBoolConverter" />
+    </ContentPage.Resources>
+
+    <ScrollView>
+        <VerticalStackLayout Padding="24" Spacing="16" VerticalOptions="Center">
+
+            <!-- App Title/Logo Area -->
+            <VerticalStackLayout HorizontalOptions="Center" Spacing="8">
+                <Label Text="🍳 PantryPal"
+                       FontSize="32"
+                       FontAttributes="Bold"
+                       HorizontalOptions="Center"
+                       TextColor="{DynamicResource Primary}" />
+                <Label Text="Create your account"
+                       FontSize="18"
+                       HorizontalOptions="Center"
+                       TextColor="{DynamicResource Gray600}" />
+            </VerticalStackLayout>
+
+            <!-- Loading Indicator -->
+            <ActivityIndicator IsRunning="{Binding IsLoading}"
+                             IsVisible="{Binding IsLoading}"
+                             Color="{DynamicResource Primary}"
+                             HorizontalOptions="Center"
+                             VerticalOptions="Center"
+                             Margin="0,20,0,0"
+                             WidthRequest="48"
+                             HeightRequest="48" />
+
+            <!-- Email Field -->
+            <VerticalStackLayout Margin="0,16,0,0" Spacing="4">
+                <Label Text="Email" FontSize="16" FontAttributes="Bold" />
+                <Entry Text="{Binding Email}"
+                       Placeholder="Enter your email"
+                       Keyboard="Email"
+                       IsEnabled="{Binding IsLoading, Converter={StaticResource InverseBoolConverter}}"
+                       ReturnType="Next" />
+            </VerticalStackLayout>
+
+            <!-- Password Field -->
+            <VerticalStackLayout Spacing="4">
+                <Label Text="Password" FontSize="16" FontAttributes="Bold" />
+                <HorizontalStackLayout Spacing="0">
+                    <Entry Text="{Binding Password}"
+                           Placeholder="Enter your password (min. 6 characters)"
+                           IsPassword="{Binding IsPasswordVisible, Converter={StaticResource InverseBoolConverter}}"
+                           IsEnabled="{Binding IsLoading, Converter={StaticResource InverseBoolConverter}}"
+                           ReturnType="Next"
+                           HorizontalOptions="FillAndExpand" />
+                    <Button Text="{Binding IsPasswordVisible, Converter={StaticResource InverseBoolConverter}, ConverterParameter='Hide:Show'}"
+                            Command="{Binding TogglePasswordVisibilityCommand}"
+                            IsEnabled="{Binding IsLoading, Converter={StaticResource InverseBoolConverter}}"
+                            BackgroundColor="Transparent"
+                            TextColor="{DynamicResource Gray600}"
+                            FontSize="14"
+                            WidthRequest="60"
+                            Padding="8,0" />
+                </HorizontalStackLayout>
+            </VerticalStackLayout>
+
+            <!-- Confirm Password Field -->
+            <VerticalStackLayout Spacing="4">
+                <Label Text="Confirm Password" FontSize="16" FontAttributes="Bold" />
+                <HorizontalStackLayout Spacing="0">
+                    <Entry Text="{Binding ConfirmPassword}"
+                           Placeholder="Confirm your password"
+                           IsPassword="{Binding IsConfirmPasswordVisible, Converter={StaticResource InverseBoolConverter}}"
+                           IsEnabled="{Binding IsLoading, Converter={StaticResource InverseBoolConverter}}"
+                           ReturnType="Done"
+                           HorizontalOptions="FillAndExpand" />
+                    <Button Text="{Binding IsConfirmPasswordVisible, Converter={StaticResource InverseBoolConverter}, ConverterParameter='Hide:Show'}"
+                            Command="{Binding ToggleConfirmPasswordVisibilityCommand}"
+                            IsEnabled="{Binding IsLoading, Converter={StaticResource InverseBoolConverter}}"
+                            BackgroundColor="Transparent"
+                            TextColor="{DynamicResource Gray600}"
+                            FontSize="14"
+                            WidthRequest="60"
+                            Padding="8,0" />
+                </HorizontalStackLayout>
+            </VerticalStackLayout>
+
+            <!-- Register Button -->
+            <Button Text="Sign Up"
+                    Command="{Binding RegisterCommand}"
+                    IsEnabled="{Binding IsLoading, Converter={StaticResource InverseBoolConverter}}"
+                    BackgroundColor="{DynamicResource Primary}"
+                    TextColor="White"
+                    FontAttributes="Bold"
+                    HeightRequest="56"
+                    CornerRadius="12"
+                    Margin="0,16,0,0"
+                    HorizontalOptions="Fill" />
+
+            <!-- Navigation Links -->
+            <VerticalStackLayout Spacing="8" Margin="0,16,0,0">
+                <Button Text="Already have an account? Sign In"
+                        Command="{Binding NavigateToLoginCommand}"
+                        BackgroundColor="Transparent"
+                        TextColor="{DynamicResource Primary}"
+                        FontSize="14"
+                        HorizontalOptions="Center" />
+            </VerticalStackLayout>
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

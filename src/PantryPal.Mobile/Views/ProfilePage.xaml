@@ -65,6 +65,17 @@
                     Margin="0,16,0,0"
                     HorizontalOptions="Fill" />
 
+            <!-- Logout Button -->
+            <Button Text="Logout"
+                    Command="{Binding LogoutCommand}"
+                    BackgroundColor="{DynamicResource Gray200}"
+                    TextColor="{DynamicResource Gray600}"
+                    FontAttributes="Bold"
+                    HeightRequest="56"
+                    CornerRadius="12"
+                    Margin="0,16,0,0"
+                    HorizontalOptions="Fill" />
+
         </VerticalStackLayout>
     </ScrollView>
 

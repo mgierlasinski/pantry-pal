@@ -13,6 +13,7 @@ public partial class ProfileViewModel : ObservableValidator
     private readonly IUserPreferencesService _userPreferencesService;
     private readonly IDietTypesService _dietTypesService;
     private readonly IPreferredCuisinesService _preferredCuisinesService;
+    private readonly IAuthService _authService;
 
     // Collections for pickers
     [ObservableProperty]
@@ -40,11 +41,13 @@ public partial class ProfileViewModel : ObservableValidator
     public ProfileViewModel(
         IUserPreferencesService userPreferencesService,
         IDietTypesService dietTypesService,
-        IPreferredCuisinesService preferredCuisinesService)
+        IPreferredCuisinesService preferredCuisinesService,
+        IAuthService authService)
     {
         _userPreferencesService = userPreferencesService;
         _dietTypesService = dietTypesService;
         _preferredCuisinesService = preferredCuisinesService;
+        _authService = authService;
     }
 
     [RelayCommand]
@@ -159,6 +162,28 @@ public partial class ProfileViewModel : ObservableValidator
         catch (Exception ex)
         {
             await Toast.Make($"Failed to save preferences: {ex.Message}").Show();
+        }
+    }
+
+    [RelayCommand]
+    public async Task LogoutAsync()
+    {
+        try
+        {
+            var result = await _authService.LogoutAsync();
+            if (result.IsSuccess)
+            {
+                await Toast.Make("Logged out successfully").Show();
+                // Navigation will be handled by the auth state change message in AppShell
+            }
+            else
+            {
+                await Shell.Current.DisplayAlert("Logout Error", result.ErrorMessage ?? "An error occurred during logout.", "OK");
+            }
+        }
+        catch (Exception ex)
+        {
+            await Shell.Current.DisplayAlert("Error", $"Logout failed: {ex.Message}", "OK");
         }
     }
 }

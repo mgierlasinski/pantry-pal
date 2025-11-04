@@ -47,7 +47,7 @@ New pages will be created to handle the authentication flows. These will follow 
 
 ### 2.2. Navigation and Routing (`AppShell.xaml`)
 
-`AppShell` will be updated to manage different routes for authenticated and unauthenticated users. The visibility of routes and flyout items will be dynamically updated by subscribing to the `IAuthService.AuthStateChanged` observable. This ensures the UI reacts immediately to login and logout events.
+`AppShell` will be updated to manage different routes for authenticated and unauthenticated users. The visibility of routes and flyout items will be dynamically updated by receiving `AuthStateChangedMessage` via `WeakReferenceMessenger` from CommunityToolkit.Mvvm. This ensures the UI reacts immediately to login and logout events.
 
 - **Unauthenticated State:** The user will only have access to `LoginPage`, `RegisterPage`, and `ForgotPasswordPage`. The default route will be `LoginPage`.
 - **Authenticated State:** The user will have access to the main application features (Pantry, Recipes, Profile). The `FlyoutItem`s for these pages will be visible. A "Logout" button will be added to the flyout menu or profile page.
@@ -64,13 +64,13 @@ This interface will define the contract for authentication operations.
 - `Task<AuthResult> RegisterAsync(string email, string password)`
 - `Task<AuthResult> LogoutAsync()`
 - `Task<AuthResult> SendPasswordResetEmailAsync(string email)`
-- `IObservable<bool> AuthStateChanged`
 
 #### `SupabaseAuthService`
 This class will implement `IAuthService` using the `supabase-csharp` client.
 - It will initialize the Supabase client with the project URL and public key.
 - It will handle session persistence and retrieval securely using `Microsoft.Maui.Storage.SecureStorage`.
 - It will map Supabase responses to a generic `AuthResult` object containing success status and error messages.
+- It will send `AuthStateChangedMessage` via `WeakReferenceMessenger` from CommunityToolkit.Mvvm when authentication state changes.
 
 ### 2.4. Validation and Error Handling
 

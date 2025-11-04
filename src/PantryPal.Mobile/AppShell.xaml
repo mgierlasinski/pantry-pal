@@ -6,8 +6,16 @@
     xmlns:views="clr-namespace:PantryPal.Mobile.Views"
     xmlns:m="clr-namespace:UraniumUI.Icons.MaterialSymbols;assembly=UraniumUI.Icons.MaterialSymbols"
     xmlns:const="clr-namespace:PantryPal.Mobile.Constants"
-    Title="PantryPal">
+    Title="PantryPal"
+    FlyoutBehavior="Disabled">
 
+    <!-- Authentication Routes -->
+    <ShellContent
+        Title="Login"
+        ContentTemplate="{DataTemplate views:LoginPage}"
+        Route="LoginPage" />
+
+    <!-- Main App Routes -->
     <TabBar>
         <ShellContent
             Title="Pantry"

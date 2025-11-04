@@ -34,6 +34,9 @@ public static class MauiProgram
         RegisterViewModels(builder.Services);
         RegisterViews(builder.Services);
 
+        // Register AppShell with dependency injection
+        builder.Services.AddSingleton<AppShell>();
+
         return builder.Build();
     }
 
@@ -54,6 +57,7 @@ public static class MauiProgram
 #endif
             return new HttpClient(handler);
         });
+        services.AddSingleton<IAuthService, SupabaseAuthService>();
         services.AddSingleton<IPantryService, PantryService>();
         services.AddSingleton<IRecipeService, RecipeService>();
         services.AddSingleton<IUserPreferencesService, UserPreferencesService>();
@@ -64,6 +68,9 @@ public static class MauiProgram
     private static void RegisterViewModels(IServiceCollection services)
     {
         services.AddTransient<MainViewModel>();
+        services.AddTransient<LoginPageViewModel>();
+        services.AddTransient<RegisterPageViewModel>();
+        services.AddTransient<ForgotPasswordPageViewModel>();
         services.AddTransient<PantryPageViewModel>();
         services.AddTransient<ProfileViewModel>();
         services.AddTransient<RecipeGenerationViewModel>();
@@ -73,6 +80,9 @@ public static class MauiProgram
 
     private static void RegisterViews(IServiceCollection services)
     {
+        services.AddTransient<LoginPage>();
+        services.AddTransient<RegisterPage>();
+        services.AddTransient<ForgotPasswordPage>();
         services.AddTransient<PantryPage>();
         services.AddTransient<ProfilePage>();
         services.AddTransient<RecipeDetailPage>();
