@@ -8,20 +8,15 @@ namespace PantryPal.Mobile.Services;
 public class UserPreferencesService : IUserPreferencesService
 {
     private readonly HttpClient _httpClient;
-    private readonly string _baseUrl;
 
     public UserPreferencesService(HttpClient httpClient)
     {
         _httpClient = httpClient;
-        // TODO: Move to configuration
-        _baseUrl = DeviceInfo.Platform == DevicePlatform.Android
-            ? "https://10.0.2.2:7154" // Android emulator localhost
-            : "https://localhost:7154";
     }
 
     public async Task<UserPreferencesDto?> GetUserPreferencesAsync()
     {
-        var response = await _httpClient.GetAsync($"{_baseUrl}/user-preferences");
+        var response = await _httpClient.GetAsync("user-preferences");
 
         if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
         {
@@ -39,7 +34,7 @@ public class UserPreferencesService : IUserPreferencesService
         var json = JsonSerializer.Serialize(preferences);
         var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-        var response = await _httpClient.PostAsync($"{_baseUrl}/user-preferences", content);
+        var response = await _httpClient.PostAsync("user-preferences", content);
         response.EnsureSuccessStatusCode();
 
         var result = await response.Content.ReadFromJsonAsync<UserPreferencesDto>();

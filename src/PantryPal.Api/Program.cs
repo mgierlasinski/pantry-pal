@@ -1,11 +1,25 @@
 using FluentValidation;
+using Microsoft.IdentityModel.Tokens;
 using PantryPal.Api.Extensions;
 using PantryPal.Api.Repositories;
 using PantryPal.Api.Services;
 using PantryPal.Data;
 using System.Security.Claims;
+using System.Text;
 
 const string DefaultUserId = "cedc2d66-51dc-4b19-8713-b51bf177df39";
+
+// Helper method to get user ID from JWT token
+static Guid GetUserId(HttpContext httpContext, ILogger logger)
+{
+    var userIdClaim = httpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+    if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+    {
+        logger.LogWarning("Unable to extract valid user ID from claims. Using default user ID for backward compatibility.");
+        return Guid.Parse(DefaultUserId);
+    }
+    return userId;
+}
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,22 +27,22 @@ builder.Services.AddSupabase();
 builder.Services.AddOpenRouter(builder.Configuration);
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 
-// TODO: Configure authentication when ready
-// builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-//     .AddJwtBearer(options =>
-//     {
-//         options.Authority = builder.Configuration["Supabase:Url"];
-//         options.Audience = "authenticated";
-//         options.TokenValidationParameters = new TokenValidationParameters
-//         {
-//             ValidateIssuer = true,
-//             ValidateAudience = true,
-//             ValidateLifetime = true,
-//             ValidateIssuerSigningKey = true
-//         };
-//     });
+// Configure authentication
+var bytes = Encoding.UTF8.GetBytes(builder.Configuration["Supabase:Auth:JwtSecret"]!);
 
-// builder.Services.AddAuthorization();
+builder.Services.AddAuthorization();
+builder.Services.AddAuthentication().AddJwtBearer(options =>
+{
+    //options.Authority = builder.Configuration["Supabase:Url"];
+    //options.Audience = "authenticated";
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(bytes),
+        ValidIssuer = builder.Configuration["Supabase:Auth:Issuer"],
+        ValidAudience = "authenticated"
+    };
+});
 
 // Register repositories
 builder.Services.AddScoped<IPantryRepository, PantryRepository>();
@@ -50,14 +64,15 @@ builder.Services.AddScoped<IAIRecipeGeneratorService, AIRecipeGeneratorService>(
 
 var app = builder.Build();
 
-// TODO: Enable authentication/authorization middleware when ready
-// app.UseAuthentication();
-// app.UseAuthorization();
+// Enable authentication/authorization middleware
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapGet("/", () => "Hello World!");
 
 // GET /pantry-items endpoint
 app.MapGet("/pantry-items", async (
+    HttpContext httpContext,
     int? page,
     int? pageSize,
     string? sort,
@@ -93,17 +108,7 @@ app.MapGet("/pantry-items", async (
 
     try
     {
-        // TODO: Extract userId from authenticated user when authentication is enabled
-        // var userIdClaim = httpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        // if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
-        // {
-        //     logger.LogWarning("Unable to extract valid user ID from claims");
-        //     return Results.Unauthorized();
-        // }
-
-        // TEMPORARY: Use a hardcoded userId for testing until authentication is implemented
-        var userId = Guid.Parse(DefaultUserId);
-        logger.LogWarning("Using hardcoded userId for testing. Authentication not yet enabled.");
+        var userId = GetUserId(httpContext, logger);
 
         var result = await pantryService.GetPantryItemsAsync(
             userId,
@@ -121,10 +126,11 @@ app.MapGet("/pantry-items", async (
             detail: "An error occurred while processing your request.",
             statusCode: 500);
     }
-}); // TODO: Add .RequireAuthorization() when authentication is enabled
+}).RequireAuthorization();
 
 // POST /pantry-items endpoint
 app.MapPost("/pantry-items", async (
+    HttpContext httpContext,
     PantryItemCreateDto dto,
     IValidator<PantryItemCreateDto> validator,
     IPantryService pantryService,
@@ -141,17 +147,7 @@ app.MapPost("/pantry-items", async (
 
     try
     {
-        // TODO: Extract userId from authenticated user when authentication is enabled
-        // var userIdClaim = httpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        // if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
-        // {
-        //     logger.LogWarning("Unable to extract valid user ID from claims");
-        //     return Results.Unauthorized();
-        // }
-
-        // TEMPORARY: Use a hardcoded userId for testing until authentication is implemented
-        var userId = Guid.Parse(DefaultUserId);
-        logger.LogWarning("Using hardcoded userId for testing. Authentication not yet enabled.");
+        var userId = GetUserId(httpContext, logger);
 
         var createdItem = await pantryService.CreatePantryItemAsync(userId, dto);
 
@@ -171,10 +167,11 @@ app.MapPost("/pantry-items", async (
             detail: "An error occurred while processing your request.",
             statusCode: 500);
     }
-}); // TODO: Add .RequireAuthorization() when authentication is enabled
+}).RequireAuthorization();
 
 // PATCH /pantry-items/{id} endpoint
 app.MapPatch("/pantry-items/{id}", async (
+    HttpContext httpContext,
     Guid id,
     PantryItemUpdateDto dto,
     IValidator<PantryItemUpdateDto> validator,
@@ -192,17 +189,7 @@ app.MapPatch("/pantry-items/{id}", async (
 
     try
     {
-        // TODO: Extract userId from authenticated user when authentication is enabled
-        // var userIdClaim = httpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        // if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
-        // {
-        //     logger.LogWarning("Unable to extract valid user ID from claims");
-        //     return Results.Unauthorized();
-        // }
-
-        // TEMPORARY: Use a hardcoded userId for testing until authentication is implemented
-        var userId = Guid.Parse(DefaultUserId);
-        logger.LogWarning("Using hardcoded userId for testing. Authentication not yet enabled.");
+        var userId = GetUserId(httpContext, logger);
 
         var updatedItem = await pantryService.UpdatePantryItemAsync(id, userId, dto);
 
@@ -227,28 +214,18 @@ app.MapPatch("/pantry-items/{id}", async (
             detail: "An error occurred while processing your request.",
             statusCode: 500);
     }
-}); // TODO: Add .RequireAuthorization() when authentication is enabled
+}).RequireAuthorization();
 
 // DELETE /pantry-items/{id} endpoint
 app.MapDelete("/pantry-items/{id}", async (
+    HttpContext httpContext,
     Guid id,
-    ClaimsPrincipal user,
     IPantryService pantryService,
     ILogger<Program> logger) =>
 {
     try
     {
-        // TODO: Extract userId from authenticated user when authentication is enabled
-        // var userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        // if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
-        // {
-        //     logger.LogWarning("Unable to extract valid user ID from claims");
-        //     return Results.Unauthorized();
-        // }
-
-        // TEMPORARY: Use a hardcoded userId for testing until authentication is implemented
-        var userId = Guid.Parse(DefaultUserId);
-        logger.LogWarning("Using hardcoded userId for testing. Authentication not yet enabled.");
+        var userId = GetUserId(httpContext, logger);
 
         await pantryService.DeletePantryItemAsync(id, userId);
 
@@ -268,10 +245,11 @@ app.MapDelete("/pantry-items/{id}", async (
             detail: "An error occurred while processing your request.",
             statusCode: 500);
     }
-}); // TODO: Add .RequireAuthorization() when authentication is enabled
+}).RequireAuthorization();
 
 // GET /recipes endpoint
 app.MapGet("/recipes", async (
+    HttpContext httpContext,
     int? page,
     int? pageSize,
     string? sort,
@@ -306,17 +284,7 @@ app.MapGet("/recipes", async (
 
     try
     {
-        // TODO: Extract userId from authenticated user when authentication is enabled
-        // var userIdClaim = httpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        // if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
-        // {
-        //     logger.LogWarning("Unable to extract valid user ID from claims");
-        //     return Results.Unauthorized();
-        // }
-
-        // TEMPORARY: Use a hardcoded userId for testing until authentication is implemented
-        var userId = Guid.Parse(DefaultUserId);
-        logger.LogWarning("Using hardcoded userId for testing. Authentication not yet enabled.");
+        var userId = GetUserId(httpContext, logger);
 
         var result = await recipeService.GetRecipesAsync(
             userId,
@@ -333,26 +301,17 @@ app.MapGet("/recipes", async (
             detail: "An error occurred while processing your request.",
             statusCode: 500);
     }
-}); // TODO: Add .RequireAuthorization() when authentication is enabled
+}).RequireAuthorization();
 
 // POST /recipes/generate endpoint
 app.MapPost("/recipes/generate", async (
+    HttpContext httpContext,
     IRecipeService recipeService,
     ILogger<Program> logger) =>
 {
     try
     {
-        // TODO: Extract userId from authenticated user when authentication is enabled
-        // var userIdClaim = httpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        // if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
-        // {
-        //     logger.LogWarning("Unable to extract valid user ID from claims");
-        //     return Results.Unauthorized();
-        // }
-
-        // TEMPORARY: Use a hardcoded userId for testing until authentication is implemented
-        var userId = Guid.Parse(DefaultUserId);
-        logger.LogWarning("Using hardcoded userId for testing. Authentication not yet enabled.");
+        var userId = GetUserId(httpContext, logger);
 
         var result = await recipeService.GenerateRecipeAsync(userId);
 
@@ -387,27 +346,18 @@ app.MapPost("/recipes/generate", async (
             detail: "An error occurred while processing your request.",
             statusCode: 500);
     }
-}); // TODO: Add .RequireAuthorization() when authentication is enabled
+}).RequireAuthorization();
 
 // POST /recipes/{generationId}/accept endpoint
 app.MapPost("/recipes/{generationId}/accept", async (
+    HttpContext httpContext,
     Guid generationId,
     IRecipeService recipeService,
     ILogger<Program> logger) =>
 {
     try
     {
-        // TODO: Extract userId from authenticated user when authentication is enabled
-        // var userIdClaim = httpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        // if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
-        // {
-        //     logger.LogWarning("Unable to extract valid user ID from claims");
-        //     return Results.Unauthorized();
-        // }
-
-        // TEMPORARY: Use a hardcoded userId for testing until authentication is implemented
-        var userId = Guid.Parse(DefaultUserId);
-        logger.LogWarning("Using hardcoded userId for testing. Authentication not yet enabled.");
+        var userId = GetUserId(httpContext, logger);
 
         var result = await recipeService.AcceptGeneratedRecipeAsync(generationId, userId);
 
@@ -444,10 +394,11 @@ app.MapPost("/recipes/{generationId}/accept", async (
             detail: "An error occurred while processing your request.",
             statusCode: 500);
     }
-}); // TODO: Add .RequireAuthorization() when authentication is enabled
+}).RequireAuthorization();
 
 // POST /recipes/{generationId}/reject endpoint
 app.MapPost("/recipes/{generationId}/reject", async (
+    HttpContext httpContext,
     Guid generationId,
     RecipeRejectRequestDto request,
     IValidator<RecipeRejectRequestDto> validator,
@@ -465,17 +416,7 @@ app.MapPost("/recipes/{generationId}/reject", async (
 
     try
     {
-        // TODO: Extract userId from authenticated user when authentication is enabled
-        // var userIdClaim = httpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        // if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
-        // {
-        //     logger.LogWarning("Unable to extract valid user ID from claims");
-        //     return Results.Unauthorized();
-        // }
-
-        // TEMPORARY: Use a hardcoded userId for testing until authentication is implemented
-        var userId = Guid.Parse(DefaultUserId);
-        logger.LogWarning("Using hardcoded userId for testing. Authentication not yet enabled.");
+        var userId = GetUserId(httpContext, logger);
 
         await recipeService.RejectGeneratedRecipeAsync(generationId, request.RejectReasonId, userId);
 
@@ -507,10 +448,11 @@ app.MapPost("/recipes/{generationId}/reject", async (
             detail: "An error occurred while processing your request.",
             statusCode: 500);
     }
-}); // TODO: Add .RequireAuthorization() when authentication is enabled
+}).RequireAuthorization();
 
 // DELETE /recipes/{id} endpoint
 app.MapDelete("/recipes/{id}", async (
+    HttpContext httpContext,
     string id,
     IRecipeService recipeService,
     ILogger<Program> logger) =>
@@ -524,17 +466,7 @@ app.MapDelete("/recipes/{id}", async (
 
     try
     {
-        // TODO: Extract userId from authenticated user when authentication is enabled
-        // var userIdClaim = httpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        // if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
-        // {
-        //     logger.LogWarning("Unable to extract valid user ID from claims");
-        //     return Results.Unauthorized();
-        // }
-
-        // TEMPORARY: Use a hardcoded userId for testing until authentication is implemented
-        var userId = Guid.Parse(DefaultUserId);
-        logger.LogWarning("Using hardcoded userId for testing. Authentication not yet enabled.");
+        var userId = GetUserId(httpContext, logger);
 
         await recipeService.DeleteRecipeAsync(id, userId);
 
@@ -548,7 +480,7 @@ app.MapDelete("/recipes/{id}", async (
     }
     catch (KeyNotFoundException ex) when (ex.Message.Contains("Recipe not found"))
     {
-        logger.LogWarning(ex, "Recipe {RecipeId} not found for user {UserId}", id, Guid.Parse(DefaultUserId));
+        logger.LogWarning(ex, "Recipe {RecipeId} not found for user {UserId}", id, GetUserId(httpContext, logger));
         return Results.NotFound(new { error = "Recipe not found." });
     }
     catch (Exception ex)
@@ -559,26 +491,17 @@ app.MapDelete("/recipes/{id}", async (
             detail: "An error occurred while processing your request.",
             statusCode: 500);
     }
-}); // TODO: Add .RequireAuthorization() when authentication is enabled
+}).RequireAuthorization();
 
 // GET /user-preferences endpoint
 app.MapGet("/user-preferences", async (
+    HttpContext httpContext,
     IUserPreferencesService service,
     ILogger<Program> logger) =>
 {
     try
     {
-        // TODO: Extract userId from authenticated user when authentication is enabled
-        // var userIdClaim = httpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        // if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
-        // {
-        //     logger.LogWarning("Unable to extract valid user ID from claims");
-        //     return Results.Unauthorized();
-        // }
-
-        // TEMPORARY: Use a hardcoded userId for testing until authentication is implemented
-        var userId = Guid.Parse(DefaultUserId);
-        logger.LogWarning("Using hardcoded userId for testing. Authentication not yet enabled.");
+        var userId = GetUserId(httpContext, logger);
 
         var preferences = await service.GetUserPreferencesAsync(userId);
 
@@ -602,10 +525,11 @@ app.MapGet("/user-preferences", async (
             detail: "An error occurred while processing your request.",
             statusCode: 500);
     }
-}); // TODO: Add .RequireAuthorization() when authentication is enabled
+}).RequireAuthorization();
 
 // POST /user-preferences endpoint
 app.MapPost("/user-preferences", async (
+    HttpContext httpContext,
     UserPreferencesCreateDto dto,
     IValidator<UserPreferencesCreateDto> validator,
     IUserPreferencesService service,
@@ -622,17 +546,7 @@ app.MapPost("/user-preferences", async (
 
     try
     {
-        // TODO: Extract userId from authenticated user when authentication is enabled
-        // var userIdClaim = httpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        // if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
-        // {
-        //     logger.LogWarning("Unable to extract valid user ID from claims");
-        //     return Results.Unauthorized();
-        // }
-
-        // TEMPORARY: Use a hardcoded userId for testing until authentication is implemented
-        var userId = DefaultUserId;
-        logger.LogWarning("Using hardcoded userId for testing. Authentication not yet enabled.");
+        var userId = GetUserId(httpContext, logger).ToString();
 
         var result = await service.UpsertPreferencesAsync(dto, userId);
 
@@ -655,7 +569,7 @@ app.MapPost("/user-preferences", async (
             detail: "An error occurred while processing your request.",
             statusCode: 500);
     }
-}).Produces<UserPreferencesDto>(200).Produces(400).Produces(500); // TODO: Add .RequireAuthorization() when authentication is enabled
+}).RequireAuthorization().Produces<UserPreferencesDto>(200).Produces(400).Produces(500);
 
 // GET /diet-types endpoint
 app.MapGet("/diet-types", async (
@@ -732,6 +646,6 @@ app.MapGet("/recipe-reject-reasons", async (
             detail: "An error occurred while processing your request.",
             statusCode: 500);
     }
-}).Produces<RecipeRejectReasonsResponseDto>(200).Produces(500); // TODO: Add .RequireAuthorization() when authentication is enabled
+}).Produces<RecipeRejectReasonsResponseDto>(200).Produces(500);
 
 app.Run();

@@ -9,4 +9,5 @@ public interface IAuthService
     Task<AuthResult> RegisterAsync(string email, string password);
     Task<AuthResult> LogoutAsync();
     Task<AuthResult> SendPasswordResetEmailAsync(string email);
+    Task<string?> GetAccessTokenAsync();
 }

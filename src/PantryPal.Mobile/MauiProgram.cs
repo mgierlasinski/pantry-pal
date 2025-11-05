@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Maui;
 using Indiko.Maui.Controls.Markdown;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using PantryPal.Mobile.Extensions;
 using PantryPal.Mobile.Services;
@@ -47,20 +48,21 @@ public static class MauiProgram
 
     private static void RegisterServices(IServiceCollection services)
     {
+        // Register HttpClient with authentication handler
+        services.AddSingleton<AuthDelegatingHandler>();
         services.AddSingleton<HttpClient>(sp =>
         {
-            var handler = new HttpClientHandler();
-#if DEBUG
-            handler.ServerCertificateCustomValidationCallback = (message, cert, chain, errors) =>
-            {
-                if (cert is { Issuer: "CN=localhost" })
-                {
-                    return true;
-                }
-                return errors == System.Net.Security.SslPolicyErrors.None;
-            };
-#endif
-            return new HttpClient(handler);
+            var configuration = sp.GetRequiredService<IConfiguration>();
+            var authHandler = sp.GetRequiredService<AuthDelegatingHandler>();
+
+            var baseUrl = DeviceInfo.Platform == DevicePlatform.Android
+                ? configuration["Api:AndroidBaseUrl"] ?? "https://10.0.2.2:7154"
+                : configuration["Api:DefaultBaseUrl"] ?? "https://localhost:7154";
+
+            var client = new HttpClient(authHandler);
+            client.BaseAddress = new Uri(baseUrl);
+
+            return client;
         });
 
         services.AddSupabase();

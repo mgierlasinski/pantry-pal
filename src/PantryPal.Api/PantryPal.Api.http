@@ -1,9 +1,25 @@
 ﻿@PantryPal.Api_HostAddress = https://localhost:7154
+@PantryPal.Auth_HostAddress = http://127.0.0.1:54321
+
 @ExistingPantryItem = 7b2e7457-8a9d-4cc4-807c-f7c2489008b5
 @ExistingGenerationId = 8030b6a4-00c4-4f11-b8ae-cc12c0141ca1
 
+# @name login
+
+POST {{PantryPal.Auth_HostAddress}}/auth/v1/token?grant_type=password
+Content-Type: application/json 
+apiKey: sb_secret_N7UND0UgjKTVK-Uodkm0Hg_xSvEMPvz
+
+{ 
+  "email": "marcin.gierlasinski@gmail.com", 
+  "password": "Test1234!"
+} 
+
+###
+
 # GET /pantry-items - Get pantry items with default pagination (page=1, pageSize=20, sort=created_at)
 GET {{PantryPal.Api_HostAddress}}/pantry-items
+Authorization: Bearer {{login.response.body.$.access_token}}
 
 ###
 
@@ -149,6 +165,7 @@ DELETE {{PantryPal.Api_HostAddress}}/pantry-items/00000000-0000-0000-0000-999999
 
 # GET /recipes - Get recipes with default pagination (page=1, pageSize=20, sort=created_at)
 GET {{PantryPal.Api_HostAddress}}/recipes
+Authorization: Bearer {{login.response.body.$.access_token}}
 
 ###
 

@@ -126,6 +126,41 @@ public class SupabaseAuthService : IAuthService
         }
     }
 
+    public async Task<string?> GetAccessTokenAsync()
+    {
+        try
+        {
+            // Try to get the current session
+            var session = _supabaseClient.Auth.CurrentSession;
+            if (session != null && !string.IsNullOrEmpty(session.AccessToken))
+            {
+                return session.AccessToken;
+            }
+
+            // If no current session, try to restore from secure storage
+            var sessionJson = await SecureStorage.GetAsync(SessionKey);
+            if (!string.IsNullOrEmpty(sessionJson))
+            {
+                var restoredSession = JsonSerializer.Deserialize<Session>(sessionJson);
+                if (restoredSession != null && !string.IsNullOrEmpty(restoredSession.AccessToken))
+                {
+                    // Try to set the session on the client
+                    var refreshedSession = await _supabaseClient.Auth.SetSession(restoredSession.AccessToken, restoredSession.RefreshToken ?? string.Empty);
+                    if (refreshedSession != null && !string.IsNullOrEmpty(refreshedSession.AccessToken))
+                    {
+                        return refreshedSession.AccessToken;
+                    }
+                }
+            }
+
+            return null;
+        }
+        catch (Exception)
+        {
+            return null;
+        }
+    }
+
     private async Task SaveSessionAsync(Session session)
     {
         try
