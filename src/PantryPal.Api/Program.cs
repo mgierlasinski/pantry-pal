@@ -4,22 +4,7 @@ using PantryPal.Api.Extensions;
 using PantryPal.Api.Repositories;
 using PantryPal.Api.Services;
 using PantryPal.Data;
-using System.Security.Claims;
 using System.Text;
-
-const string DefaultUserId = "cedc2d66-51dc-4b19-8713-b51bf177df39";
-
-// Helper method to get user ID from JWT token
-static Guid GetUserId(HttpContext httpContext, ILogger logger)
-{
-    var userIdClaim = httpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-    if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
-    {
-        logger.LogWarning("Unable to extract valid user ID from claims. Using default user ID for backward compatibility.");
-        return Guid.Parse(DefaultUserId);
-    }
-    return userId;
-}
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -33,8 +18,6 @@ var bytes = Encoding.UTF8.GetBytes(builder.Configuration["Supabase:Auth:JwtSecre
 builder.Services.AddAuthorization();
 builder.Services.AddAuthentication().AddJwtBearer(options =>
 {
-    //options.Authority = builder.Configuration["Supabase:Url"];
-    //options.Audience = "authenticated";
     options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuerSigningKey = true,
@@ -108,7 +91,7 @@ app.MapGet("/pantry-items", async (
 
     try
     {
-        var userId = GetUserId(httpContext, logger);
+        var userId = httpContext.GetUserId();
 
         var result = await pantryService.GetPantryItemsAsync(
             userId,
@@ -147,7 +130,7 @@ app.MapPost("/pantry-items", async (
 
     try
     {
-        var userId = GetUserId(httpContext, logger);
+        var userId = httpContext.GetUserId();
 
         var createdItem = await pantryService.CreatePantryItemAsync(userId, dto);
 
@@ -189,7 +172,7 @@ app.MapPatch("/pantry-items/{id}", async (
 
     try
     {
-        var userId = GetUserId(httpContext, logger);
+        var userId = httpContext.GetUserId();
 
         var updatedItem = await pantryService.UpdatePantryItemAsync(id, userId, dto);
 
@@ -225,7 +208,7 @@ app.MapDelete("/pantry-items/{id}", async (
 {
     try
     {
-        var userId = GetUserId(httpContext, logger);
+        var userId = httpContext.GetUserId();
 
         await pantryService.DeletePantryItemAsync(id, userId);
 
@@ -284,7 +267,7 @@ app.MapGet("/recipes", async (
 
     try
     {
-        var userId = GetUserId(httpContext, logger);
+        var userId = httpContext.GetUserId();
 
         var result = await recipeService.GetRecipesAsync(
             userId,
@@ -311,7 +294,7 @@ app.MapPost("/recipes/generate", async (
 {
     try
     {
-        var userId = GetUserId(httpContext, logger);
+        var userId = httpContext.GetUserId();
 
         var result = await recipeService.GenerateRecipeAsync(userId);
 
@@ -357,7 +340,7 @@ app.MapPost("/recipes/{generationId}/accept", async (
 {
     try
     {
-        var userId = GetUserId(httpContext, logger);
+        var userId = httpContext.GetUserId();
 
         var result = await recipeService.AcceptGeneratedRecipeAsync(generationId, userId);
 
@@ -416,7 +399,7 @@ app.MapPost("/recipes/{generationId}/reject", async (
 
     try
     {
-        var userId = GetUserId(httpContext, logger);
+        var userId = httpContext.GetUserId();
 
         await recipeService.RejectGeneratedRecipeAsync(generationId, request.RejectReasonId, userId);
 
@@ -466,7 +449,7 @@ app.MapDelete("/recipes/{id}", async (
 
     try
     {
-        var userId = GetUserId(httpContext, logger);
+        var userId = httpContext.GetUserId();
 
         await recipeService.DeleteRecipeAsync(id, userId);
 
@@ -480,7 +463,7 @@ app.MapDelete("/recipes/{id}", async (
     }
     catch (KeyNotFoundException ex) when (ex.Message.Contains("Recipe not found"))
     {
-        logger.LogWarning(ex, "Recipe {RecipeId} not found for user {UserId}", id, GetUserId(httpContext, logger));
+        logger.LogWarning(ex, "Recipe {RecipeId} not found for user {UserId}", id, httpContext.GetUserId());
         return Results.NotFound(new { error = "Recipe not found." });
     }
     catch (Exception ex)
@@ -501,7 +484,7 @@ app.MapGet("/user-preferences", async (
 {
     try
     {
-        var userId = GetUserId(httpContext, logger);
+        var userId = httpContext.GetUserId();
 
         var preferences = await service.GetUserPreferencesAsync(userId);
 
@@ -546,7 +529,7 @@ app.MapPost("/user-preferences", async (
 
     try
     {
-        var userId = GetUserId(httpContext, logger).ToString();
+        var userId = httpContext.GetUserId().ToString();
 
         var result = await service.UpsertPreferencesAsync(dto, userId);
 
