@@ -27,7 +27,7 @@ public partial class PantryPageViewModel : ObservableObject
 
     // State properties
     [ObservableProperty]
-    private bool _isBusy;
+    private bool _isLoading;
 
     [ObservableProperty]
     private bool _isRefreshing;
@@ -60,12 +60,12 @@ public partial class PantryPageViewModel : ObservableObject
     [RelayCommand]
     public async Task LoadItemsAsync()
     {
-        if (IsBusy)
+        if (IsLoading)
             return;
 
         try
         {
-            IsBusy = true;
+            IsLoading = true;
 
             var response = await _pantryService.GetPantryItemsAsync(Page, PageSize, SortField);
             
@@ -82,7 +82,7 @@ public partial class PantryPageViewModel : ObservableObject
         }
         catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Unauthorized)
         {
-            await Shell.Current.GoToAsync("//LoginPage");
+            await Shell.Current.GoToAsync(AppShell.LoginRoute);
         }
         catch (HttpRequestException ex)
         {
@@ -94,7 +94,7 @@ public partial class PantryPageViewModel : ObservableObject
         }
         finally
         {
-            IsBusy = false;
+            IsLoading = false;
             IsRefreshing = false;
         }
     }
@@ -114,12 +114,12 @@ public partial class PantryPageViewModel : ObservableObject
             return;
         }
 
-        if (IsBusy)
+        if (IsLoading)
             return;
 
         try
         {
-            IsBusy = true;
+            IsLoading = true;
 
             var createDto = new PantryItemCreateDto(DialogItemName.Trim());
             var newItem = await _pantryService.CreatePantryItemAsync(createDto);
@@ -138,7 +138,7 @@ public partial class PantryPageViewModel : ObservableObject
         }
         catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Unauthorized)
         {
-            await Shell.Current.GoToAsync("//LoginPage");
+            await Shell.Current.GoToAsync(AppShell.LoginRoute);
         }
         catch (HttpRequestException ex)
         {
@@ -150,7 +150,7 @@ public partial class PantryPageViewModel : ObservableObject
         }
         finally
         {
-            IsBusy = false;
+            IsLoading = false;
         }
     }
 
@@ -169,12 +169,12 @@ public partial class PantryPageViewModel : ObservableObject
             return;
         }
 
-        if (IsBusy)
+        if (IsLoading)
             return;
 
         try
         {
-            IsBusy = true;
+            IsLoading = true;
 
             var updateDto = new PantryItemUpdateDto(Name: DialogItemName.Trim());
             var updatedItem = await _pantryService.UpdatePantryItemAsync(SelectedItemId, updateDto);
@@ -195,7 +195,7 @@ public partial class PantryPageViewModel : ObservableObject
         }
         catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Unauthorized)
         {
-            await Shell.Current.GoToAsync("//LoginPage");
+            await Shell.Current.GoToAsync(AppShell.LoginRoute);
         }
         catch (HttpRequestException ex)
         {
@@ -207,19 +207,19 @@ public partial class PantryPageViewModel : ObservableObject
         }
         finally
         {
-            IsBusy = false;
+            IsLoading = false;
         }
     }
 
     [RelayCommand]
     public async Task ConfirmDeleteAsync()
     {
-        if (IsBusy)
+        if (IsLoading)
             return;
 
         try
         {
-            IsBusy = true;
+            IsLoading = true;
 
             await _pantryService.DeletePantryItemAsync(SelectedItemId);
 
@@ -235,7 +235,7 @@ public partial class PantryPageViewModel : ObservableObject
         }
         catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Unauthorized)
         {
-            await Shell.Current.GoToAsync("//LoginPage");
+            await Shell.Current.GoToAsync(AppShell.LoginRoute);
         }
         catch (HttpRequestException ex)
         {
@@ -247,14 +247,14 @@ public partial class PantryPageViewModel : ObservableObject
         }
         finally
         {
-            IsBusy = false;
+            IsLoading = false;
         }
     }
 
     [RelayCommand]
     public async Task ToggleFavoriteAsync(string itemId)
     {
-        if (IsBusy)
+        if (IsLoading)
             return;
 
         var item = Items.FirstOrDefault(i => i.Id == itemId);
@@ -266,7 +266,7 @@ public partial class PantryPageViewModel : ObservableObject
 
         try
         {
-            IsBusy = true;
+            IsLoading = true;
 
             var updateDto = new PantryItemUpdateDto(IsFavorite: item.IsFavorite);
             var updatedItem = await _pantryService.UpdatePantryItemAsync(itemId, updateDto);
@@ -276,7 +276,7 @@ public partial class PantryPageViewModel : ObservableObject
         catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Unauthorized)
         {
             item.IsFavorite = originalState;
-            await Shell.Current.GoToAsync("//LoginPage");
+            await Shell.Current.GoToAsync(AppShell.LoginRoute);
         }
         catch (HttpRequestException ex)
         {
@@ -290,7 +290,7 @@ public partial class PantryPageViewModel : ObservableObject
         }
         finally
         {
-            IsBusy = false;
+            IsLoading = false;
         }
     }
 

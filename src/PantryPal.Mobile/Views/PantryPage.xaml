@@ -26,13 +26,13 @@
         
         <!-- Loading Overlay -->
         <Grid Grid.RowSpan="2"
-              IsVisible="{Binding IsBusy}"
+              IsVisible="{Binding IsLoading}"
               BackgroundColor="#80000000"
               ZIndex="1000">
             <VerticalStackLayout VerticalOptions="Center"
                                 HorizontalOptions="Center"
                                 Spacing="16">
-                <ActivityIndicator IsRunning="{Binding IsBusy}"
+                <ActivityIndicator IsRunning="{Binding IsLoading}"
                                   Color="{DynamicResource Primary}"
                                   WidthRequest="48"
                                   HeightRequest="48" />

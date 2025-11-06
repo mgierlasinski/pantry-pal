@@ -55,12 +55,11 @@ public static class MauiProgram
             var configuration = sp.GetRequiredService<IConfiguration>();
             var authHandler = sp.GetRequiredService<AuthDelegatingHandler>();
 
-            var baseUrl = DeviceInfo.Platform == DevicePlatform.Android
-                ? configuration["Api:AndroidBaseUrl"] ?? "https://10.0.2.2:7154"
-                : configuration["Api:DefaultBaseUrl"] ?? "https://localhost:7154";
-
-            var client = new HttpClient(authHandler);
-            client.BaseAddress = new Uri(baseUrl);
+            var client = new HttpClient(authHandler)
+            {
+                BaseAddress = new Uri(configuration["Api:Url"]!),
+                Timeout = TimeSpan.Parse(configuration["Api:Timeout"]!)
+            };
 
             return client;
         });
