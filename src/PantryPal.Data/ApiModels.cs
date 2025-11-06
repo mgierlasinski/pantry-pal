@@ -9,6 +9,11 @@ namespace PantryPal.Data;
 // Pantry Items DTOs
 // ================================
 
+public record PantryItemsPaginatedRequestDto(
+    int Page = 1,
+    int PageSize = 20,
+    string Sort = "created_at");
+
 /// <summary>
 /// DTO for pantry item responses (derived from PantryItemsSelect)
 /// </summary>
@@ -47,6 +52,10 @@ public record PantryItemsPaginatedResponseDto(
 // ================================
 // Recipe DTOs
 // ================================
+
+public record RecipesPaginatedRequestDto(
+    int Page = 1,
+    int PageSize = 20);
 
 /// <summary>
 /// DTO for recipe responses (derived from RecipesSelect)

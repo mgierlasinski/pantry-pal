@@ -56,48 +56,28 @@ app.MapGet("/", () => "Hello World!");
 // GET /pantry-items endpoint
 app.MapGet("/pantry-items", async (
     HttpContext httpContext,
-    int? page,
-    int? pageSize,
-    string? sort,
+    [AsParameters] PantryItemsPaginatedRequestDto request,
+    IValidator<PantryItemsPaginatedRequestDto> validator,
     IPantryService pantryService,
     ILogger<Program> logger) =>
 {
-    // Set default values
-    var validatedPage = page ?? 1;
-    var validatedPageSize = pageSize ?? 20;
-    var validatedSort = sort ?? "created_at";
-
-    // Validate page parameter
-    if (validatedPage < 1)
+    // Validate request using FluentValidation
+    var validationResult = await validator.ValidateAsync(request);
+    if (!validationResult.IsValid)
     {
-        logger.LogWarning("Invalid page parameter: {Page}", validatedPage);
-        return Results.BadRequest(new { error = "Page must be greater than or equal to 1." });
-    }
-
-    // Validate pageSize parameter
-    if (validatedPageSize < 1 || validatedPageSize > 100)
-    {
-        logger.LogWarning("Invalid pageSize parameter: {PageSize}", validatedPageSize);
-        return Results.BadRequest(new { error = "PageSize must be between 1 and 100." });
-    }
-
-    // Validate sort parameter
-    var allowedSortFields = new[] { "created_at", "name" };
-    if (!allowedSortFields.Contains(validatedSort))
-    {
-        logger.LogWarning("Invalid sort parameter: {Sort}", validatedSort);
-        return Results.BadRequest(new { error = "Sort must be either 'created_at' or 'name'." });
+        logger.LogWarning("Validation failed for GET /pantry-items: {Errors}",
+            string.Join(", ", validationResult.Errors.Select(e => e.ErrorMessage)));
+        return Results.ValidationProblem(validationResult.ToDictionary());
     }
 
     try
     {
         var userId = httpContext.GetUserId();
-
         var result = await pantryService.GetPantryItemsAsync(
             userId,
-            validatedPage,
-            validatedPageSize,
-            validatedSort);
+            request.Page,
+            request.PageSize,
+            request.Sort);
 
         return Results.Ok(result);
     }
@@ -131,7 +111,6 @@ app.MapPost("/pantry-items", async (
     try
     {
         var userId = httpContext.GetUserId();
-
         var createdItem = await pantryService.CreatePantryItemAsync(userId, dto);
 
         logger.LogInformation("Successfully created pantry item {ItemId} for user {UserId}", createdItem.Id, userId);
@@ -173,7 +152,6 @@ app.MapPatch("/pantry-items/{id}", async (
     try
     {
         var userId = httpContext.GetUserId();
-
         var updatedItem = await pantryService.UpdatePantryItemAsync(id, userId, dto);
 
         logger.LogInformation("Successfully updated pantry item {ItemId} for user {UserId}", updatedItem.Id, userId);
@@ -209,7 +187,6 @@ app.MapDelete("/pantry-items/{id}", async (
     try
     {
         var userId = httpContext.GetUserId();
-
         await pantryService.DeletePantryItemAsync(id, userId);
 
         logger.LogInformation("Successfully deleted pantry item {ItemId} for user {UserId}", id, userId);
@@ -233,46 +210,27 @@ app.MapDelete("/pantry-items/{id}", async (
 // GET /recipes endpoint
 app.MapGet("/recipes", async (
     HttpContext httpContext,
-    int? page,
-    int? pageSize,
-    string? sort,
+    [AsParameters] RecipesPaginatedRequestDto request,
+    IValidator<RecipesPaginatedRequestDto> validator,
     IRecipeService recipeService,
     ILogger<Program> logger) =>
 {
-    // Set default values
-    var validatedPage = page ?? 1;
-    var validatedPageSize = pageSize ?? 20;
-    var validatedSort = sort ?? "created_at";
-
-    // Validate page parameter
-    if (validatedPage < 1)
+    // Validate request using FluentValidation
+    var validationResult = await validator.ValidateAsync(request);
+    if (!validationResult.IsValid)
     {
-        logger.LogWarning("Invalid page parameter: {Page}", validatedPage);
-        return Results.BadRequest(new { error = "Page must be greater than or equal to 1." });
-    }
-
-    // Validate pageSize parameter
-    if (validatedPageSize < 1 || validatedPageSize > 100)
-    {
-        logger.LogWarning("Invalid pageSize parameter: {PageSize}", validatedPageSize);
-        return Results.BadRequest(new { error = "PageSize must be between 1 and 100." });
-    }
-
-    // Validate sort parameter (only "created_at" is supported)
-    if (validatedSort != "created_at")
-    {
-        logger.LogWarning("Invalid sort parameter: {Sort}", validatedSort);
-        return Results.BadRequest(new { error = "Sort must be 'created_at'." });
+        logger.LogWarning("Validation failed for GET /recipes: {Errors}",
+            string.Join(", ", validationResult.Errors.Select(e => e.ErrorMessage)));
+        return Results.ValidationProblem(validationResult.ToDictionary());
     }
 
     try
     {
         var userId = httpContext.GetUserId();
-
         var result = await recipeService.GetRecipesAsync(
             userId,
-            validatedPage,
-            validatedPageSize);
+            request.Page,
+            request.PageSize);
 
         return Results.Ok(result);
     }
@@ -295,7 +253,6 @@ app.MapPost("/recipes/generate", async (
     try
     {
         var userId = httpContext.GetUserId();
-
         var result = await recipeService.GenerateRecipeAsync(userId);
 
         logger.LogInformation("Successfully generated recipe {GenerationId} for user {UserId}",
@@ -341,7 +298,6 @@ app.MapPost("/recipes/{generationId}/accept", async (
     try
     {
         var userId = httpContext.GetUserId();
-
         var result = await recipeService.AcceptGeneratedRecipeAsync(generationId, userId);
 
         logger.LogInformation("Successfully accepted recipe generation {GenerationId} and created recipe {RecipeId} for user {UserId}",
@@ -400,7 +356,6 @@ app.MapPost("/recipes/{generationId}/reject", async (
     try
     {
         var userId = httpContext.GetUserId();
-
         await recipeService.RejectGeneratedRecipeAsync(generationId, request.RejectReasonId, userId);
 
         logger.LogInformation("Successfully rejected recipe generation {GenerationId} with reason {RejectReasonId} for user {UserId}",
@@ -450,7 +405,6 @@ app.MapDelete("/recipes/{id}", async (
     try
     {
         var userId = httpContext.GetUserId();
-
         await recipeService.DeleteRecipeAsync(id, userId);
 
         logger.LogInformation("Successfully deleted recipe {RecipeId} for user {UserId}", id, userId);
@@ -485,7 +439,6 @@ app.MapGet("/user-preferences", async (
     try
     {
         var userId = httpContext.GetUserId();
-
         var preferences = await service.GetUserPreferencesAsync(userId);
 
         if (preferences == null)
@@ -530,7 +483,6 @@ app.MapPost("/user-preferences", async (
     try
     {
         var userId = httpContext.GetUserId().ToString();
-
         var result = await service.UpsertPreferencesAsync(dto, userId);
 
         logger.LogInformation(

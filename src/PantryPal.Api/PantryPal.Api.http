@@ -25,31 +25,37 @@ Authorization: Bearer {{login.response.body.$.access_token}}
 
 # GET /pantry-items - Get pantry items with custom pagination
 GET {{PantryPal.Api_HostAddress}}/pantry-items?page=1&pageSize=10&sort=created_at
+Authorization: Bearer {{login.response.body.$.access_token}}
 
 ###
 
 # GET /pantry-items - Get pantry items with custom page and name sorting
 GET {{PantryPal.Api_HostAddress}}/pantry-items?page=2&pageSize=5&sort=name
+Authorization: Bearer {{login.response.body.$.access_token}}
 
 ###
 
 # GET /pantry-items - Validation error: invalid page (less than 1)
 GET {{PantryPal.Api_HostAddress}}/pantry-items?page=0&pageSize=10
+Authorization: Bearer {{login.response.body.$.access_token}}
 
 ###
 
 # GET /pantry-items - Validation error: invalid pageSize (too large)
 GET {{PantryPal.Api_HostAddress}}/pantry-items?page=1&pageSize=150
+Authorization: Bearer {{login.response.body.$.access_token}}
 
 ###
 
 # GET /pantry-items - Validation error: invalid pageSize (too small)
 GET {{PantryPal.Api_HostAddress}}/pantry-items?page=1&pageSize=0
+Authorization: Bearer {{login.response.body.$.access_token}}
 
 ###
 
 # GET /pantry-items - Validation error: invalid sort parameter
 GET {{PantryPal.Api_HostAddress}}/pantry-items?page=1&pageSize=10&sort=invalid
+Authorization: Bearer {{login.response.body.$.access_token}}
 
 ###
 
@@ -163,39 +169,33 @@ DELETE {{PantryPal.Api_HostAddress}}/pantry-items/00000000-0000-0000-0000-999999
 
 ###
 
-# GET /recipes - Get recipes with default pagination (page=1, pageSize=20, sort=created_at)
+# GET /recipes - Get recipes with default pagination (page=1, pageSize=20)
 GET {{PantryPal.Api_HostAddress}}/recipes
 Authorization: Bearer {{login.response.body.$.access_token}}
 
 ###
 
-# GET /recipes - Get recipes with custom pagination
-GET {{PantryPal.Api_HostAddress}}/recipes?page=1&pageSize=10&sort=created_at
-
-###
-
 # GET /recipes - Get recipes with custom page
 GET {{PantryPal.Api_HostAddress}}/recipes?page=2&pageSize=5
+Authorization: Bearer {{login.response.body.$.access_token}}
 
 ###
 
 # GET /recipes - Validation error: invalid page (less than 1)
 GET {{PantryPal.Api_HostAddress}}/recipes?page=0&pageSize=10
+Authorization: Bearer {{login.response.body.$.access_token}}
 
 ###
 
 # GET /recipes - Validation error: invalid pageSize (too large)
 GET {{PantryPal.Api_HostAddress}}/recipes?page=1&pageSize=150
+Authorization: Bearer {{login.response.body.$.access_token}}
 
 ###
 
 # GET /recipes - Validation error: invalid pageSize (too small)
 GET {{PantryPal.Api_HostAddress}}/recipes?page=1&pageSize=0
-
-###
-
-# GET /recipes - Validation error: invalid sort parameter
-GET {{PantryPal.Api_HostAddress}}/recipes?page=1&pageSize=10&sort=name
+Authorization: Bearer {{login.response.body.$.access_token}}
 
 ###
 
