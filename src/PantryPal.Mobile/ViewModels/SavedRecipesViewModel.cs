@@ -1,9 +1,8 @@
-using CommunityToolkit.Maui.Alerts;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using PantryPal.Data;
 using PantryPal.Mobile.Models;
 using PantryPal.Mobile.Services;
+using PantryPal.Mobile.Views;
 using System.Collections.ObjectModel;
 
 namespace PantryPal.Mobile.ViewModels;
@@ -15,6 +14,8 @@ namespace PantryPal.Mobile.ViewModels;
 public partial class SavedRecipesViewModel : ObservableObject
 {
     private readonly IRecipeService _recipeService;
+    private readonly IDisplayService _displayService;
+    private readonly INavigationService _navigationService;
 
     // Pagination state
     private int _currentPage = 1;
@@ -37,9 +38,11 @@ public partial class SavedRecipesViewModel : ObservableObject
     /// <summary>
     /// Constructor that injects the recipe service
     /// </summary>
-    public SavedRecipesViewModel(IRecipeService recipeService)
+    public SavedRecipesViewModel(IRecipeService recipeService, IDisplayService displayService, INavigationService navigationService)
     {
         _recipeService = recipeService ?? throw new ArgumentNullException(nameof(recipeService));
+        _displayService = displayService ?? throw new ArgumentNullException(nameof(displayService));
+        _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
     }
 
     /// <summary>
@@ -69,15 +72,15 @@ public partial class SavedRecipesViewModel : ObservableObject
         }
         catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Unauthorized)
         {
-            await Shell.Current.GoToAsync("//LoginPage");
+            await _navigationService.GoToAsync(AppShell.LoginRoute);
         }
         catch (HttpRequestException ex)
         {
-            await Toast.Make($"Failed to load recipes: {ex.Message}").Show();
+            await _displayService.ShowToast($"Failed to load recipes: {ex.Message}");
         }
         catch (Exception ex)
         {
-            await Toast.Make($"An error occurred: {ex.Message}").Show();
+            await _displayService.ShowToast($"An error occurred: {ex.Message}");
         }
         finally
         {
@@ -109,19 +112,19 @@ public partial class SavedRecipesViewModel : ObservableObject
         }
         catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Unauthorized)
         {
-            await Shell.Current.GoToAsync("//LoginPage");
+            await _navigationService.GoToAsync(AppShell.LoginRoute);
         }
         catch (HttpRequestException ex)
         {
             // Reset page counter on failure to allow retry
             _currentPage--;
-            await Toast.Make($"Failed to load more recipes: {ex.Message}").Show();
+            await _displayService.ShowToast($"Failed to load more recipes: {ex.Message}");
         }
         catch (Exception ex)
         {
             // Reset page counter on failure to allow retry
             _currentPage--;
-            await Toast.Make($"An error occurred: {ex.Message}").Show();
+            await _displayService.ShowToast($"An error occurred: {ex.Message}");
         }
         finally
         {
@@ -142,7 +145,7 @@ public partial class SavedRecipesViewModel : ObservableObject
         if (recipe == null)
             return;
 
-        var confirm = await Shell.Current.DisplayAlert(
+        var confirm = await _displayService.DisplayAlert(
             "Delete Recipe",
             $"Are you sure you want to delete '{recipe.Title}'?",
             "Delete",
@@ -166,19 +169,19 @@ public partial class SavedRecipesViewModel : ObservableObject
             // Recipe was already deleted - remove from UI
             Recipes.Remove(recipe);
             _totalItems--;
-            await Toast.Make("Recipe was already deleted.").Show();
+            await _displayService.ShowToast("Recipe was already deleted.");
         }
         catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Unauthorized)
         {
-            await Shell.Current.GoToAsync("//LoginPage");
+            await _navigationService.GoToAsync(AppShell.LoginRoute);
         }
         catch (HttpRequestException ex)
         {
-            await Toast.Make($"Failed to delete recipe: {ex.Message}").Show();
+            await _displayService.ShowToast($"Failed to delete recipe: {ex.Message}");
         }
         catch (Exception ex)
         {
-            await Toast.Make($"An error occurred: {ex.Message}").Show();
+            await _displayService.ShowToast($"An error occurred: {ex.Message}");
         }
         finally
         {
@@ -200,7 +203,7 @@ public partial class SavedRecipesViewModel : ObservableObject
         if (selectedRecipe == null || IsBusy)
             return;
 
-        await Shell.Current.GoToAsync("RecipeDetailPage", new Dictionary<string, object>
+        await _navigationService.GoToAsync(nameof(RecipeDetailPage), new Dictionary<string, object>
         {
             { "Recipe", selectedRecipe }
         });

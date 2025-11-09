@@ -1,15 +1,16 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using CommunityToolkit.Maui.Alerts;
 using PantryPal.Mobile.Services;
-using System.ComponentModel.DataAnnotations;
 using PantryPal.Mobile.Views;
+using System.ComponentModel.DataAnnotations;
 
 namespace PantryPal.Mobile.ViewModels;
 
 public partial class LoginPageViewModel : ObservableValidator
 {
     private readonly IAuthService _authService;
+    private readonly IDisplayService _displayService;
+    private readonly INavigationService _navigationService;
 
     [ObservableProperty]
     [Required(ErrorMessage = "Email is required.")]
@@ -26,9 +27,11 @@ public partial class LoginPageViewModel : ObservableValidator
     [ObservableProperty]
     private bool _isPasswordVisible;
 
-    public LoginPageViewModel(IAuthService authService)
+    public LoginPageViewModel(IAuthService authService, IDisplayService displayService, INavigationService navigationService)
     {
         _authService = authService;
+        _displayService = displayService;
+        _navigationService = navigationService;
     }
 
     [RelayCommand]
@@ -41,8 +44,8 @@ public partial class LoginPageViewModel : ObservableValidator
         ValidateAllProperties();
         if (HasErrors)
         {
-            await Shell.Current.DisplayAlert("Validation Error",
-                string.Join(Environment.NewLine, GetErrors().Select(e => e.ErrorMessage)), "OK");
+            await _displayService.DisplayAlert("Validation Error",
+                string.Join(Environment.NewLine, GetErrors().Select(e => e.ErrorMessage)));
             return;
         }
 
@@ -54,18 +57,18 @@ public partial class LoginPageViewModel : ObservableValidator
 
             if (result.IsSuccess)
             {
-                await Toast.Make("Login successful!").Show();
+                await _displayService.ShowToast("Login successful!");
                 // Navigation to main app will be handled by AppShell based on auth state
-                await Shell.Current.GoToAsync("//PantryPage");
+                await _navigationService.GoToAsync(AppShell.DefaultRoute);
             }
             else
             {
-                await Shell.Current.DisplayAlert("Login Failed", result.ErrorMessage ?? "An unexpected error occurred.", "OK");
+                await _displayService.DisplayAlert("Login Failed", result.ErrorMessage ?? "An unexpected error occurred.");
             }
         }
         catch (Exception ex)
         {
-            await Shell.Current.DisplayAlert("Error", $"Login failed: {ex.Message}", "OK");
+            await _displayService.DisplayAlert("Error", $"Login failed: {ex.Message}");
         }
         finally
         {
@@ -76,13 +79,13 @@ public partial class LoginPageViewModel : ObservableValidator
     [RelayCommand]
     public async Task NavigateToRegisterAsync()
     {
-        await Shell.Current.GoToAsync(nameof(RegisterPage));
+        await _navigationService.GoToAsync(nameof(RegisterPage));
     }
 
     [RelayCommand]
     public async Task NavigateToForgotPasswordAsync()
     {
-        await Shell.Current.GoToAsync(nameof(ForgotPasswordPage));
+        await _navigationService.GoToAsync(nameof(ForgotPasswordPage));
     }
 
     [RelayCommand]

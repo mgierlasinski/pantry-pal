@@ -19,6 +19,11 @@ public class DisplayService : IDisplayService
         return await Shell.Current.DisplayPromptAsync(title, message, accept, cancel, placeholder, maxLength, keyboard ?? Keyboard.Default, initialValue);
     }
 
+    public async Task<string?> DisplayActionSheet(string title, string? cancel, string? destruction, params string[] buttons)
+    {
+        return await Shell.Current.DisplayActionSheet(title, cancel, destruction, buttons);
+    }
+
     public async Task ShowToast(string message)
     {
         await Toast.Make(message).Show();

@@ -11,4 +11,9 @@ public class NavigationService : INavigationService
     {
         await Shell.Current.GoToAsync(route, animate, parameters);
     }
+
+    public async Task PopModalAsync(bool animate = false)
+    {
+        await Shell.Current.Navigation.PopModalAsync(animate);
+    }
 }

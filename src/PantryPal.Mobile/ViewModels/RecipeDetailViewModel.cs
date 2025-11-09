@@ -1,6 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using PantryPal.Mobile.Models;
+using PantryPal.Mobile.Services;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -9,6 +10,13 @@ namespace PantryPal.Mobile.ViewModels;
 [QueryProperty(nameof(Recipe), "Recipe")]
 public partial class RecipeDetailViewModel : ObservableObject
 {
+    private readonly INavigationService _navigationService;
+
+    public RecipeDetailViewModel(INavigationService navigationService)
+    {
+        _navigationService = navigationService;
+    }
+
     [ObservableProperty]
     private SavedRecipeItemViewModel _recipe;
 
@@ -42,6 +50,6 @@ public partial class RecipeDetailViewModel : ObservableObject
     [RelayCommand]
     private async Task CloseAsync()
     {
-        await Shell.Current.GoToAsync("..");
+        await _navigationService.GoToAsync("..");
     }
 }

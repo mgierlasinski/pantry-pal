@@ -1,6 +1,5 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using CommunityToolkit.Maui.Alerts;
 using PantryPal.Mobile.Services;
 using System.ComponentModel.DataAnnotations;
 
@@ -9,6 +8,8 @@ namespace PantryPal.Mobile.ViewModels;
 public partial class RegisterPageViewModel : ObservableValidator
 {
     private readonly IAuthService _authService;
+    private readonly IDisplayService _displayService;
+    private readonly INavigationService _navigationService;
 
     [ObservableProperty]
     [Required(ErrorMessage = "Email is required.")]
@@ -33,9 +34,11 @@ public partial class RegisterPageViewModel : ObservableValidator
     [ObservableProperty]
     private bool _isConfirmPasswordVisible;
 
-    public RegisterPageViewModel(IAuthService authService)
+    public RegisterPageViewModel(IAuthService authService, IDisplayService displayService, INavigationService navigationService)
     {
         _authService = authService;
+        _displayService = displayService;
+        _navigationService = navigationService;
     }
 
     [RelayCommand]
@@ -50,14 +53,14 @@ public partial class RegisterPageViewModel : ObservableValidator
         // Additional validation for password matching
         if (Password != ConfirmPassword)
         {
-            await Shell.Current.DisplayAlert("Validation Error", "Passwords do not match.", "OK");
+            await _displayService.DisplayAlert("Validation Error", "Passwords do not match.");
             return;
         }
 
         if (HasErrors)
         {
-            await Shell.Current.DisplayAlert("Validation Error",
-                string.Join(Environment.NewLine, GetErrors().Select(e => e.ErrorMessage)), "OK");
+            await _displayService.DisplayAlert("Validation Error",
+                string.Join(Environment.NewLine, GetErrors().Select(e => e.ErrorMessage)));
             return;
         }
 
@@ -69,18 +72,18 @@ public partial class RegisterPageViewModel : ObservableValidator
 
             if (result.IsSuccess)
             {
-                await Toast.Make("Registration successful! Please check your email for verification.").Show();
+                await _displayService.ShowToast("Registration successful! Please check your email for verification.");
                 // Navigate back to login page
-                await Shell.Current.GoToAsync(AppShell.LoginRoute);
+                await _navigationService.GoToAsync(AppShell.LoginRoute);
             }
             else
             {
-                await Shell.Current.DisplayAlert("Registration Failed", result.ErrorMessage ?? "An unexpected error occurred.", "OK");
+                await _displayService.DisplayAlert("Registration Failed", result.ErrorMessage ?? "An unexpected error occurred.");
             }
         }
         catch (Exception ex)
         {
-            await Shell.Current.DisplayAlert("Error", $"Registration failed: {ex.Message}", "OK");
+            await _displayService.DisplayAlert("Error", $"Registration failed: {ex.Message}");
         }
         finally
         {
@@ -91,7 +94,7 @@ public partial class RegisterPageViewModel : ObservableValidator
     [RelayCommand]
     public async Task NavigateToLoginAsync()
     {
-        await Shell.Current.GoToAsync(AppShell.LoginRoute);
+        await _navigationService.GoToAsync(AppShell.LoginRoute);
     }
 
     [RelayCommand]

@@ -8,6 +8,8 @@ namespace PantryPal.Mobile.ViewModels;
 public partial class RecipeGenerationViewModel : ObservableObject
 {
     private readonly IRecipeService _recipeService;
+    private readonly IDisplayService _displayService;
+    private readonly INavigationService _navigationService;
 
     /// <summary>
     /// Controls the visibility of the loading spinner
@@ -32,9 +34,11 @@ public partial class RecipeGenerationViewModel : ObservableObject
     private string _generationId = string.Empty;
     private List<RecipeRejectReasonDto> _rejectReasons = new();
 
-    public RecipeGenerationViewModel(IRecipeService recipeService)
+    public RecipeGenerationViewModel(IRecipeService recipeService, IDisplayService displayService, INavigationService navigationService)
     {
         _recipeService = recipeService;
+        _displayService = displayService;
+        _navigationService = navigationService;
     }
 
     /// <summary>
@@ -63,33 +67,30 @@ public partial class RecipeGenerationViewModel : ObservableObject
         {
             // Handle validation errors (empty pantry, no preferences)
             var errorMessage = await TryExtractErrorMessageAsync(ex);
-            await Shell.Current.DisplayAlert(
-                "Cannot Generate Recipe", 
-                errorMessage ?? "Please ensure your pantry has items and your preferences are set.", 
-                "OK");
-            await Shell.Current.Navigation.PopModalAsync();
+            await _displayService.DisplayAlert(
+                "Cannot Generate Recipe",
+                errorMessage ?? "Please ensure your pantry has items and your preferences are set.");
+            await _navigationService.PopModalAsync();
         }
         catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Unauthorized)
         {
-            await Shell.Current.DisplayAlert("Session Expired", "Please log in again.", "OK");
-            await Shell.Current.Navigation.PopModalAsync();
-            await Shell.Current.GoToAsync("//LoginPage");
+            await _displayService.DisplayAlert("Session Expired", "Please log in again.");
+            await _navigationService.PopModalAsync();
+            await _navigationService.GoToAsync(AppShell.LoginRoute);
         }
         catch (HttpRequestException ex)
         {
-            await Shell.Current.DisplayAlert(
-                "Network Error", 
-                $"Failed to generate recipe. Please check your connection and try again.\n{ex.Message}", 
-                "OK");
-            await Shell.Current.Navigation.PopModalAsync();
+            await _displayService.DisplayAlert(
+                "Network Error",
+                $"Failed to generate recipe. Please check your connection and try again.\n{ex.Message}");
+            await _navigationService.PopModalAsync();
         }
         catch (Exception ex)
         {
-            await Shell.Current.DisplayAlert(
-                "Error", 
-                $"An unexpected error occurred. Please try again later.\n{ex.Message}", 
-                "OK");
-            await Shell.Current.Navigation.PopModalAsync();
+            await _displayService.DisplayAlert(
+                "Error",
+                $"An unexpected error occurred. Please try again later.\n{ex.Message}");
+            await _navigationService.PopModalAsync();
         }
         finally
         {
@@ -119,45 +120,42 @@ public partial class RecipeGenerationViewModel : ObservableObject
 
             var response = await _recipeService.AcceptRecipeAsync(_generationId);
 
-            await Shell.Current.DisplayAlert(
-                "Recipe Saved", 
-                "Your recipe has been saved to your collection!", 
-                "OK");
-            
-            await Shell.Current.Navigation.PopModalAsync();
+            await _displayService.DisplayAlert(
+                "Recipe Saved",
+                "Your recipe has been saved to your collection!");
+
+            await _navigationService.PopModalAsync();
         }
         catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
         {
-            await Shell.Current.DisplayAlert(
-                "Recipe Expired", 
-                "This recipe session has expired or is no longer valid.", 
-                "OK");
-            await Shell.Current.Navigation.PopModalAsync();
+            await _displayService.DisplayAlert(
+                "Recipe Expired",
+                "This recipe session has expired or is no longer valid.");
+            await _navigationService.PopModalAsync();
         }
         catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Conflict)
         {
-            await Shell.Current.DisplayAlert(
-                "Recipe Already Processed", 
-                "This recipe has already been accepted or rejected.", 
-                "OK");
-            await Shell.Current.Navigation.PopModalAsync();
+            await _displayService.DisplayAlert(
+                "Recipe Already Processed",
+                "This recipe has already been accepted or rejected.");
+            await _navigationService.PopModalAsync();
         }
         catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Unauthorized)
         {
-            await Shell.Current.DisplayAlert("Session Expired", "Please log in again.", "OK");
-            await Shell.Current.Navigation.PopModalAsync();
-            await Shell.Current.GoToAsync("//LoginPage");
+            await _displayService.DisplayAlert("Session Expired", "Please log in again.");
+            await _navigationService.PopModalAsync();
+            await _navigationService.GoToAsync(AppShell.LoginRoute);
         }
         catch (HttpRequestException ex)
         {
-            await Shell.Current.DisplayAlert(
+            await _displayService.DisplayAlert(
                 "Network Error", 
                 $"Failed to accept recipe. Please check your connection and try again.\n{ex.Message}", 
                 "OK");
         }
         catch (Exception ex)
         {
-            await Shell.Current.DisplayAlert(
+            await _displayService.DisplayAlert(
                 "Error", 
                 $"An unexpected error occurred. Please try again later.\n{ex.Message}", 
                 "OK");
@@ -186,7 +184,7 @@ public partial class RecipeGenerationViewModel : ObservableObject
 
         if (_rejectReasons.Count == 0)
         {
-            await Shell.Current.DisplayAlert(
+            await _displayService.DisplayAlert(
                 "Error", 
                 "No rejection reasons available. Please try again.", 
                 "OK");
@@ -195,10 +193,10 @@ public partial class RecipeGenerationViewModel : ObservableObject
 
         // Display action sheet with rejection reasons
         var reasonDescriptions = _rejectReasons.Select(r => r.Description).ToArray();
-        var selectedReason = await Shell.Current.DisplayActionSheet(
-            "Why are you rejecting this recipe?", 
-            "Cancel", 
-            null, 
+        var selectedReason = await _displayService.DisplayActionSheet(
+            "Why are you rejecting this recipe?",
+            "Cancel",
+            null,
             reasonDescriptions);
 
         // User cancelled
@@ -221,40 +219,39 @@ public partial class RecipeGenerationViewModel : ObservableObject
             var payload = new RecipeRejectRequestDto(reason.Id);
             await _recipeService.RejectRecipeAsync(_generationId, payload);
 
-            await Shell.Current.Navigation.PopModalAsync();
+            await _navigationService.PopModalAsync();
         }
         catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
         {
-            await Shell.Current.DisplayAlert(
+            await _displayService.DisplayAlert(
                 "Recipe Expired", 
                 "This recipe session has expired or is no longer valid.", 
                 "OK");
-            await Shell.Current.Navigation.PopModalAsync();
+            await _navigationService.PopModalAsync();
         }
         catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Conflict)
         {
-            await Shell.Current.DisplayAlert(
-                "Recipe Already Processed", 
-                "This recipe has already been accepted or rejected.", 
-                "OK");
-            await Shell.Current.Navigation.PopModalAsync();
+            await _displayService.DisplayAlert(
+                "Recipe Already Processed",
+                "This recipe has already been accepted or rejected.");
+            await _navigationService.PopModalAsync();
         }
         catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Unauthorized)
         {
-            await Shell.Current.DisplayAlert("Session Expired", "Please log in again.", "OK");
-            await Shell.Current.Navigation.PopModalAsync();
-            await Shell.Current.GoToAsync("//LoginPage");
+            await _displayService.DisplayAlert("Session Expired", "Please log in again.");
+            await _navigationService.PopModalAsync();
+            await _navigationService.GoToAsync(AppShell.LoginRoute);
         }
         catch (HttpRequestException ex)
         {
-            await Shell.Current.DisplayAlert(
+            await _displayService.DisplayAlert(
                 "Network Error", 
                 $"Failed to reject recipe. Please check your connection and try again.\n{ex.Message}", 
                 "OK");
         }
         catch (Exception ex)
         {
-            await Shell.Current.DisplayAlert(
+            await _displayService.DisplayAlert(
                 "Error", 
                 $"An unexpected error occurred. Please try again later.\n{ex.Message}", 
                 "OK");

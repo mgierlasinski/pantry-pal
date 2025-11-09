@@ -1,4 +1,3 @@
-using CommunityToolkit.Maui.Alerts;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using PantryPal.Data;
@@ -14,6 +13,8 @@ public partial class ProfileViewModel : ObservableValidator
     private readonly IDietTypesService _dietTypesService;
     private readonly IPreferredCuisinesService _preferredCuisinesService;
     private readonly IAuthService _authService;
+    private readonly IDisplayService _displayService;
+    private readonly INavigationService _navigationService;
 
     // Collections for pickers
     [ObservableProperty]
@@ -42,12 +43,16 @@ public partial class ProfileViewModel : ObservableValidator
         IUserPreferencesService userPreferencesService,
         IDietTypesService dietTypesService,
         IPreferredCuisinesService preferredCuisinesService,
-        IAuthService authService)
+        IAuthService authService,
+        IDisplayService displayService,
+        INavigationService navigationService)
     {
         _userPreferencesService = userPreferencesService;
         _dietTypesService = dietTypesService;
         _preferredCuisinesService = preferredCuisinesService;
         _authService = authService;
+        _displayService = displayService;
+        _navigationService = navigationService;
     }
 
     [RelayCommand]
@@ -100,15 +105,15 @@ public partial class ProfileViewModel : ObservableValidator
         }
         catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Unauthorized)
         {
-            await Shell.Current.GoToAsync("//LoginPage");
+            await _navigationService.GoToAsync(AppShell.LoginRoute);
         }
         catch (HttpRequestException ex)
         {
-            await Toast.Make($"Network error: {ex.Message}").Show();
+            await _displayService.ShowToast($"Network error: {ex.Message}");
         }
         catch (Exception ex)
         {
-            await Toast.Make($"Failed to load preferences: {ex.Message}").Show();
+            await _displayService.ShowToast($"Failed to load preferences: {ex.Message}");
         }
         finally
         {
@@ -123,20 +128,20 @@ public partial class ProfileViewModel : ObservableValidator
         ValidateAllProperties();
         if (HasErrors)
         {
-            await Shell.Current.DisplayAlert("Validation Error", string.Join(Environment.NewLine, GetErrors().Select(e => e.ErrorMessage)), "OK");
+            await _displayService.DisplayAlert("Validation Error", string.Join(Environment.NewLine, GetErrors().Select(e => e.ErrorMessage)));
             return;
         }
 
         // Ensure required selections are made
         if (SelectedDietType == null)
         {
-            await Shell.Current.DisplayAlert("Validation Error", "Please select a diet type.", "OK");
+            await _displayService.DisplayAlert("Validation Error", "Please select a diet type.");
             return;
         }
 
         if (SelectedPreferredCuisine == null)
         {
-            await Shell.Current.DisplayAlert("Validation Error", "Please select a preferred cuisine.", "OK");
+            await _displayService.DisplayAlert("Validation Error", "Please select a preferred cuisine.");
             return;
         }
 
@@ -149,19 +154,19 @@ public partial class ProfileViewModel : ObservableValidator
             );
 
             var result = await _userPreferencesService.UpsertUserPreferencesAsync(preferencesDto);
-            await Toast.Make("Preferences saved successfully!").Show();
+            await _displayService.ShowToast("Preferences saved successfully!");
         }
         catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Unauthorized)
         {
-            await Shell.Current.GoToAsync("//LoginPage");
+            await _navigationService.GoToAsync(AppShell.LoginRoute);
         }
         catch (HttpRequestException ex)
         {
-            await Toast.Make($"Network error: {ex.Message}").Show();
+            await _displayService.ShowToast($"Network error: {ex.Message}");
         }
         catch (Exception ex)
         {
-            await Toast.Make($"Failed to save preferences: {ex.Message}").Show();
+            await _displayService.ShowToast($"Failed to save preferences: {ex.Message}");
         }
     }
 
@@ -173,17 +178,17 @@ public partial class ProfileViewModel : ObservableValidator
             var result = await _authService.LogoutAsync();
             if (result.IsSuccess)
             {
-                await Toast.Make("Logged out successfully").Show();
+                await _displayService.ShowToast("Logged out successfully");
                 // Navigation will be handled by the auth state change message in AppShell
             }
             else
             {
-                await Shell.Current.DisplayAlert("Logout Error", result.ErrorMessage ?? "An error occurred during logout.", "OK");
+                await _displayService.DisplayAlert("Logout Error", result.ErrorMessage ?? "An error occurred during logout.");
             }
         }
         catch (Exception ex)
         {
-            await Shell.Current.DisplayAlert("Error", $"Logout failed: {ex.Message}", "OK");
+            await _displayService.DisplayAlert("Error", $"Logout failed: {ex.Message}");
         }
     }
 }
