@@ -1,4 +1,3 @@
-using CommunityToolkit.Maui.Alerts;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using PantryPal.Data;
@@ -11,6 +10,8 @@ namespace PantryPal.Mobile.ViewModels;
 public partial class PantryPageViewModel : ObservableObject
 {
     private readonly IPantryService _pantryService;
+    private readonly IDisplayService _displayService;
+    private readonly INavigationService _navigationService;
 
     // Pagination properties
     [ObservableProperty]
@@ -36,25 +37,17 @@ public partial class PantryPageViewModel : ObservableObject
     [NotifyPropertyChangedFor(nameof(IsNotEmpty))]
     private bool _isEmpty = true;
 
-    // Dialog properties
-    [ObservableProperty]
-    private string _dialogItemName = string.Empty;
-
-    [ObservableProperty]
-    private bool _dialogIsEdit;
-
-    [ObservableProperty]
-    private string _selectedItemId = string.Empty;
-
     // Collection
     [ObservableProperty]
     private ObservableCollection<PantryItemViewModel> _items = new();
 
     public bool IsNotEmpty => !IsEmpty;
 
-    public PantryPageViewModel(IPantryService pantryService)
+    public PantryPageViewModel(IPantryService pantryService, IDisplayService displayService, INavigationService navigationService)
     {
         _pantryService = pantryService;
+        _displayService = displayService;
+        _navigationService = navigationService;
     }
 
     [RelayCommand]
@@ -82,15 +75,16 @@ public partial class PantryPageViewModel : ObservableObject
         }
         catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Unauthorized)
         {
-            await Shell.Current.GoToAsync(AppShell.LoginRoute);
+            // Navigation to login should be handled by global error handler
+            throw;
         }
         catch (HttpRequestException ex)
         {
-            await Toast.Make($"Network error: {ex.Message}").Show();
+            await _displayService.ShowToast($"Network error: {ex.Message}");
         }
         catch (Exception ex)
         {
-            await Toast.Make($"Failed to load items: {ex.Message}").Show();
+            await _displayService.ShowToast($"Failed to load items: {ex.Message}");
         }
         finally
         {
@@ -99,20 +93,10 @@ public partial class PantryPageViewModel : ObservableObject
         }
     }
 
-    [RelayCommand]
-    public async Task AddItemAsync()
+    public async Task AddItemAsync(string itemName)
     {
-        if (string.IsNullOrWhiteSpace(DialogItemName))
-        {
-            await Shell.Current.DisplayAlert("Validation Error", "Item name is required.", "OK");
+        if (!await ValidateItemName(itemName))
             return;
-        }
-
-        if (DialogItemName.Length > 100)
-        {
-            await Shell.Current.DisplayAlert("Validation Error", "Item name must be 100 characters or less.", "OK");
-            return;
-        }
 
         if (IsLoading)
             return;
@@ -121,32 +105,31 @@ public partial class PantryPageViewModel : ObservableObject
         {
             IsLoading = true;
 
-            var createDto = new PantryItemCreateDto(DialogItemName.Trim());
+            var createDto = new PantryItemCreateDto(itemName.Trim());
             var newItem = await _pantryService.CreatePantryItemAsync(createDto);
 
             var viewModel = CreateItemViewModel(newItem);
             Items.Add(viewModel);
-            
+
             IsEmpty = false;
             Total++;
-
-            DialogItemName = string.Empty;
         }
         catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Conflict)
         {
-            await Shell.Current.DisplayAlert("Duplicate Item", "An item with this name already exists.", "OK");
+            await _displayService.DisplayAlert("Duplicate Item", "An item with this name already exists.");
         }
         catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Unauthorized)
         {
-            await Shell.Current.GoToAsync(AppShell.LoginRoute);
+            // Navigation to login should be handled by global error handler
+            throw;
         }
         catch (HttpRequestException ex)
         {
-            await Toast.Make($"Network error: {ex.Message}").Show();
+            await _displayService.ShowToast($"Network error: {ex.Message}");
         }
         catch (Exception ex)
         {
-            await Toast.Make($"Failed to add item: {ex.Message}").Show();
+            await _displayService.ShowToast($"Failed to add item: {ex.Message}");
         }
         finally
         {
@@ -154,56 +137,50 @@ public partial class PantryPageViewModel : ObservableObject
         }
     }
 
-    [RelayCommand]
-    public async Task EditItemAsync()
+    public async Task EditItemAsync(string itemId, string newName)
     {
-        if (string.IsNullOrWhiteSpace(DialogItemName))
-        {
-            await Shell.Current.DisplayAlert("Validation Error", "Item name is required.", "OK");
+         
+        if (!await ValidateItemName(newName))
             return;
-        }
-
-        if (DialogItemName.Length > 100)
-        {
-            await Shell.Current.DisplayAlert("Validation Error", "Item name must be 100 characters or less.", "OK");
-            return;
-        }
 
         if (IsLoading)
             return;
+
+        var existingItem = Items.FirstOrDefault(i => i.Id == itemId);
+        if (existingItem == null)
+            return;
+
+        var originalName = existingItem.Name;
 
         try
         {
             IsLoading = true;
 
-            var updateDto = new PantryItemUpdateDto(Name: DialogItemName.Trim());
-            var updatedItem = await _pantryService.UpdatePantryItemAsync(SelectedItemId, updateDto);
+            var updateDto = new PantryItemUpdateDto(Name: newName.Trim());
+            var updatedItem = await _pantryService.UpdatePantryItemAsync(itemId, updateDto);
 
-            var existingItem = Items.FirstOrDefault(i => i.Id == SelectedItemId);
-            if (existingItem != null)
-            {
-                existingItem.Name = updatedItem.Name;
-                existingItem.IsFavorite = updatedItem.IsFavorite;
-            }
-
-            DialogItemName = string.Empty;
-            SelectedItemId = string.Empty;
+            existingItem.Name = updatedItem.Name;
+            existingItem.IsFavorite = updatedItem.IsFavorite;
         }
         catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Conflict)
         {
-            await Shell.Current.DisplayAlert("Duplicate Item", "An item with this name already exists.", "OK");
+            existingItem.Name = originalName;
+            await _displayService.DisplayAlert("Duplicate Item", "An item with this name already exists.");
         }
         catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Unauthorized)
         {
-            await Shell.Current.GoToAsync(AppShell.LoginRoute);
+            existingItem.Name = originalName;
+            await _navigationService.GoToAsync(AppShell.LoginRoute);
         }
         catch (HttpRequestException ex)
         {
-            await Toast.Make($"Network error: {ex.Message}").Show();
+            existingItem.Name = originalName;
+            await _displayService.ShowToast($"Network error: {ex.Message}");
         }
         catch (Exception ex)
         {
-            await Toast.Make($"Failed to update item: {ex.Message}").Show();
+            existingItem.Name = originalName;
+            await _displayService.ShowToast($"Failed to update item: {ex.Message}");
         }
         finally
         {
@@ -211,39 +188,37 @@ public partial class PantryPageViewModel : ObservableObject
         }
     }
 
-    [RelayCommand]
-    public async Task ConfirmDeleteAsync()
+    public async Task ConfirmDeleteAsync(string itemId)
     {
         if (IsLoading)
+            return;
+
+        var itemToRemove = Items.FirstOrDefault(i => i.Id == itemId);
+        if (itemToRemove == null)
             return;
 
         try
         {
             IsLoading = true;
 
-            await _pantryService.DeletePantryItemAsync(SelectedItemId);
+            await _pantryService.DeletePantryItemAsync(itemId);
 
-            var itemToRemove = Items.FirstOrDefault(i => i.Id == SelectedItemId);
-            if (itemToRemove != null)
-            {
-                Items.Remove(itemToRemove);
-                Total--;
-                IsEmpty = Items.Count == 0;
-            }
-
-            SelectedItemId = string.Empty;
+            Items.Remove(itemToRemove);
+            Total--;
+            IsEmpty = Items.Count == 0;
         }
         catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Unauthorized)
         {
-            await Shell.Current.GoToAsync(AppShell.LoginRoute);
+            // Navigation to login should be handled by global error handler
+            throw;
         }
         catch (HttpRequestException ex)
         {
-            await Toast.Make($"Network error: {ex.Message}").Show();
+            await _displayService.ShowToast($"Network error: {ex.Message}");
         }
         catch (Exception ex)
         {
-            await Toast.Make($"Failed to delete item: {ex.Message}").Show();
+            await _displayService.ShowToast($"Failed to delete item: {ex.Message}");
         }
         finally
         {
@@ -276,17 +251,18 @@ public partial class PantryPageViewModel : ObservableObject
         catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Unauthorized)
         {
             item.IsFavorite = originalState;
-            await Shell.Current.GoToAsync(AppShell.LoginRoute);
+            // Navigation to login should be handled by global error handler
+            throw;
         }
         catch (HttpRequestException ex)
         {
             item.IsFavorite = originalState;
-            await Toast.Make($"Network error: {ex.Message}").Show();
+            await _displayService.ShowToast($"Network error: {ex.Message}");
         }
         catch (Exception ex)
         {
             item.IsFavorite = originalState;
-            await Toast.Make($"Failed to update favorite status: {ex.Message}").Show();
+            await _displayService.ShowToast($"Failed to update favorite status: {ex.Message}");
         }
         finally
         {
@@ -297,7 +273,7 @@ public partial class PantryPageViewModel : ObservableObject
     [RelayCommand]
     public async Task ShowAddDialogAsync()
     {
-        var itemName = await Shell.Current.DisplayPromptAsync(
+        var itemName = await _displayService.DisplayPromptAsync(
             "Add Item",
             "Enter item name:",
             accept: "Add",
@@ -309,8 +285,7 @@ public partial class PantryPageViewModel : ObservableObject
         if (string.IsNullOrWhiteSpace(itemName))
             return;
 
-        DialogItemName = itemName;
-        await AddItemAsync();
+        await AddItemAsync(itemName);
     }
 
     [RelayCommand]
@@ -320,7 +295,7 @@ public partial class PantryPageViewModel : ObservableObject
         if (item == null)
             return;
 
-        var itemName = await Shell.Current.DisplayPromptAsync(
+        var itemName = await _displayService.DisplayPromptAsync(
             "Edit Item",
             "Enter item name:",
             accept: "Save",
@@ -333,9 +308,7 @@ public partial class PantryPageViewModel : ObservableObject
         if (string.IsNullOrWhiteSpace(itemName))
             return;
 
-        DialogItemName = itemName;
-        SelectedItemId = itemId;
-        await EditItemAsync();
+        await EditItemAsync(itemId, itemName);
     }
 
     [RelayCommand]
@@ -345,7 +318,7 @@ public partial class PantryPageViewModel : ObservableObject
         if (item == null)
             return;
 
-        var confirm = await Shell.Current.DisplayAlert(
+        var confirm = await _displayService.DisplayAlert(
             "Delete Item",
             $"Are you sure you want to delete '{item.Name}'?",
             "Delete",
@@ -354,8 +327,7 @@ public partial class PantryPageViewModel : ObservableObject
         if (!confirm)
             return;
 
-        SelectedItemId = itemId;
-        await ConfirmDeleteAsync();
+        await ConfirmDeleteAsync(itemId);
     }
 
     [RelayCommand]
@@ -363,24 +335,28 @@ public partial class PantryPageViewModel : ObservableObject
     {
         if (IsEmpty)
         {
-            await Shell.Current.DisplayAlert("No Items", "Add items to your pantry before generating a recipe.", "OK");
+            await _displayService.DisplayAlert("No Items", "Add items to your pantry before generating a recipe.");
             return;
         }
 
-        await Shell.Current.GoToAsync(nameof(Views.RecipeGenerationPage), true);
+        await _navigationService.GoToAsync(nameof(Views.RecipeGenerationPage), true);
     }
 
-    [RelayCommand]
-    public void DismissError()
+    private async Task<bool> ValidateItemName(string itemName)
     {
-        // No longer needed since we use Toast.Make directly
-    }
+        if (string.IsNullOrWhiteSpace(itemName))
+        {
+            await _displayService.DisplayAlert("Validation Error", "Item name is required.");
+            return false;
+        }
 
-    [RelayCommand]
-    public async Task RetryAsync()
-    {
-        DismissError();
-        await LoadItemsAsync();
+        if (itemName.Length > 100)
+        {
+            await _displayService.DisplayAlert("Validation Error", "Item name must be 100 characters or less.");
+            return false;
+        }
+
+        return true;
     }
 
     private PantryItemViewModel CreateItemViewModel(PantryItemDto dto)
@@ -412,6 +388,4 @@ public partial class PantryPageViewModel : ObservableObject
 
         return viewModel;
     }
-
 }
-

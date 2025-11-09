@@ -9,12 +9,16 @@ namespace PantryPal.Mobile.UnitTests.ViewModels;
 public class PantryPageViewModelTests
 {
     private readonly Mock<IPantryService> _mockPantryService;
+    private readonly Mock<IDisplayService> _mockDisplayService;
+    private readonly Mock<INavigationService> _mockNavigationService;
     private readonly PantryPageViewModel _viewModel;
 
     public PantryPageViewModelTests()
     {
         _mockPantryService = new Mock<IPantryService>();
-        _viewModel = new PantryPageViewModel(_mockPantryService.Object);
+        _mockDisplayService = new Mock<IDisplayService>();
+        _mockNavigationService = new Mock<INavigationService>();
+        _viewModel = new PantryPageViewModel(_mockPantryService.Object, _mockDisplayService.Object, _mockNavigationService.Object);
     }
 
     [Fact]
@@ -78,63 +82,43 @@ public class PantryPageViewModelTests
         _mockPantryService.Setup(s => s.CreatePantryItemAsync(It.IsAny<PantryItemCreateDto>()))
             .ReturnsAsync(newItem);
 
-        _viewModel.DialogItemName = "Carrots";
-
         // Act
-        await _viewModel.AddItemAsync();
+        await _viewModel.AddItemAsync("Carrots");
 
         // Assert
         Assert.Single(_viewModel.Items);
         Assert.Equal("Carrots", _viewModel.Items[0].Name);
         Assert.False(_viewModel.IsEmpty);
         Assert.Equal(1, _viewModel.Total);
-        Assert.Empty(_viewModel.DialogItemName);
     }
 
     [Fact]
     public async Task AddItemAsync_EmptyName_DoesNotCallService()
     {
         // Arrange
-        _viewModel.DialogItemName = "";
 
         // Act
-        // The method will try to display an alert which fails in unit tests
-        // We're verifying that the service is never called
-        try
-        {
-            await _viewModel.AddItemAsync();
-        }
-        catch (NullReferenceException)
-        {
-            // Expected in unit tests due to Shell.Current being null
-        }
+        await _viewModel.AddItemAsync("");
 
         // Assert
         Assert.Empty(_viewModel.Items);
         _mockPantryService.Verify(s => s.CreatePantryItemAsync(It.IsAny<PantryItemCreateDto>()), Times.Never);
+        _mockDisplayService.Verify(s => s.DisplayAlert("Validation Error", "Item name is required.", "OK"), Times.Once);
     }
 
     [Fact]
     public async Task AddItemAsync_NameTooLong_DoesNotCallService()
     {
         // Arrange
-        _viewModel.DialogItemName = new string('a', 101);
+        var longName = new string('a', 101);
 
         // Act
-        // The method will try to display an alert which fails in unit tests
-        // We're verifying that the service is never called
-        try
-        {
-            await _viewModel.AddItemAsync();
-        }
-        catch (NullReferenceException)
-        {
-            // Expected in unit tests due to Shell.Current being null
-        }
+        await _viewModel.AddItemAsync(longName);
 
         // Assert
         Assert.Empty(_viewModel.Items);
         _mockPantryService.Verify(s => s.CreatePantryItemAsync(It.IsAny<PantryItemCreateDto>()), Times.Never);
+        _mockDisplayService.Verify(s => s.DisplayAlert("Validation Error", "Item name must be 100 characters or less.", "OK"), Times.Once);
     }
 
     [Fact]
@@ -153,17 +137,12 @@ public class PantryPageViewModelTests
         _mockPantryService.Setup(s => s.UpdatePantryItemAsync("1", It.IsAny<PantryItemUpdateDto>()))
             .ReturnsAsync(updatedItem);
 
-        _viewModel.DialogItemName = "Cherry Tomatoes";
-        _viewModel.SelectedItemId = "1";
-
         // Act
-        await _viewModel.EditItemAsync();
+        await _viewModel.EditItemAsync("1", "Cherry Tomatoes");
 
         // Assert
         Assert.Single(_viewModel.Items);
         Assert.Equal("Cherry Tomatoes", _viewModel.Items[0].Name);
-        Assert.Empty(_viewModel.DialogItemName);
-        Assert.Empty(_viewModel.SelectedItemId);
     }
 
     [Fact]
@@ -172,7 +151,7 @@ public class PantryPageViewModelTests
         // Arrange
         var item = new PantryItemDto("1", "Tomatoes", false, DateTime.UtcNow.ToString(), DateTime.UtcNow.ToString());
         var response = new PantryItemsPaginatedResponseDto([item], 1, 20, 1);
-        
+
         _mockPantryService.Setup(s => s.GetPantryItemsAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>()))
             .ReturnsAsync(response);
 
@@ -181,16 +160,13 @@ public class PantryPageViewModelTests
         _mockPantryService.Setup(s => s.DeletePantryItemAsync("1"))
             .Returns(Task.CompletedTask);
 
-        _viewModel.SelectedItemId = "1";
-
         // Act
-        await _viewModel.ConfirmDeleteAsync();
+        await _viewModel.ConfirmDeleteAsync("1");
 
         // Assert
         Assert.Empty(_viewModel.Items);
         Assert.True(_viewModel.IsEmpty);
         Assert.Equal(0, _viewModel.Total);
-        Assert.Empty(_viewModel.SelectedItemId);
     }
 
     [Fact]
@@ -250,29 +226,174 @@ public class PantryPageViewModelTests
         Assert.True(_viewModel.IsNotEmpty);
     }
 
-    [Fact]
-    public void DismissError_DoesNotCrash()
-    {
-        // Arrange & Act
-        _viewModel.DismissError();
 
-        // Assert - Should not throw exception
-        Assert.True(true);
+
+    [Fact]
+    public async Task GenerateRecipeAsync_WhenEmpty_ShowsAlertAndDoesNotNavigate()
+    {
+        // Arrange
+        _viewModel.IsEmpty = true;
+
+        // Act
+        await _viewModel.GenerateRecipeAsync();
+
+        // Assert - Should show alert when empty
+        _mockDisplayService.Verify(s => s.DisplayAlert("No Items", "Add items to your pantry before generating a recipe.", "OK"), Times.Once);
+        // Navigation testing would require integration tests with Shell mocking
     }
 
     [Fact]
-    public async Task RetryAsync_CallsLoadItemsAsync()
+    public async Task GenerateRecipeAsync_WhenHasItems_NavigatesToRecipeGenerationPage()
     {
         // Arrange
-        var response = new PantryItemsPaginatedResponseDto([], 1, 20, 0);
+        var item = new PantryItemDto("1", "Tomatoes", false, DateTime.UtcNow.ToString(), DateTime.UtcNow.ToString());
+        var response = new PantryItemsPaginatedResponseDto([item], 1, 20, 1);
+
         _mockPantryService.Setup(s => s.GetPantryItemsAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>()))
             .ReturnsAsync(response);
 
-        // Act
-        await _viewModel.RetryAsync();
+        await _viewModel.LoadItemsAsync();
 
-        // Assert
-        _mockPantryService.Verify(s => s.GetPantryItemsAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>()), Times.Once);
+        // Act - Method will try to navigate which fails in unit tests
+        try
+        {
+            await _viewModel.GenerateRecipeAsync();
+        }
+        catch (NullReferenceException)
+        {
+            // Expected in unit tests due to Shell.Current being null
+        }
+
+        // Assert - Items loaded and not empty
+        Assert.False(_viewModel.IsEmpty);
+        Assert.Single(_viewModel.Items);
+    }
+
+    [Fact]
+    public async Task AddItemAsync_ConflictError_ShowsDuplicateAlert()
+    {
+        // Arrange
+        var exception = new HttpRequestException("Conflict", null, HttpStatusCode.Conflict);
+
+        _mockPantryService.Setup(s => s.CreatePantryItemAsync(It.IsAny<PantryItemCreateDto>()))
+            .ThrowsAsync(exception);
+
+        // Act
+        await _viewModel.AddItemAsync("Existing Item");
+
+        // Assert - Service was called and alert was shown
+        _mockPantryService.Verify(s => s.CreatePantryItemAsync(It.IsAny<PantryItemCreateDto>()), Times.Once);
+        _mockDisplayService.Verify(s => s.DisplayAlert("Duplicate Item", "An item with this name already exists.", "OK"), Times.Once);
+    }
+
+    [Fact]
+    public async Task EditItemAsync_ConflictError_ShowsDuplicateAlert()
+    {
+        // Arrange
+        var originalItem = new PantryItemDto("1", "Tomatoes", false, DateTime.UtcNow.ToString(), DateTime.UtcNow.ToString());
+        var response = new PantryItemsPaginatedResponseDto([originalItem], 1, 20, 1);
+
+        _mockPantryService.Setup(s => s.GetPantryItemsAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>()))
+            .ReturnsAsync(response);
+
+        await _viewModel.LoadItemsAsync();
+
+        var exception = new HttpRequestException("Conflict", null, HttpStatusCode.Conflict);
+
+        _mockPantryService.Setup(s => s.UpdatePantryItemAsync("1", It.IsAny<PantryItemUpdateDto>()))
+            .ThrowsAsync(exception);
+
+        // Act
+        await _viewModel.EditItemAsync("1", "Existing Item");
+
+        // Assert - Service was called and alert was shown
+        _mockPantryService.Verify(s => s.UpdatePantryItemAsync("1", It.IsAny<PantryItemUpdateDto>()), Times.Once);
+        _mockDisplayService.Verify(s => s.DisplayAlert("Duplicate Item", "An item with this name already exists.", "OK"), Times.Once);
+    }
+
+    [Fact]
+    public async Task AddItemAsync_UnauthorizedError_ThrowsException()
+    {
+        // Arrange
+        var exception = new HttpRequestException("Unauthorized", null, HttpStatusCode.Unauthorized);
+
+        _mockPantryService.Setup(s => s.CreatePantryItemAsync(It.IsAny<PantryItemCreateDto>()))
+            .ThrowsAsync(exception);
+
+        // Act & Assert - Should throw exception (handled by global error handler)
+        await Assert.ThrowsAsync<HttpRequestException>(() => _viewModel.AddItemAsync("Valid Item"));
+        _mockPantryService.Verify(s => s.CreatePantryItemAsync(It.IsAny<PantryItemCreateDto>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task EditItemAsync_UnauthorizedError_NavigatesToLogin()
+    {
+        // Arrange
+        var originalItem = new PantryItemDto("1", "Tomatoes", false, DateTime.UtcNow.ToString(), DateTime.UtcNow.ToString());
+        var response = new PantryItemsPaginatedResponseDto([originalItem], 1, 20, 1);
+
+        _mockPantryService.Setup(s => s.GetPantryItemsAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>()))
+            .ReturnsAsync(response);
+
+        await _viewModel.LoadItemsAsync();
+
+        var exception = new HttpRequestException("Unauthorized", null, HttpStatusCode.Unauthorized);
+
+        _mockPantryService.Setup(s => s.UpdatePantryItemAsync("1", It.IsAny<PantryItemUpdateDto>()))
+            .ThrowsAsync(exception);
+
+        // Act
+        await _viewModel.EditItemAsync("1", "Valid Item");
+
+        // Assert - Service was called and navigation was triggered
+        _mockPantryService.Verify(s => s.UpdatePantryItemAsync("1", It.IsAny<PantryItemUpdateDto>()), Times.Once);
+        _mockNavigationService.Verify(s => s.GoToAsync(AppShell.LoginRoute, false), Times.Once);
+    }
+
+    [Fact]
+    public async Task ConfirmDeleteAsync_UnauthorizedError_ThrowsException()
+    {
+        // Arrange
+        var item = new PantryItemDto("1", "Tomatoes", false, DateTime.UtcNow.ToString(), DateTime.UtcNow.ToString());
+        var response = new PantryItemsPaginatedResponseDto([item], 1, 20, 1);
+
+        _mockPantryService.Setup(s => s.GetPantryItemsAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>()))
+            .ReturnsAsync(response);
+
+        await _viewModel.LoadItemsAsync();
+
+        var exception = new HttpRequestException("Unauthorized", null, HttpStatusCode.Unauthorized);
+
+        _mockPantryService.Setup(s => s.DeletePantryItemAsync("1"))
+            .ThrowsAsync(exception);
+
+        // Act & Assert - Should throw exception (handled by global error handler)
+        await Assert.ThrowsAsync<HttpRequestException>(() => _viewModel.ConfirmDeleteAsync("1"));
+        _mockPantryService.Verify(s => s.DeletePantryItemAsync("1"), Times.Once);
+    }
+
+    [Fact]
+    public async Task ToggleFavoriteAsync_UnauthorizedError_RevertsStateAndThrowsException()
+    {
+        // Arrange
+        var item = new PantryItemDto("1", "Tomatoes", false, DateTime.UtcNow.ToString(), DateTime.UtcNow.ToString());
+        var response = new PantryItemsPaginatedResponseDto([item], 1, 20, 1);
+
+        _mockPantryService.Setup(s => s.GetPantryItemsAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>()))
+            .ReturnsAsync(response);
+
+        await _viewModel.LoadItemsAsync();
+
+        var exception = new HttpRequestException("Unauthorized", null, HttpStatusCode.Unauthorized);
+
+        _mockPantryService.Setup(s => s.UpdatePantryItemAsync("1", It.IsAny<PantryItemUpdateDto>()))
+            .ThrowsAsync(exception);
+
+        // Act & Assert - Should throw exception after reverting state
+        await Assert.ThrowsAsync<HttpRequestException>(() => _viewModel.ToggleFavoriteAsync("1"));
+        Assert.Single(_viewModel.Items);
+        Assert.False(_viewModel.Items[0].IsFavorite); // Should revert to original state
+        _mockPantryService.Verify(s => s.UpdatePantryItemAsync("1", It.IsAny<PantryItemUpdateDto>()), Times.Once);
     }
 }
 

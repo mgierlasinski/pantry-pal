@@ -71,6 +71,8 @@ public static class MauiProgram
         services.AddSingleton<IUserPreferencesService, UserPreferencesService>();
         services.AddSingleton<IDietTypesService, DietTypesService>();
         services.AddSingleton<IPreferredCuisinesService, PreferredCuisinesService>();
+        services.AddSingleton<IDisplayService, DisplayService>();
+        services.AddSingleton<INavigationService, NavigationService>();
     }
 
     private static void RegisterViewModels(IServiceCollection services)
