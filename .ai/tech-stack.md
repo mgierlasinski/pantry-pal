@@ -17,6 +17,13 @@ AI – Communication with models via Openrouter.ai:
 - Access to a wide range of models (OpenAI, Anthropic, Google, and many others), allowing us to find a solution that ensures high efficiency and low cost
 - Enables financial limits on API keys
 
+Testing:
+- xUnit as the unit testing framework for .NET
+- Moq as the mocking framework for isolating dependencies in unit tests
+- ASP.NET Test Host for in-memory integration testing of API endpoints
+- Appium for automated UI testing of the mobile application
+- Postman / .http files for manual API endpoint testing
+
 CI/CD and Hosting:
 - GitHub Actions for creating CI/CD pipelines
 - DigitalOcean for hosting the application using a Docker image

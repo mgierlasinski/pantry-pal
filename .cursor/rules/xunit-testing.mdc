@@ -1,0 +1,17 @@
+---
+alwaysApply: false
+---
+## TESTING
+
+### Guidelines for UNIT
+
+#### xUnit
+
+- Tests should be reliable, maintainable, and provide meaningful coverage
+- Use xUnit as the testing framework
+- Ensure test isolation - use fresh data for each test
+- Maintain high code coverage
+- Use `IClassFixture` for shared state
+- Prefer Theory over multiple Facts
+- Follow Arrange-Act-Assert pattern
+- Name tests using convention: TestedMethod_TestedCondition_ExpectedResult

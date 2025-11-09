@@ -32,6 +32,7 @@ Key features include:
 - **Backend**: ASP.NET Core Minimal API  
 - **Database & Auth**: Supabase (PostgreSQL, SDK, Auth)  
 - **AI Integration**: Openrouter.ai (OpenAI, Anthropic, Google models)  
+- **Testing**: xUnit (unit tests), Moq (mocking), ASP.NET Test Host (API integration tests), Appium (mobile UI tests)  
 - **CI/CD**: GitHub Actions  
 - **Hosting**: Docker on DigitalOcean  
 
