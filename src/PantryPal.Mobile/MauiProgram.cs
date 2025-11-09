@@ -77,7 +77,6 @@ public static class MauiProgram
 
     private static void RegisterViewModels(IServiceCollection services)
     {
-        services.AddTransient<MainViewModel>();
         services.AddTransient<LoginPageViewModel>();
         services.AddTransient<RegisterPageViewModel>();
         services.AddTransient<ForgotPasswordPageViewModel>();

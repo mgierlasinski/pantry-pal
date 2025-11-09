@@ -2,8 +2,6 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using PantryPal.Mobile.Models;
 using PantryPal.Mobile.Services;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace PantryPal.Mobile.ViewModels;
 
@@ -36,6 +34,7 @@ public partial class RecipeDetailViewModel : ObservableObject
         else
         {
             RecipeMarkdownContent = "Error: Could not load recipe.";
+            RecipeTitle = "Recipe";
         }
     }
 
