@@ -1,0 +1,149 @@
+using OpenQA.Selenium.Appium;
+using PantryPal.Mobile.UITests.Extensions;
+
+namespace PantryPal.Mobile.UITests.Pages;
+
+/// <summary>
+/// Page Object class for LoginPage, implementing the Page Object pattern.
+/// Provides methods and properties for interacting with login page elements.
+/// </summary>
+public class LoginPage
+{
+    private readonly AppiumDriver _driver = AppiumSetup.App;
+
+    // Element identifiers (AutomationId values)
+    private const string EmailEntryId = "EmailEntry";
+    private const string PasswordEntryId = "PasswordEntry";
+    private const string TogglePasswordButtonId = "TogglePasswordButton";
+    private const string LoginButtonId = "LoginButton";
+    private const string SignUpButtonId = "SignUpButton";
+    private const string ForgotPasswordButtonId = "ForgotPasswordButton";
+    private const string LoadingIndicatorId = "LoadingIndicator";
+
+    // UI Element Properties
+    public AppiumElement EmailEntry => _driver.FindElementById(EmailEntryId);
+    public AppiumElement PasswordEntry => _driver.FindElementById(PasswordEntryId);
+    public AppiumElement TogglePasswordButton => _driver.FindElementById(TogglePasswordButtonId);
+    public AppiumElement LoginButton => _driver.FindElementById(LoginButtonId);
+    public AppiumElement SignUpButton => _driver.FindElementById(SignUpButtonId);
+    public AppiumElement ForgotPasswordButton => _driver.FindElementById(ForgotPasswordButtonId);
+    public AppiumElement LoadingIndicator => _driver.FindElementById(LoadingIndicatorId);
+
+    /// <summary>
+    /// Waits for the login page to be fully loaded
+    /// </summary>
+    public void WaitForPageToLoad()
+    {
+        _driver.WaitUntilVisible(EmailEntryId);
+        _driver.WaitUntilVisible(PasswordEntryId);
+        _driver.WaitUntilVisible(LoginButtonId);
+    }
+
+    /// <summary>
+    /// Enters email address into the email field
+    /// </summary>
+    public void EnterEmail(string email)
+    {
+        EmailEntry.Clear();
+        EmailEntry.SendKeys(email);
+    }
+
+    /// <summary>
+    /// Enters password into the password field
+    /// </summary>
+    public void EnterPassword(string password)
+    {
+        PasswordEntry.Clear();
+        PasswordEntry.SendKeys(password);
+    }
+
+    /// <summary>
+    /// Clicks the login button
+    /// </summary>
+    public void ClickLoginButton()
+    {
+        LoginButton.Click();
+    }
+
+    /// <summary>
+    /// Clicks the toggle password visibility button
+    /// </summary>
+    public void ClickTogglePasswordVisibility()
+    {
+        TogglePasswordButton.Click();
+    }
+
+    /// <summary>
+    /// Clicks the sign up button to navigate to registration
+    /// </summary>
+    public void ClickSignUpButton()
+    {
+        SignUpButton.Click();
+    }
+
+    /// <summary>
+    /// Clicks the forgot password button
+    /// </summary>
+    public void ClickForgotPasswordButton()
+    {
+        ForgotPasswordButton.Click();
+    }
+
+    /// <summary>
+    /// Performs complete login flow with email and password
+    /// </summary>
+    public void Login(string email, string password)
+    {
+        WaitForPageToLoad();
+        EnterEmail(email);
+        EnterPassword(password);
+        ClickLoginButton();
+    }
+
+    /// <summary>
+    /// Checks if the loading indicator is visible
+    /// </summary>
+    public bool IsLoadingVisible()
+    {
+        try
+        {
+            return LoadingIndicator.Displayed;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Waits for loading to complete
+    /// </summary>
+    public void WaitForLoadingToComplete()
+    {
+        _driver.WaitUntilInvisible(LoadingIndicatorId);
+    }
+
+    /// <summary>
+    /// Checks if login button is enabled
+    /// </summary>
+    public bool IsLoginButtonEnabled()
+    {
+        return LoginButton.Enabled;
+    }
+
+    /// <summary>
+    /// Gets the current text in email field
+    /// </summary>
+    public string GetEmailText()
+    {
+        return EmailEntry.Text;
+    }
+
+    /// <summary>
+    /// Gets the current text in password field
+    /// </summary>
+    public string GetPasswordText()
+    {
+        return PasswordEntry.Text;
+    }
+}

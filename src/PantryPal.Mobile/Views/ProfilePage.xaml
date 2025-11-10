@@ -23,7 +23,8 @@
                              VerticalOptions="Center"
                              Margin="0,20,0,20"
                              WidthRequest="48"
-                             HeightRequest="48" />
+                             HeightRequest="48"
+                             AutomationId="ProfileLoadingIndicator" />
 
             <!-- Diet Type Picker -->
             <VerticalStackLayout Margin="0,0,0,16">
@@ -31,7 +32,8 @@
                 <Picker ItemsSource="{Binding DietTypes}"
                         SelectedItem="{Binding SelectedDietType}"
                         ItemDisplayBinding="{Binding Name}"
-                        IsEnabled="{Binding IsLoading, Converter={StaticResource InverseBoolConverter}}" />
+                        IsEnabled="{Binding IsLoading, Converter={StaticResource InverseBoolConverter}}"
+                        AutomationId="DietTypePicker" />
             </VerticalStackLayout>
 
             <!-- Preferred Cuisine Picker -->
@@ -40,7 +42,8 @@
                 <Picker ItemsSource="{Binding PreferredCuisines}"
                         SelectedItem="{Binding SelectedPreferredCuisine}"
                         ItemDisplayBinding="{Binding Name}"
-                        IsEnabled="{Binding IsLoading, Converter={StaticResource InverseBoolConverter}}" />
+                        IsEnabled="{Binding IsLoading, Converter={StaticResource InverseBoolConverter}}"
+                        AutomationId="PreferredCuisinePicker" />
             </VerticalStackLayout>
 
             <!-- Disliked Ingredients Editor -->
@@ -50,7 +53,8 @@
                         Placeholder="List any ingredients you dislike (optional)"
                         IsEnabled="{Binding IsLoading, Converter={StaticResource InverseBoolConverter}}"
                         HeightRequest="120"
-                        AutoSize="TextChanges" />
+                        AutoSize="TextChanges"
+                        AutomationId="DislikedIngredientsEditor" />
             </VerticalStackLayout>
 
             <!-- Save Button -->
@@ -63,7 +67,8 @@
                     HeightRequest="56"
                     CornerRadius="12"
                     Margin="0,16,0,0"
-                    HorizontalOptions="Fill" />
+                    HorizontalOptions="Fill"
+                    AutomationId="SavePreferencesButton" />
 
             <!-- Logout Button -->
             <Button Text="Logout"
@@ -74,7 +79,8 @@
                     HeightRequest="56"
                     CornerRadius="12"
                     Margin="0,16,0,0"
-                    HorizontalOptions="Fill" />
+                    HorizontalOptions="Fill"
+                    AutomationId="LogoutButton" />
 
         </VerticalStackLayout>
     </ScrollView>

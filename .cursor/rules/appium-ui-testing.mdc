@@ -8,6 +8,7 @@ alwaysApply: false
 #### Appium
 
 - Implement the Page Object pattern for maintainable tests
+- Create files in PantryPal.Mobile.UITests
 - Put page classes into Pages directory, test classes into Tests directory
 - Keep test data in separate directory
 - Use AutomationId for element selection

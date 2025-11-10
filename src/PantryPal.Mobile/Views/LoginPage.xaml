@@ -35,7 +35,8 @@
                              VerticalOptions="Center"
                              Margin="0,20,0,0"
                              WidthRequest="48"
-                             HeightRequest="48" />
+                             HeightRequest="48"
+                             AutomationId="LoadingIndicator" />
 
             <!-- Email Field -->
             <VerticalStackLayout Margin="0,16,0,0" Spacing="4">
@@ -44,7 +45,8 @@
                        Placeholder="Enter your email"
                        Keyboard="Email"
                        IsEnabled="{Binding IsLoading, Converter={StaticResource InverseBoolConverter}}"
-                       ReturnType="Next" />
+                       ReturnType="Next"
+                       AutomationId="EmailEntry" />
             </VerticalStackLayout>
 
             <!-- Password Field -->
@@ -56,7 +58,8 @@
                            IsPassword="{Binding IsPasswordVisible, Converter={StaticResource InverseBoolConverter}}"
                            IsEnabled="{Binding IsLoading, Converter={StaticResource InverseBoolConverter}}"
                            ReturnType="Done"
-                           HorizontalOptions="FillAndExpand" />
+                           HorizontalOptions="FillAndExpand"
+                           AutomationId="PasswordEntry" />
                     <Button Text="{Binding IsPasswordVisible, Converter={StaticResource InverseBoolConverter}, ConverterParameter='Hide:Show'}"
                             Command="{Binding TogglePasswordVisibilityCommand}"
                             IsEnabled="{Binding IsLoading, Converter={StaticResource InverseBoolConverter}}"
@@ -64,7 +67,8 @@
                             TextColor="{DynamicResource Gray600}"
                             FontSize="14"
                             WidthRequest="60"
-                            Padding="8,0" />
+                            Padding="8,0"
+                            AutomationId="TogglePasswordButton" />
                 </HorizontalStackLayout>
             </VerticalStackLayout>
 
@@ -78,7 +82,8 @@
                     HeightRequest="56"
                     CornerRadius="12"
                     Margin="0,16,0,0"
-                    HorizontalOptions="Fill" />
+                    HorizontalOptions="Fill"
+                    AutomationId="LoginButton" />
 
             <!-- Navigation Links -->
             <VerticalStackLayout Spacing="8" Margin="0,16,0,0">
@@ -87,14 +92,16 @@
                         BackgroundColor="Transparent"
                         TextColor="{DynamicResource Primary}"
                         FontSize="14"
-                        HorizontalOptions="Center" />
+                        HorizontalOptions="Center"
+                        AutomationId="SignUpButton" />
 
                 <Button Text="Forgot your password?"
                         Command="{Binding NavigateToForgotPasswordCommand}"
                         BackgroundColor="Transparent"
                         TextColor="{DynamicResource Gray600}"
                         FontSize="14"
-                        HorizontalOptions="Center" />
+                        HorizontalOptions="Center"
+                        AutomationId="ForgotPasswordButton" />
             </VerticalStackLayout>
 
         </VerticalStackLayout>

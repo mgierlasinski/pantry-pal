@@ -35,7 +35,8 @@
                 <ActivityIndicator IsRunning="{Binding IsLoading}"
                                   Color="{DynamicResource Primary}"
                                   WidthRequest="48"
-                                  HeightRequest="48" />
+                                  HeightRequest="48"
+                                  AutomationId="PantryLoadingIndicator" />
                 <Label Text="Loading..."
                        TextColor="White"
                        FontSize="16"
