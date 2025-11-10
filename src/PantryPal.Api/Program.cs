@@ -12,12 +12,17 @@ builder.Services.AddSupabase();
 builder.Services.AddOpenRouter(builder.Configuration);
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 
-// Configure authentication
-var bytes = Encoding.UTF8.GetBytes(builder.Configuration["Supabase:Auth:JwtSecret"]!);
+if (builder.Environment.IsEnvironment("Test"))
+{
+    builder.Configuration.AddUserSecrets<Program>();
+}
 
 builder.Services.AddAuthorization();
 builder.Services.AddAuthentication().AddJwtBearer(options =>
 {
+    var secret = builder.Configuration["Supabase:Auth:JwtSecret"]!;
+    var bytes = Encoding.UTF8.GetBytes(secret);
+
     options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuerSigningKey = true,

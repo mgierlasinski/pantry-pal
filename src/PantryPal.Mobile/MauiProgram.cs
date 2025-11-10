@@ -21,10 +21,15 @@ public static class MauiProgram
             .UseUraniumUI()
             .UseUraniumUIMaterial()
             .UseMarkdownView()
-            .ConfigureSettings("appsettings.json")
+            .ConfigureSettings(options =>
+            {
 #if DEBUG
-            .ConfigureSettings("appsettings.Development.json")
+                //options.SetEnvironment("Development");
+                options.SetEnvironment("Test");
 #endif
+                options.AddConfiguration("appsettings.json");
+                options.AddUserSecrets();
+            })
             .ConfigureFonts(fonts =>
             {
                 fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");

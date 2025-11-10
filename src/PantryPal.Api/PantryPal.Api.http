@@ -1,66 +1,63 @@
-﻿@PantryPal.Api_HostAddress = https://localhost:7154
-@PantryPal.Auth_HostAddress = http://127.0.0.1:54321
-
-@ExistingPantryItem = 7b2e7457-8a9d-4cc4-807c-f7c2489008b5
+﻿@ExistingPantryItem = 7b2e7457-8a9d-4cc4-807c-f7c2489008b5
 @ExistingGenerationId = 8030b6a4-00c4-4f11-b8ae-cc12c0141ca1
 
 # @name login
 
-POST {{PantryPal.Auth_HostAddress}}/auth/v1/token?grant_type=password
+POST {{Auth_HostAddress}}/auth/v1/token?grant_type=password
 Content-Type: application/json 
-apiKey: sb_secret_N7UND0UgjKTVK-Uodkm0Hg_xSvEMPvz
+apiKey: {{Auth_ApiKey}}
 
 { 
-  "email": "marcin.gierlasinski@gmail.com", 
-  "password": "Test1234!"
+  "email": "{{UserEmail}}", 
+  "password": "{{UserPassword}}"
 } 
 
 ###
 
 # GET /pantry-items - Get pantry items with default pagination (page=1, pageSize=20, sort=created_at)
-GET {{PantryPal.Api_HostAddress}}/pantry-items
+GET {{Api_HostAddress}}/pantry-items
 Authorization: Bearer {{login.response.body.$.access_token}}
 
 ###
 
 # GET /pantry-items - Get pantry items with custom pagination
-GET {{PantryPal.Api_HostAddress}}/pantry-items?page=1&pageSize=10&sort=created_at
+GET {{Api_HostAddress}}/pantry-items?page=1&pageSize=10&sort=created_at
 Authorization: Bearer {{login.response.body.$.access_token}}
 
 ###
 
 # GET /pantry-items - Get pantry items with custom page and name sorting
-GET {{PantryPal.Api_HostAddress}}/pantry-items?page=2&pageSize=5&sort=name
+GET {{Api_HostAddress}}/pantry-items?page=2&pageSize=5&sort=name
 Authorization: Bearer {{login.response.body.$.access_token}}
 
 ###
 
 # GET /pantry-items - Validation error: invalid page (less than 1)
-GET {{PantryPal.Api_HostAddress}}/pantry-items?page=0&pageSize=10
+GET {{Api_HostAddress}}/pantry-items?page=0&pageSize=10
 Authorization: Bearer {{login.response.body.$.access_token}}
 
 ###
 
 # GET /pantry-items - Validation error: invalid pageSize (too large)
-GET {{PantryPal.Api_HostAddress}}/pantry-items?page=1&pageSize=150
+GET {{Api_HostAddress}}/pantry-items?page=1&pageSize=150
 Authorization: Bearer {{login.response.body.$.access_token}}
 
 ###
 
 # GET /pantry-items - Validation error: invalid pageSize (too small)
-GET {{PantryPal.Api_HostAddress}}/pantry-items?page=1&pageSize=0
+GET {{Api_HostAddress}}/pantry-items?page=1&pageSize=0
 Authorization: Bearer {{login.response.body.$.access_token}}
 
 ###
 
 # GET /pantry-items - Validation error: invalid sort parameter
-GET {{PantryPal.Api_HostAddress}}/pantry-items?page=1&pageSize=10&sort=invalid
+GET {{Api_HostAddress}}/pantry-items?page=1&pageSize=10&sort=invalid
 Authorization: Bearer {{login.response.body.$.access_token}}
 
 ###
 
 # POST /pantry-items - Create pantry item
-POST {{PantryPal.Api_HostAddress}}/pantry-items
+POST {{Api_HostAddress}}/pantry-items
 Content-Type: application/json
 
 {
@@ -70,7 +67,7 @@ Content-Type: application/json
 ###
 
 # POST /pantry-items - Validation error: empty name
-POST {{PantryPal.Api_HostAddress}}/pantry-items
+POST {{Api_HostAddress}}/pantry-items
 Content-Type: application/json
 
 {
@@ -80,7 +77,7 @@ Content-Type: application/json
 ###
 
 # POST /pantry-items - Validation error: name too long
-POST {{PantryPal.Api_HostAddress}}/pantry-items
+POST {{Api_HostAddress}}/pantry-items
 Content-Type: application/json
 
 {
@@ -90,7 +87,7 @@ Content-Type: application/json
 ###
 
 # PATCH /pantry-items/{id} - Update pantry item name
-PATCH {{PantryPal.Api_HostAddress}}/pantry-items/{{ExistingPantryItem}}
+PATCH {{Api_HostAddress}}/pantry-items/{{ExistingPantryItem}}
 Content-Type: application/json
 
 {
@@ -100,7 +97,7 @@ Content-Type: application/json
 ###
 
 # PATCH /pantry-items/{id} - Update pantry item favorite status
-PATCH {{PantryPal.Api_HostAddress}}/pantry-items/{{ExistingPantryItem}}
+PATCH {{Api_HostAddress}}/pantry-items/{{ExistingPantryItem}}
 Content-Type: application/json
 
 {
@@ -110,7 +107,7 @@ Content-Type: application/json
 ###
 
 # PATCH /pantry-items/{id} - Update both name and favorite status
-PATCH {{PantryPal.Api_HostAddress}}/pantry-items/{{ExistingPantryItem}}
+PATCH {{Api_HostAddress}}/pantry-items/{{ExistingPantryItem}}
 Content-Type: application/json
 
 {
@@ -121,7 +118,7 @@ Content-Type: application/json
 ###
 
 # PATCH /pantry-items/{id} - Validation error: no fields provided
-PATCH {{PantryPal.Api_HostAddress}}/pantry-items/{{ExistingPantryItem}}
+PATCH {{Api_HostAddress}}/pantry-items/{{ExistingPantryItem}}
 Content-Type: application/json
 
 {
@@ -130,7 +127,7 @@ Content-Type: application/json
 ###
 
 # PATCH /pantry-items/{id} - Validation error: empty name
-PATCH {{PantryPal.Api_HostAddress}}/pantry-items/{{ExistingPantryItem}}
+PATCH {{Api_HostAddress}}/pantry-items/{{ExistingPantryItem}}
 Content-Type: application/json
 
 {
@@ -140,7 +137,7 @@ Content-Type: application/json
 ###
 
 # PATCH /pantry-items/{id} - Validation error: name too long
-PATCH {{PantryPal.Api_HostAddress}}/pantry-items/{{ExistingPantryItem}}
+PATCH {{Api_HostAddress}}/pantry-items/{{ExistingPantryItem}}
 Content-Type: application/json
 
 {
@@ -150,7 +147,7 @@ Content-Type: application/json
 ###
 
 # PATCH /pantry-items/{id} - Error: item not found
-PATCH {{PantryPal.Api_HostAddress}}/pantry-items/00000000-0000-0000-0000-999999999999
+PATCH {{Api_HostAddress}}/pantry-items/00000000-0000-0000-0000-999999999999
 Content-Type: application/json
 
 {
@@ -160,64 +157,64 @@ Content-Type: application/json
 ###
 
 # DELETE /pantry-items/{id} - Delete existing pantry item
-DELETE {{PantryPal.Api_HostAddress}}/pantry-items/20064eb6-236c-4eec-90f9-3db822d659be
+DELETE {{Api_HostAddress}}/pantry-items/20064eb6-236c-4eec-90f9-3db822d659be
 
 ###
 
 # DELETE /pantry-items/{id} - Error: item not found
-DELETE {{PantryPal.Api_HostAddress}}/pantry-items/00000000-0000-0000-0000-999999999999
+DELETE {{Api_HostAddress}}/pantry-items/00000000-0000-0000-0000-999999999999
 
 ###
 
 # GET /recipes - Get recipes with default pagination (page=1, pageSize=20)
-GET {{PantryPal.Api_HostAddress}}/recipes
+GET {{Api_HostAddress}}/recipes
 Authorization: Bearer {{login.response.body.$.access_token}}
 
 ###
 
 # GET /recipes - Get recipes with custom page
-GET {{PantryPal.Api_HostAddress}}/recipes?page=2&pageSize=5
+GET {{Api_HostAddress}}/recipes?page=2&pageSize=5
 Authorization: Bearer {{login.response.body.$.access_token}}
 
 ###
 
 # GET /recipes - Validation error: invalid page (less than 1)
-GET {{PantryPal.Api_HostAddress}}/recipes?page=0&pageSize=10
+GET {{Api_HostAddress}}/recipes?page=0&pageSize=10
 Authorization: Bearer {{login.response.body.$.access_token}}
 
 ###
 
 # GET /recipes - Validation error: invalid pageSize (too large)
-GET {{PantryPal.Api_HostAddress}}/recipes?page=1&pageSize=150
+GET {{Api_HostAddress}}/recipes?page=1&pageSize=150
 Authorization: Bearer {{login.response.body.$.access_token}}
 
 ###
 
 # GET /recipes - Validation error: invalid pageSize (too small)
-GET {{PantryPal.Api_HostAddress}}/recipes?page=1&pageSize=0
+GET {{Api_HostAddress}}/recipes?page=1&pageSize=0
 Authorization: Bearer {{login.response.body.$.access_token}}
 
 ###
 
 # POST /recipes/generate - Generate AI-powered recipe based on pantry items and preferences
-POST {{PantryPal.Api_HostAddress}}/recipes/generate
+POST {{Api_HostAddress}}/recipes/generate
 
 ###
 
 # POST /recipes/{generationId}/accept - Accept a generated recipe and save it to recipes table
 # Note: Replace @ExistingGenerationId with a valid generation ID from POST /recipes/generate response
-POST {{PantryPal.Api_HostAddress}}/recipes/{{ExistingGenerationId}}/accept
+POST {{Api_HostAddress}}/recipes/{{ExistingGenerationId}}/accept
 
 ###
 
 # POST /recipes/{generationId}/accept - Error: generation not found
-POST {{PantryPal.Api_HostAddress}}/recipes/00000000-0000-0000-0000-999999999999/accept
+POST {{Api_HostAddress}}/recipes/00000000-0000-0000-0000-999999999999/accept
 
 ###
 
 # POST /recipes/{generationId}/reject - Reject a generated recipe with a reason
 # Note: Replace @ExistingGenerationId with a valid generation ID from POST /recipes/generate response
-POST {{PantryPal.Api_HostAddress}}/recipes/{{ExistingGenerationId}}/reject
+POST {{Api_HostAddress}}/recipes/{{ExistingGenerationId}}/reject
 Content-Type: application/json
 
 {
@@ -227,7 +224,7 @@ Content-Type: application/json
 ###
 
 # POST /recipes/{generationId}/reject - Error: generation not found
-POST {{PantryPal.Api_HostAddress}}/recipes/00000000-0000-0000-0000-999999999999/reject
+POST {{Api_HostAddress}}/recipes/00000000-0000-0000-0000-999999999999/reject
 Content-Type: application/json
 
 {
@@ -238,7 +235,7 @@ Content-Type: application/json
 
 # POST /recipes/{generationId}/reject - Error: invalid reject reason ID
 # Note: Replace @ExistingGenerationId with a valid generation ID from POST /recipes/generate response
-POST {{PantryPal.Api_HostAddress}}/recipes/{{ExistingGenerationId}}/reject
+POST {{Api_HostAddress}}/recipes/{{ExistingGenerationId}}/reject
 Content-Type: application/json
 
 {
@@ -249,31 +246,31 @@ Content-Type: application/json
 
 # DELETE /recipes/{id} - Success: delete existing recipe
 # Note: Replace @ExistingRecipeId with a valid recipe ID from POST /recipes/{generationId}/accept response
-DELETE {{PantryPal.Api_HostAddress}}/recipes/{{ExistingRecipeId}}
+DELETE {{Api_HostAddress}}/recipes/{{ExistingRecipeId}}
 
 ###
 
 # DELETE /recipes/{id} - Error: invalid recipe ID format
-DELETE {{PantryPal.Api_HostAddress}}/recipes/invalid-id
+DELETE {{Api_HostAddress}}/recipes/invalid-id
 
 ###
 
 # DELETE /recipes/{id} - Error: recipe not found (404)
-DELETE {{PantryPal.Api_HostAddress}}/recipes/00000000-0000-0000-0000-999999999999
+DELETE {{Api_HostAddress}}/recipes/00000000-0000-0000-0000-999999999999
 
 ###
 
 # GET /user-preferences - Get user preferences (requires authentication)
 # Note: Authentication not yet fully implemented in http file
 # TODO: Add Authorization header with Supabase JWT when authentication is enabled
-GET {{PantryPal.Api_HostAddress}}/user-preferences
+GET {{Api_HostAddress}}/user-preferences
 
 ###
 
 # POST /user-preferences - Create or update user preferences (upsert)
 # Note: Authentication not yet fully implemented in http file
 # TODO: Add Authorization header with Supabase JWT when authentication is enabled
-POST {{PantryPal.Api_HostAddress}}/user-preferences
+POST {{Api_HostAddress}}/user-preferences
 Content-Type: application/json
 
 {
@@ -285,7 +282,7 @@ Content-Type: application/json
 ###
 
 # POST /user-preferences - Create preferences without disliked ingredients
-POST {{PantryPal.Api_HostAddress}}/user-preferences
+POST {{Api_HostAddress}}/user-preferences
 Content-Type: application/json
 
 {
@@ -296,7 +293,7 @@ Content-Type: application/json
 ###
 
 # POST /user-preferences - Update existing preferences with different values
-POST {{PantryPal.Api_HostAddress}}/user-preferences
+POST {{Api_HostAddress}}/user-preferences
 Content-Type: application/json
 
 {
@@ -308,7 +305,7 @@ Content-Type: application/json
 ###
 
 # POST /user-preferences - Validation error: missing required dietTypeId
-POST {{PantryPal.Api_HostAddress}}/user-preferences
+POST {{Api_HostAddress}}/user-preferences
 Content-Type: application/json
 
 {
@@ -319,7 +316,7 @@ Content-Type: application/json
 ###
 
 # POST /user-preferences - Validation error: missing required preferredCuisineId
-POST {{PantryPal.Api_HostAddress}}/user-preferences
+POST {{Api_HostAddress}}/user-preferences
 Content-Type: application/json
 
 {
@@ -330,7 +327,7 @@ Content-Type: application/json
 ###
 
 # POST /user-preferences - Validation error: invalid dietTypeId (doesn't exist)
-POST {{PantryPal.Api_HostAddress}}/user-preferences
+POST {{Api_HostAddress}}/user-preferences
 Content-Type: application/json
 
 {
@@ -342,7 +339,7 @@ Content-Type: application/json
 ###
 
 # POST /user-preferences - Validation error: invalid preferredCuisineId (doesn't exist)
-POST {{PantryPal.Api_HostAddress}}/user-preferences
+POST {{Api_HostAddress}}/user-preferences
 Content-Type: application/json
 
 {
@@ -354,7 +351,7 @@ Content-Type: application/json
 ###
 
 # POST /user-preferences - Validation error: dislikedIngredients too long (>1000 characters)
-POST {{PantryPal.Api_HostAddress}}/user-preferences
+POST {{Api_HostAddress}}/user-preferences
 Content-Type: application/json
 
 {
@@ -366,7 +363,7 @@ Content-Type: application/json
 ###
 
 # POST /user-preferences - Validation error: invalid JSON format
-POST {{PantryPal.Api_HostAddress}}/user-preferences
+POST {{Api_HostAddress}}/user-preferences
 Content-Type: application/json
 
 {
@@ -378,16 +375,16 @@ Content-Type: application/json
 ###
 
 # GET /diet-types - Get all available diet types (no authentication required)
-GET {{PantryPal.Api_HostAddress}}/diet-types
+GET {{Api_HostAddress}}/diet-types
 
 ###
 
 # GET /preferred-cuisines - Get all available preferred cuisines (no authentication required)
-GET {{PantryPal.Api_HostAddress}}/preferred-cuisines
+GET {{Api_HostAddress}}/preferred-cuisines
 
 ###
 
 # GET /recipe-reject-reasons - Get all available recipe reject reasons (authentication required)
-GET {{PantryPal.Api_HostAddress}}/recipe-reject-reasons
+GET {{Api_HostAddress}}/recipe-reject-reasons
 
 ###

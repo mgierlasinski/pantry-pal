@@ -7,7 +7,11 @@ alwaysApply: false
 
 #### Appium
 
-- Implement the Page Object Model for maintainable tests
-- Use locators for resilient element selection
+- Implement the Page Object pattern for maintainable tests
+- Put page classes into Pages directory, test classes into Tests directory
+- Keep test data in separate directory
+- Use AutomationId for element selection
+- Avoid XPath selectors, add missing AutomationId instead
+- Use helpers like WaitUntilVisible, WaitUntilClickable for synchronization
 - Leverage API testing for backend validation
 - Use expect assertions with specific matchers
