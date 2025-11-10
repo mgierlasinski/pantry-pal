@@ -4,6 +4,7 @@ using PantryPal.Api.Extensions;
 using PantryPal.Api.Repositories;
 using PantryPal.Api.Services;
 using PantryPal.Data;
+using Scalar.AspNetCore;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -32,6 +33,8 @@ builder.Services.AddAuthentication().AddJwtBearer(options =>
     };
 });
 
+builder.Services.AddOpenApi();
+
 // Register repositories
 builder.Services.AddScoped<IPantryRepository, PantryRepository>();
 builder.Services.AddScoped<IRecipeRepository, RecipeRepository>();
@@ -55,6 +58,12 @@ var app = builder.Build();
 // Enable authentication/authorization middleware
 app.UseAuthentication();
 app.UseAuthorization();
+
+if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Test"))
+{
+    app.MapOpenApi();
+    app.MapScalarApiReference();
+}
 
 app.MapGet("/", () => "Hello World!");
 
