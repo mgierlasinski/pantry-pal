@@ -89,7 +89,7 @@ jobs:
         if: always()
         with:
           name: API Tests Results
-          path: 'test-results/api/**/*.xml'
+          path: 'test-results/api/**/*.trx'
           reporter: dotnet-trx
           fail-on-error: false
 
@@ -98,7 +98,7 @@ jobs:
         if: always()
         with:
           name: Mobile Tests Results
-          path: 'test-results/mobile/**/*.xml'
+          path: 'test-results/mobile/**/*.trx'
           reporter: dotnet-trx
           fail-on-error: false
 
