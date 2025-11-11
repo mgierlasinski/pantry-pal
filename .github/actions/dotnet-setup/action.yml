@@ -1,0 +1,23 @@
+name: Dotnet Setup
+description: Configure .NET SDK and optional workloads
+inputs:
+  dotnet-version:
+    description: .NET SDK version specification
+    required: true
+  install-maui:
+    description: Install MAUI workload (true/false)
+    required: false
+    default: 'false'
+runs:
+  using: composite
+  steps:
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v5
+      with:
+        dotnet-version: ${{ inputs.dotnet-version }}
+        cache: true
+    - name: Install MAUI workload
+      if: ${{ inputs.install-maui == 'true' }}
+      shell: pwsh
+      run: dotnet workload install maui
+
