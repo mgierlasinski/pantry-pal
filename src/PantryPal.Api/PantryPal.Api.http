@@ -384,7 +384,8 @@ GET {{Api_HostAddress}}/preferred-cuisines
 
 ###
 
-# GET /recipe-reject-reasons - Get all available recipe reject reasons (authentication required)
+# GET /recipe-reject-reasons - Get all available recipe reject reasons
 GET {{Api_HostAddress}}/recipe-reject-reasons
+Authorization: Bearer {{login.response.body.$.access_token}}
 
 ###

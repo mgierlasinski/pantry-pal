@@ -1,5 +1,6 @@
 using FluentValidation;
 using Microsoft.IdentityModel.Tokens;
+using PantryPal.Api.Exceptions;
 using PantryPal.Api.Extensions;
 using PantryPal.Api.Repositories;
 using PantryPal.Api.Services;
@@ -8,6 +9,17 @@ using Scalar.AspNetCore;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddExceptionHandler<ArgumentExceptionHandler>();
+builder.Services.AddExceptionHandler<InvalidOperationExceptionHandler>();
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddProblemDetails(configure =>
+{
+    configure.CustomizeProblemDetails = context =>
+    {
+        context.ProblemDetails.Extensions.TryAdd("requestId", context.HttpContext.TraceIdentifier);
+    };
+});
 
 builder.Services.AddSupabase();
 builder.Services.AddOpenRouter(builder.Configuration);
@@ -54,6 +66,7 @@ builder.Services.AddScoped<IRecipeRejectReasonsService, RecipeRejectReasonsServi
 builder.Services.AddScoped<IAIRecipeGeneratorService, AIRecipeGeneratorService>();
 
 var app = builder.Build();
+app.UseExceptionHandler();
 
 // Enable authentication/authorization middleware
 app.UseAuthentication();
@@ -84,25 +97,14 @@ app.MapGet("/pantry-items", async (
         return Results.ValidationProblem(validationResult.ToDictionary());
     }
 
-    try
-    {
-        var userId = httpContext.GetUserId();
-        var result = await pantryService.GetPantryItemsAsync(
-            userId,
-            request.Page,
-            request.PageSize,
-            request.Sort);
+    var userId = httpContext.GetUserId();
+    var result = await pantryService.GetPantryItemsAsync(
+        userId,
+        request.Page,
+        request.PageSize,
+        request.Sort);
 
-        return Results.Ok(result);
-    }
-    catch (Exception ex)
-    {
-        logger.LogError(ex, "Unhandled exception in GET /pantry-items endpoint");
-        return Results.Problem(
-            title: "Internal Server Error",
-            detail: "An error occurred while processing your request.",
-            statusCode: 500);
-    }
+    return Results.Ok(result);
 }).RequireAuthorization();
 
 // POST /pantry-items endpoint
@@ -122,27 +124,11 @@ app.MapPost("/pantry-items", async (
         return Results.ValidationProblem(validationResult.ToDictionary());
     }
 
-    try
-    {
-        var userId = httpContext.GetUserId();
-        var createdItem = await pantryService.CreatePantryItemAsync(userId, dto);
+    var userId = httpContext.GetUserId();
+    var createdItem = await pantryService.CreatePantryItemAsync(userId, dto);
 
-        logger.LogInformation("Successfully created pantry item {ItemId} for user {UserId}", createdItem.Id, userId);
-        return Results.Created($"/pantry-items/{createdItem.Id}", createdItem);
-    }
-    catch (InvalidOperationException ex) when (ex.Message.Contains("already exists"))
-    {
-        logger.LogWarning(ex, "Duplicate pantry item name");
-        return Results.Conflict("An item with this name already exists");
-    }
-    catch (Exception ex)
-    {
-        logger.LogError(ex, "Unhandled exception in POST /pantry-items endpoint");
-        return Results.Problem(
-            title: "Internal Server Error",
-            detail: "An error occurred while processing your request.",
-            statusCode: 500);
-    }
+    logger.LogInformation("Successfully created pantry item {ItemId} for user {UserId}", createdItem.Id, userId);
+    return Results.Created($"/pantry-items/{createdItem.Id}", createdItem);
 }).RequireAuthorization();
 
 // PATCH /pantry-items/{id} endpoint
@@ -163,32 +149,11 @@ app.MapPatch("/pantry-items/{id}", async (
         return Results.ValidationProblem(validationResult.ToDictionary());
     }
 
-    try
-    {
-        var userId = httpContext.GetUserId();
-        var updatedItem = await pantryService.UpdatePantryItemAsync(id, userId, dto);
+    var userId = httpContext.GetUserId();
+    var updatedItem = await pantryService.UpdatePantryItemAsync(id, userId, dto);
 
-        logger.LogInformation("Successfully updated pantry item {ItemId} for user {UserId}", updatedItem.Id, userId);
-        return Results.Ok(updatedItem);
-    }
-    catch (ArgumentException ex) when (ex.Message.Contains("not found"))
-    {
-        logger.LogWarning(ex, "Pantry item {ItemId} not found for user", id);
-        return Results.NotFound("Pantry item not found");
-    }
-    catch (InvalidOperationException ex) when (ex.Message.Contains("already exists"))
-    {
-        logger.LogWarning(ex, "Duplicate pantry item name for user");
-        return Results.Conflict("An item with this name already exists");
-    }
-    catch (Exception ex)
-    {
-        logger.LogError(ex, "Unhandled exception in PATCH /pantry-items/{Id} endpoint", id);
-        return Results.Problem(
-            title: "Internal Server Error",
-            detail: "An error occurred while processing your request.",
-            statusCode: 500);
-    }
+    logger.LogInformation("Successfully updated pantry item {ItemId} for user {UserId}", updatedItem.Id, userId);
+    return Results.Ok(updatedItem);
 }).RequireAuthorization();
 
 // DELETE /pantry-items/{id} endpoint
@@ -198,27 +163,11 @@ app.MapDelete("/pantry-items/{id}", async (
     IPantryService pantryService,
     ILogger<Program> logger) =>
 {
-    try
-    {
-        var userId = httpContext.GetUserId();
-        await pantryService.DeletePantryItemAsync(id, userId);
+    var userId = httpContext.GetUserId();
+    await pantryService.DeletePantryItemAsync(id, userId);
 
-        logger.LogInformation("Successfully deleted pantry item {ItemId} for user {UserId}", id, userId);
-        return Results.NoContent();
-    }
-    catch (ArgumentException ex) when (ex.Message.Contains("not found"))
-    {
-        logger.LogWarning(ex, "Pantry item {ItemId} not found for user", id);
-        return Results.NotFound("Pantry item not found");
-    }
-    catch (Exception ex)
-    {
-        logger.LogError(ex, "Unhandled exception in DELETE /pantry-items/{Id} endpoint", id);
-        return Results.Problem(
-            title: "Internal Server Error",
-            detail: "An error occurred while processing your request.",
-            statusCode: 500);
-    }
+    logger.LogInformation("Successfully deleted pantry item {ItemId} for user {UserId}", id, userId);
+    return Results.NoContent();
 }).RequireAuthorization();
 
 // GET /recipes endpoint
@@ -238,24 +187,13 @@ app.MapGet("/recipes", async (
         return Results.ValidationProblem(validationResult.ToDictionary());
     }
 
-    try
-    {
-        var userId = httpContext.GetUserId();
-        var result = await recipeService.GetRecipesAsync(
-            userId,
-            request.Page,
-            request.PageSize);
+    var userId = httpContext.GetUserId();
+    var result = await recipeService.GetRecipesAsync(
+        userId,
+        request.Page,
+        request.PageSize);
 
-        return Results.Ok(result);
-    }
-    catch (Exception ex)
-    {
-        logger.LogError(ex, "Unhandled exception in GET /recipes endpoint");
-        return Results.Problem(
-            title: "Internal Server Error",
-            detail: "An error occurred while processing your request.",
-            statusCode: 500);
-    }
+    return Results.Ok(result);
 }).RequireAuthorization();
 
 // POST /recipes/generate endpoint
@@ -264,42 +202,13 @@ app.MapPost("/recipes/generate", async (
     IRecipeService recipeService,
     ILogger<Program> logger) =>
 {
-    try
-    {
-        var userId = httpContext.GetUserId();
-        var result = await recipeService.GenerateRecipeAsync(userId);
+    var userId = httpContext.GetUserId();
+    var result = await recipeService.GenerateRecipeAsync(userId);
 
-        logger.LogInformation("Successfully generated recipe {GenerationId} for user {UserId}",
-            result.GenerationId, userId);
+    logger.LogInformation("Successfully generated recipe {GenerationId} for user {UserId}",
+        result.GenerationId, userId);
 
-        return Results.Ok(result);
-    }
-    catch (InvalidOperationException ex) when (ex.Message.Contains("preferences not set"))
-    {
-        logger.LogWarning(ex, "Recipe generation failed: user preferences not set");
-        return Results.BadRequest(new { error = "User preferences not set." });
-    }
-    catch (InvalidOperationException ex) when (ex.Message.Contains("Pantry is empty"))
-    {
-        logger.LogWarning(ex, "Recipe generation failed: pantry is empty");
-        return Results.BadRequest(new { error = "Pantry is empty." });
-    }
-    catch (InvalidOperationException ex) when (ex.Message.Contains("Failed to generate recipe"))
-    {
-        logger.LogError(ex, "Recipe generation failed: AI service error");
-        return Results.Problem(
-            title: "Recipe Generation Failed",
-            detail: "Failed to generate recipe. Please try again later.",
-            statusCode: 500);
-    }
-    catch (Exception ex)
-    {
-        logger.LogError(ex, "Unhandled exception in POST /recipes/generate endpoint");
-        return Results.Problem(
-            title: "Internal Server Error",
-            detail: "An error occurred while processing your request.",
-            statusCode: 500);
-    }
+    return Results.Ok(result);
 }).RequireAuthorization();
 
 // POST /recipes/{generationId}/accept endpoint
@@ -309,44 +218,13 @@ app.MapPost("/recipes/{generationId}/accept", async (
     IRecipeService recipeService,
     ILogger<Program> logger) =>
 {
-    try
-    {
-        var userId = httpContext.GetUserId();
-        var result = await recipeService.AcceptGeneratedRecipeAsync(generationId, userId);
+    var userId = httpContext.GetUserId();
+    var result = await recipeService.AcceptGeneratedRecipeAsync(generationId, userId);
 
-        logger.LogInformation("Successfully accepted recipe generation {GenerationId} and created recipe {RecipeId} for user {UserId}",
-            generationId, result.RecipeId, userId);
+    logger.LogInformation("Successfully accepted recipe generation {GenerationId} and created recipe {RecipeId} for user {UserId}",
+        generationId, result.RecipeId, userId);
 
-        return Results.Created($"/recipes/{result.RecipeId}", result);
-    }
-    catch (ArgumentException ex) when (ex.Message.Contains("not found"))
-    {
-        logger.LogWarning(ex, "Generation {GenerationId} not found", generationId);
-        return Results.NotFound(new { error = "Generation not found" });
-    }
-    catch (InvalidOperationException ex) when (ex.Message.Contains("Already accepted"))
-    {
-        logger.LogWarning(ex, "Generation {GenerationId} already accepted", generationId);
-        return Results.Conflict(new { error = "Already accepted" });
-    }
-    catch (InvalidOperationException ex) when (ex.Message.Contains("Already rejected"))
-    {
-        logger.LogWarning(ex, "Generation {GenerationId} already rejected", generationId);
-        return Results.Conflict(new { error = "Already rejected" });
-    }
-    catch (InvalidOperationException ex) when (ex.Message.Contains("No recipe text available"))
-    {
-        logger.LogWarning(ex, "Generation {GenerationId} has no recipe text", generationId);
-        return Results.BadRequest(new { error = "No recipe text available" });
-    }
-    catch (Exception ex)
-    {
-        logger.LogError(ex, "Unhandled exception in POST /recipes/{GenerationId}/accept endpoint", generationId);
-        return Results.Problem(
-            title: "Internal Server Error",
-            detail: "An error occurred while processing your request.",
-            statusCode: 500);
-    }
+    return Results.Created($"/recipes/{result.RecipeId}", result);
 }).RequireAuthorization();
 
 // POST /recipes/{generationId}/reject endpoint
@@ -367,39 +245,13 @@ app.MapPost("/recipes/{generationId}/reject", async (
         return Results.ValidationProblem(validationResult.ToDictionary());
     }
 
-    try
-    {
-        var userId = httpContext.GetUserId();
-        await recipeService.RejectGeneratedRecipeAsync(generationId, request.RejectReasonId, userId);
+    var userId = httpContext.GetUserId();
+    await recipeService.RejectGeneratedRecipeAsync(generationId, request.RejectReasonId, userId);
 
-        logger.LogInformation("Successfully rejected recipe generation {GenerationId} with reason {RejectReasonId} for user {UserId}",
-            generationId, request.RejectReasonId, userId);
+    logger.LogInformation("Successfully rejected recipe generation {GenerationId} with reason {RejectReasonId} for user {UserId}",
+        generationId, request.RejectReasonId, userId);
 
-        return Results.NoContent();
-    }
-    catch (ArgumentException ex) when (ex.Message.Contains("not found"))
-    {
-        logger.LogWarning(ex, "Generation {GenerationId} not found", generationId);
-        return Results.NotFound(new { error = "Generation not found" });
-    }
-    catch (InvalidOperationException ex) when (ex.Message.Contains("Already accepted"))
-    {
-        logger.LogWarning(ex, "Generation {GenerationId} already accepted", generationId);
-        return Results.Conflict(new { error = "Already accepted" });
-    }
-    catch (InvalidOperationException ex) when (ex.Message.Contains("Already rejected"))
-    {
-        logger.LogWarning(ex, "Generation {GenerationId} already rejected", generationId);
-        return Results.Conflict(new { error = "Already rejected" });
-    }
-    catch (Exception ex)
-    {
-        logger.LogError(ex, "Unhandled exception in POST /recipes/{GenerationId}/reject endpoint", generationId);
-        return Results.Problem(
-            title: "Internal Server Error",
-            detail: "An error occurred while processing your request.",
-            statusCode: 500);
-    }
+    return Results.NoContent();
 }).RequireAuthorization();
 
 // DELETE /recipes/{id} endpoint
@@ -416,32 +268,11 @@ app.MapDelete("/recipes/{id}", async (
         return Results.BadRequest(new { error = "Invalid recipe ID format." });
     }
 
-    try
-    {
-        var userId = httpContext.GetUserId();
-        await recipeService.DeleteRecipeAsync(id, userId);
+    var userId = httpContext.GetUserId();
+    await recipeService.DeleteRecipeAsync(id, userId);
 
-        logger.LogInformation("Successfully deleted recipe {RecipeId} for user {UserId}", id, userId);
-        return Results.NoContent();
-    }
-    catch (ArgumentException ex) when (ex.Message.Contains("Invalid recipe ID format"))
-    {
-        logger.LogWarning(ex, "Invalid recipe ID format: {RecipeId}", id);
-        return Results.BadRequest(new { error = "Invalid recipe ID format." });
-    }
-    catch (KeyNotFoundException ex) when (ex.Message.Contains("Recipe not found"))
-    {
-        logger.LogWarning(ex, "Recipe {RecipeId} not found for user {UserId}", id, httpContext.GetUserId());
-        return Results.NotFound(new { error = "Recipe not found." });
-    }
-    catch (Exception ex)
-    {
-        logger.LogError(ex, "Unhandled exception in DELETE /recipes/{Id} endpoint", id);
-        return Results.Problem(
-            title: "Internal Server Error",
-            detail: "An error occurred while processing your request.",
-            statusCode: 500);
-    }
+    logger.LogInformation("Successfully deleted recipe {RecipeId} for user {UserId}", id, userId);
+    return Results.NoContent();
 }).RequireAuthorization();
 
 // GET /user-preferences endpoint
@@ -450,31 +281,20 @@ app.MapGet("/user-preferences", async (
     IUserPreferencesService service,
     ILogger<Program> logger) =>
 {
-    try
+    var userId = httpContext.GetUserId();
+    var preferences = await service.GetUserPreferencesAsync(userId);
+
+    if (preferences == null)
     {
-        var userId = httpContext.GetUserId();
-        var preferences = await service.GetUserPreferencesAsync(userId);
-
-        if (preferences == null)
-        {
-            logger.LogWarning("User preferences not found for user {UserId}", userId);
-            return Results.NotFound(new { error = "User preferences not found" });
-        }
-
-        logger.LogInformation(
-            "Successfully retrieved user preferences for user {UserId}: Diet={DietType}, Cuisine={PreferredCuisine}",
-            userId, preferences.DietTypeName, preferences.PreferredCuisineName);
-
-        return Results.Ok(preferences);
+        logger.LogWarning("User preferences not found for user {UserId}", userId);
+        return Results.NotFound(new { error = "User preferences not found" });
     }
-    catch (Exception ex)
-    {
-        logger.LogError(ex, "Unhandled exception in GET /user-preferences endpoint");
-        return Results.Problem(
-            title: "Internal Server Error",
-            detail: "An error occurred while processing your request.",
-            statusCode: 500);
-    }
+
+    logger.LogInformation(
+        "Successfully retrieved user preferences for user {UserId}: Diet={DietType}, Cuisine={PreferredCuisine}",
+        userId, preferences.DietTypeName, preferences.PreferredCuisineName);
+
+    return Results.Ok(preferences);
 }).RequireAuthorization();
 
 // POST /user-preferences endpoint
@@ -494,30 +314,14 @@ app.MapPost("/user-preferences", async (
         return Results.ValidationProblem(validationResult.ToDictionary());
     }
 
-    try
-    {
-        var userId = httpContext.GetUserId().ToString();
-        var result = await service.UpsertPreferencesAsync(dto, userId);
+    var userId = httpContext.GetUserId().ToString();
+    var result = await service.UpsertPreferencesAsync(dto, userId);
 
-        logger.LogInformation(
-            "Successfully upserted user preferences for user {UserId}: Diet={DietType}, Cuisine={PreferredCuisine}",
-            userId, result.DietTypeName, result.PreferredCuisineName);
+    logger.LogInformation(
+        "Successfully upserted user preferences for user {UserId}: Diet={DietType}, Cuisine={PreferredCuisine}",
+        userId, result.DietTypeName, result.PreferredCuisineName);
 
-        return Results.Ok(result);
-    }
-    catch (ArgumentException ex) when (ex.Message.Contains("does not exist"))
-    {
-        logger.LogWarning(ex, "Invalid reference in user preferences");
-        return Results.BadRequest(new { error = ex.Message });
-    }
-    catch (Exception ex)
-    {
-        logger.LogError(ex, "Unhandled exception in POST /user-preferences endpoint");
-        return Results.Problem(
-            title: "Internal Server Error",
-            detail: "An error occurred while processing your request.",
-            statusCode: 500);
-    }
+    return Results.Ok(result);
 }).RequireAuthorization().Produces<UserPreferencesDto>(200).Produces(400).Produces(500);
 
 // GET /diet-types endpoint
@@ -525,44 +329,22 @@ app.MapGet("/diet-types", async (
     IDietTypesService dietTypesService,
     ILogger<Program> logger) =>
 {
-    try
-    {
-        var result = await dietTypesService.GetAllAsync();
+    var result = await dietTypesService.GetAllAsync();
 
-        logger.LogInformation("Successfully retrieved {Count} diet types", result.DietTypes.Count());
+    logger.LogInformation("Successfully retrieved {Count} diet types", result.DietTypes.Count());
 
-        return Results.Ok(result);
-    }
-    catch (Exception ex)
-    {
-        logger.LogError(ex, "Unhandled exception in GET /diet-types endpoint");
-        return Results.Problem(
-            title: "Internal Server Error",
-            detail: "An error occurred while processing your request.",
-            statusCode: 500);
-    }
+    return Results.Ok(result);
 });
 
 app.MapGet("/preferred-cuisines", async (
     IPreferredCuisinesService preferredCuisinesService,
     ILogger<Program> logger) =>
 {
-    try
-    {
-        var result = await preferredCuisinesService.GetAllAsync();
+    var result = await preferredCuisinesService.GetAllAsync();
 
-        logger.LogInformation("Successfully retrieved {Count} preferred cuisines", result.PreferredCuisines.Count());
+    logger.LogInformation("Successfully retrieved {Count} preferred cuisines", result.PreferredCuisines.Count());
 
-        return Results.Ok(result);
-    }
-    catch (Exception ex)
-    {
-        logger.LogError(ex, "Unhandled exception in GET /preferred-cuisines endpoint");
-        return Results.Problem(
-            title: "Internal Server Error",
-            detail: "An error occurred while processing your request.",
-            statusCode: 500);
-    }
+    return Results.Ok(result);
 }).Produces<PreferredCuisinesResponseDto>(200);
 
 // GET /recipe-reject-reasons endpoint
@@ -570,31 +352,12 @@ app.MapGet("/recipe-reject-reasons", async (
     IRecipeRejectReasonsService recipeRejectReasonsService,
     ILogger<Program> logger) =>
 {
-    try
-    {
-        var rejectReasons = await recipeRejectReasonsService.GetAllAsync();
+    var rejectReasons = await recipeRejectReasonsService.GetAllAsync();
 
-        logger.LogInformation("Successfully retrieved {Count} recipe reject reasons", rejectReasons.Count());
+    logger.LogInformation("Successfully retrieved {Count} recipe reject reasons", rejectReasons.Count());
 
-        var response = new RecipeRejectReasonsResponseDto(rejectReasons);
-        return Results.Ok(response);
-    }
-    catch (InvalidOperationException ex) when (ex.Message.Contains("Configuration error"))
-    {
-        logger.LogError(ex, "Configuration error: No reject reasons found in database");
-        return Results.Problem(
-            title: "Configuration Error",
-            detail: "No reject reasons are configured. Please contact support.",
-            statusCode: 500);
-    }
-    catch (Exception ex)
-    {
-        logger.LogError(ex, "Unhandled exception in GET /recipe-reject-reasons endpoint");
-        return Results.Problem(
-            title: "Internal Server Error",
-            detail: "An error occurred while processing your request.",
-            statusCode: 500);
-    }
+    var response = new RecipeRejectReasonsResponseDto(rejectReasons);
+    return Results.Ok(response);
 }).Produces<RecipeRejectReasonsResponseDto>(200).Produces(500);
 
 app.Run();
