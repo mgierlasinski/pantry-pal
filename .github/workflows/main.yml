@@ -52,6 +52,7 @@ jobs:
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
           install-maui: 'true'
+          maui-platform: 'android'
 
       - name: Restore dependencies
         run: dotnet restore PantryPal.sln

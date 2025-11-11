@@ -1,6 +1,6 @@
 # PantryPal
 
-[![Build Status](https://github.com/yourusername/PantryPal/actions/workflows/ci.yml/badge.svg)](https://github.com/yourusername/PantryPal/actions) [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Test and Publish](https://github.com/mgierlasinski/pantry-pal/actions/workflows/main.yml/badge.svg)](https://github.com/mgierlasinski/pantry-pal/actions/workflows/main.yml) [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 ## Table of Contents
 

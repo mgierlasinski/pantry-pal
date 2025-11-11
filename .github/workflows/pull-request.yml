@@ -4,10 +4,6 @@ on:
   pull_request:
     branches:
       - main
-    paths:
-      - 'src/**'
-      - 'tests/**'
-      - '.github/workflows/**'
 
 env:
   DOTNET_VERSION: 9.0.x
@@ -29,7 +25,7 @@ jobs:
         run: dotnet restore PantryPal.sln
 
       - name: Run API unit tests with coverage
-        run: dotnet test tests/PantryPal.Api.UnitTests/PantryPal.Api.UnitTests.csproj --configuration Release --no-restore --collect:"XPlat Code Coverage" --results-directory ./test-results/api
+        run: dotnet test tests/PantryPal.Api.UnitTests/PantryPal.Api.UnitTests.csproj --configuration Release --no-restore --collect:"XPlat Code Coverage" --results-directory ./test-results/api --logger trx
 
       - name: Upload API test results
         uses: actions/upload-artifact@v5
@@ -51,12 +47,13 @@ jobs:
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
           install-maui: 'true'
+          maui-platform: 'android'
 
       - name: Restore dependencies
         run: dotnet restore PantryPal.sln
 
       - name: Run Mobile unit tests with coverage
-        run: dotnet test tests/PantryPal.Mobile.UnitTests/PantryPal.Mobile.UnitTests.csproj --configuration Release --no-restore --collect:"XPlat Code Coverage" --results-directory ./test-results/mobile
+        run: dotnet test tests/PantryPal.Mobile.UnitTests/PantryPal.Mobile.UnitTests.csproj --configuration Release --no-restore --collect:"XPlat Code Coverage" --results-directory ./test-results/mobile --logger trx
 
       - name: Upload Mobile test results
         uses: actions/upload-artifact@v5
@@ -92,7 +89,7 @@ jobs:
         if: always()
         with:
           name: API Tests Results
-          path: 'test-results/api/**/*.xml'
+          path: 'test-results/api/**/*.trx'
           reporter: dotnet-trx
           fail-on-error: false
 
@@ -101,7 +98,7 @@ jobs:
         if: always()
         with:
           name: Mobile Tests Results
-          path: 'test-results/mobile/**/*.xml'
+          path: 'test-results/mobile/**/*.trx'
           reporter: dotnet-trx
           fail-on-error: false
 

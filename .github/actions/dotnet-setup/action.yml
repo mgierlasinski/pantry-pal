@@ -8,6 +8,9 @@ inputs:
     description: Install MAUI workload (true/false)
     required: false
     default: 'false'
+  maui-platform:
+    description: MAUI platform to install (android/ios/windows/maccatalyst)
+    required: false
 runs:
   using: composite
   steps:
@@ -19,5 +22,16 @@ runs:
     - name: Install MAUI workload
       if: ${{ inputs.install-maui == 'true' }}
       shell: pwsh
-      run: dotnet workload install maui
+      run: |
+        if ("${{ inputs.maui-platform }}" -eq "android") {
+          dotnet workload install maui-android
+        } elseif ("${{ inputs.maui-platform }}" -eq "ios") {
+          dotnet workload install maui-ios
+        } elseif ("${{ inputs.maui-platform }}" -eq "windows") {
+          dotnet workload install maui-windows
+        } elseif ("${{ inputs.maui-platform }}" -eq "maccatalyst") {
+          dotnet workload install maui-maccatalyst
+        } else {
+          dotnet workload install maui
+        }
 
