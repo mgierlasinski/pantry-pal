@@ -1,0 +1,191 @@
+name: Pull Request Tests
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'src/**'
+      - 'tests/**'
+      - '.github/workflows/**'
+
+env:
+  DOTNET_VERSION: 9.0.x
+
+jobs:
+  api-tests:
+    name: API Unit Tests
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup .NET SDK
+        uses: ./.github/actions/dotnet-setup
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore dependencies
+        run: dotnet restore PantryPal.sln
+
+      - name: Run API unit tests with coverage
+        run: dotnet test tests/PantryPal.Api.UnitTests/PantryPal.Api.UnitTests.csproj --configuration Release --no-restore --collect:"XPlat Code Coverage" --results-directory ./test-results/api
+
+      - name: Upload API test results
+        uses: actions/upload-artifact@v5
+        if: always()
+        with:
+          name: api-test-results
+          path: test-results/api/
+          retention-days: 7
+
+  mobile-tests:
+    name: Mobile Unit Tests
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup .NET SDK with MAUI
+        uses: ./.github/actions/dotnet-setup
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+          install-maui: 'true'
+
+      - name: Restore dependencies
+        run: dotnet restore PantryPal.sln
+
+      - name: Run Mobile unit tests with coverage
+        run: dotnet test tests/PantryPal.Mobile.UnitTests/PantryPal.Mobile.UnitTests.csproj --configuration Release --no-restore --collect:"XPlat Code Coverage" --results-directory ./test-results/mobile
+
+      - name: Upload Mobile test results
+        uses: actions/upload-artifact@v5
+        if: always()
+        with:
+          name: mobile-test-results
+          path: test-results/mobile/
+          retention-days: 7
+
+  pr-status-comment:
+    name: PR Status Comment
+    runs-on: ubuntu-latest
+    needs: [api-tests, mobile-tests]
+    if: always() && github.event_name == 'pull_request'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Download API test results
+        uses: actions/download-artifact@v6
+        with:
+          name: api-test-results
+          path: test-results/api/
+
+      - name: Download Mobile test results
+        uses: actions/download-artifact@v6
+        with:
+          name: mobile-test-results
+          path: test-results/mobile/
+
+      - name: Publish API Test Results
+        uses: dorny/test-reporter@v2
+        if: always()
+        with:
+          name: API Tests Results
+          path: 'test-results/api/**/*.xml'
+          reporter: dotnet-trx
+          fail-on-error: false
+
+      - name: Publish Mobile Test Results
+        uses: dorny/test-reporter@v2
+        if: always()
+        with:
+          name: Mobile Tests Results
+          path: 'test-results/mobile/**/*.xml'
+          reporter: dotnet-trx
+          fail-on-error: false
+
+      - name: Generate status summary
+        id: status
+        run: |
+          API_STATUS="${{ needs.api-tests.result }}"
+          MOBILE_STATUS="${{ needs.mobile-tests.result }}"
+
+          if [ "$API_STATUS" = "success" ] && [ "$MOBILE_STATUS" = "success" ]; then
+            echo "status=✅ All tests passed successfully!" >> $GITHUB_OUTPUT
+            echo "color=brightgreen" >> $GITHUB_OUTPUT
+          elif [ "$API_STATUS" = "failure" ] || [ "$MOBILE_STATUS" = "failure" ]; then
+            echo "status=❌ Some tests failed. Please check the test results above." >> $GITHUB_OUTPUT
+            echo "color=red" >> $GITHUB_OUTPUT
+          else
+            echo "status=⚠️ Tests completed with warnings or were skipped." >> $GITHUB_OUTPUT
+            echo "color=yellow" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Generate test status
+        id: test-status
+        run: |
+          API_RESULT="${{ needs.api-tests.result }}"
+          MOBILE_RESULT="${{ needs.mobile-tests.result }}"
+
+          if [ "$API_RESULT" = "success" ]; then
+            echo "api_status=✅ Passed" >> $GITHUB_OUTPUT
+          elif [ "$API_RESULT" = "failure" ]; then
+            echo "api_status=❌ Failed" >> $GITHUB_OUTPUT
+          else
+            echo "api_status=⚠️ $API_RESULT" >> $GITHUB_OUTPUT
+          fi
+
+          if [ "$MOBILE_RESULT" = "success" ]; then
+            echo "mobile_status=✅ Passed" >> $GITHUB_OUTPUT
+          elif [ "$MOBILE_RESULT" = "failure" ]; then
+            echo "mobile_status=❌ Failed" >> $GITHUB_OUTPUT
+          else
+            echo "mobile_status=⚠️ $MOBILE_RESULT" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Comment PR
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const status = '${{ steps.status.outputs.status }}';
+
+            const body = `## 🧪 Test Results Summary
+
+            **API Tests:** ${{ steps.test-status.outputs.api_status }}
+            **Mobile Tests:** ${{ steps.test-status.outputs.mobile_status }}
+
+            ${status}
+
+            ---
+            *This comment was automatically generated by the CI pipeline.*`;
+
+            // Find existing comment
+            const comments = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const existingComment = comments.data.find(comment =>
+              comment.body.includes('## 🧪 Test Results Summary') &&
+              comment.user.type === 'Bot'
+            );
+
+            if (existingComment) {
+              // Update existing comment
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existingComment.id,
+                body: body
+              });
+            } else {
+              // Create new comment
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: body
+              });
+            }
