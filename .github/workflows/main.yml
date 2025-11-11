@@ -23,7 +23,7 @@ jobs:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
       - name: Restore dependencies
-        run: dotnet restore PantryPal.sln --use-lock-file
+        run: dotnet restore PantryPal.sln
 
       - name: Run unit tests
         run: dotnet test tests/PantryPal.Api.UnitTests/PantryPal.Api.UnitTests.csproj --configuration Release --no-restore
@@ -54,7 +54,7 @@ jobs:
           install-maui: 'true'
 
       - name: Restore dependencies
-        run: dotnet restore PantryPal.sln --use-lock-file
+        run: dotnet restore PantryPal.sln
 
       - name: Run unit tests
         run: dotnet test tests/PantryPal.Mobile.UnitTests/PantryPal.Mobile.UnitTests.csproj --configuration Release --no-restore
