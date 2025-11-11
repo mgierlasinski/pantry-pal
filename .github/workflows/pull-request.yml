@@ -55,12 +55,6 @@ jobs:
       - name: Run Mobile unit tests with coverage
         run: dotnet test tests/PantryPal.Mobile.UnitTests/PantryPal.Mobile.UnitTests.csproj --configuration Release --no-restore --collect:"XPlat Code Coverage" --results-directory ./test-results/mobile --logger trx
 
-      - name: List test result files
-        run: |
-          echo "Contents of test-results/mobile/:"
-          ls -la test-results/mobile/ || echo "Directory not found"
-          find test-results/mobile/ -name "*.trx" -o -name "*.xml" | head -10 || echo "No trx/xml files found"
-
       - name: Upload Mobile test results
         uses: actions/upload-artifact@v5
         if: always()
