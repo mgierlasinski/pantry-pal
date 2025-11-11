@@ -74,6 +74,7 @@
 		<PackageReference Include="Supabase" Version="1.1.1" />
 		<PackageReference Include="UraniumUI.Icons.MaterialSymbols" Version="2.13.0" />
 		<PackageReference Include="UraniumUI.Material" Version="2.13.0" />
+		<PackageReference Include="UraniumUI.Validations.DataAnnotations" Version="2.13.0" />
 	</ItemGroup>
 
 	<ItemGroup>

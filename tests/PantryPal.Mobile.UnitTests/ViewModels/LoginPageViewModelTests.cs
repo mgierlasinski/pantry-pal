@@ -42,36 +42,46 @@ public class LoginPageViewModelTests
     [Theory]
     [InlineData("", "password123", "Email is required.")]
     [InlineData("test@example.com", "", "Password is required.")]
-    [InlineData("", "", "Email is required.\nPassword is required.")]
-    public async Task LoginAsync_InvalidInput_ShowsValidationError(string email, string password, string expectedMessage)
+    [InlineData("", "", "Email is required.", "Password is required.")]
+    public async Task LoginAsync_InvalidInput_HasValidationErrors(string email, string password, params string[] expectedErrors)
     {
         // Arrange
         _viewModel.Email = email;
         _viewModel.Password = password;
 
         // Act
-        await _viewModel.LoginAsync();
+        _viewModel.LoginCommand.Execute(null);
 
         // Assert
-        _mockDisplayService.Verify(s => s.DisplayAlert("Validation Error", It.IsAny<string>(), "OK"), Times.Once);
+        Assert.True(_viewModel.HasErrors);
+        var errors = _viewModel.GetErrors().Select(e => e.ErrorMessage).ToList();
+        foreach (var expectedError in expectedErrors)
+        {
+            Assert.Contains(expectedError, errors);
+        }
         _mockAuthService.Verify(s => s.LoginAsync(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
         Assert.False(_viewModel.IsLoading);
     }
 
     [Theory]
     [InlineData("invalid-email", "password123", "Please enter a valid email address.")]
-    [InlineData("invalid-email", "", "Please enter a valid email address.\nPassword is required.")]
-    public async Task LoginAsync_InvalidEmailFormat_ShowsValidationError(string email, string password, string expectedMessage)
+    [InlineData("invalid-email", "", "Please enter a valid email address.", "Password is required.")]
+    public async Task LoginAsync_InvalidEmailFormat_HasValidationErrors(string email, string password, params string[] expectedErrors)
     {
         // Arrange
         _viewModel.Email = email;
         _viewModel.Password = password;
 
         // Act
-        await _viewModel.LoginAsync();
-
+        _viewModel.LoginCommand.Execute(null);
+        
         // Assert
-        _mockDisplayService.Verify(s => s.DisplayAlert("Validation Error", It.IsAny<string>(), "OK"), Times.Once);
+        Assert.True(_viewModel.HasErrors);
+        var errors = _viewModel.GetErrors().Select(e => e.ErrorMessage).ToList();
+        foreach (var expectedError in expectedErrors)
+        {
+            Assert.Contains(expectedError, errors);
+        }
         _mockAuthService.Verify(s => s.LoginAsync(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
         Assert.False(_viewModel.IsLoading);
     }
@@ -202,29 +212,4 @@ public class LoginPageViewModelTests
         _mockNavigationService.Verify(s => s.GoToAsync(nameof(PantryPal.Mobile.Views.ForgotPasswordPage), It.IsAny<bool>()), Times.Once);
     }
 
-    [Fact]
-    public void TogglePasswordVisibility_FalseToTrue_ChangesToTrue()
-    {
-        // Arrange
-        _viewModel.IsPasswordVisible = false;
-
-        // Act
-        _viewModel.TogglePasswordVisibility();
-
-        // Assert
-        Assert.True(_viewModel.IsPasswordVisible);
-    }
-
-    [Fact]
-    public void TogglePasswordVisibility_TrueToFalse_ChangesToFalse()
-    {
-        // Arrange
-        _viewModel.IsPasswordVisible = true;
-
-        // Act
-        _viewModel.TogglePasswordVisibility();
-
-        // Assert
-        Assert.False(_viewModel.IsPasswordVisible);
-    }
 }

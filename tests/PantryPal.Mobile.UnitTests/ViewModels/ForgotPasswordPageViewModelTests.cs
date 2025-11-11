@@ -39,16 +39,18 @@ public class ForgotPasswordPageViewModelTests
     }
 
     [Fact]
-    public async Task SendResetEmailAsync_EmptyEmail_ShowsValidationError()
+    public async Task SendResetEmailAsync_EmptyEmail_HasValidationErrors()
     {
         // Arrange
         _viewModel.Email = "";
 
         // Act
-        await _viewModel.SendResetEmailAsync();
+        _viewModel.SendResetEmailCommand.Execute(null);
 
         // Assert
-        _mockDisplayService.Verify(s => s.DisplayAlert("Validation Error", "Email is required.", "OK"), Times.Once);
+        Assert.True(_viewModel.HasErrors);
+        var errors = _viewModel.GetErrors().Select(e => e.ErrorMessage).ToList();
+        Assert.Contains("Email is required.", errors);
         _mockAuthService.Verify(s => s.SendPasswordResetEmailAsync(It.IsAny<string>()), Times.Never);
         Assert.False(_viewModel.IsLoading);
     }
@@ -57,16 +59,18 @@ public class ForgotPasswordPageViewModelTests
     [InlineData("notanemail")]
     [InlineData("invalid@")]
     [InlineData("@example.com")]
-    public async Task SendResetEmailAsync_InvalidEmailFormat_ShowsValidationError(string invalidEmail)
+    public async Task SendResetEmailAsync_InvalidEmailFormat_HasValidationErrors(string invalidEmail)
     {
         // Arrange
         _viewModel.Email = invalidEmail;
 
         // Act
-        await _viewModel.SendResetEmailAsync();
+        _viewModel.SendResetEmailCommand.Execute(null);
 
         // Assert
-        _mockDisplayService.Verify(s => s.DisplayAlert("Validation Error", "Please enter a valid email address.", "OK"), Times.Once);
+        Assert.True(_viewModel.HasErrors);
+        var errors = _viewModel.GetErrors().Select(e => e.ErrorMessage).ToList();
+        Assert.Contains("Please enter a valid email address.", errors);
         _mockAuthService.Verify(s => s.SendPasswordResetEmailAsync(It.IsAny<string>()), Times.Never);
         Assert.False(_viewModel.IsLoading);
     }

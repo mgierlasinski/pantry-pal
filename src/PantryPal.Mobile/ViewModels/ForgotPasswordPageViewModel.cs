@@ -32,12 +32,10 @@ public partial class ForgotPasswordPageViewModel : ObservableValidator
         if (IsLoading)
             return;
 
-        // Validate input
         ValidateAllProperties();
+
         if (HasErrors)
         {
-            await _displayService.DisplayAlert("Validation Error",
-                string.Join(Environment.NewLine, GetErrors().Select(e => e.ErrorMessage)));
             return;
         }
 

@@ -28,12 +28,6 @@ public partial class RegisterPageViewModel : ObservableValidator
     [ObservableProperty]
     private bool _isLoading;
 
-    [ObservableProperty]
-    private bool _isPasswordVisible;
-
-    [ObservableProperty]
-    private bool _isConfirmPasswordVisible;
-
     public RegisterPageViewModel(IAuthService authService, IDisplayService displayService, INavigationService navigationService)
     {
         _authService = authService;
@@ -47,7 +41,6 @@ public partial class RegisterPageViewModel : ObservableValidator
         if (IsLoading)
             return;
 
-        // Validate input
         ValidateAllProperties();
 
         // Additional validation for password matching
@@ -59,8 +52,6 @@ public partial class RegisterPageViewModel : ObservableValidator
 
         if (HasErrors)
         {
-            await _displayService.DisplayAlert("Validation Error",
-                string.Join(Environment.NewLine, GetErrors().Select(e => e.ErrorMessage)));
             return;
         }
 
@@ -95,17 +86,5 @@ public partial class RegisterPageViewModel : ObservableValidator
     public async Task NavigateToLoginAsync()
     {
         await _navigationService.GoToAsync(AppShell.LoginRoute);
-    }
-
-    [RelayCommand]
-    public void TogglePasswordVisibility()
-    {
-        IsPasswordVisible = !IsPasswordVisible;
-    }
-
-    [RelayCommand]
-    public void ToggleConfirmPasswordVisibility()
-    {
-        IsConfirmPasswordVisible = !IsConfirmPasswordVisible;
     }
 }

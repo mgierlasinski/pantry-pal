@@ -3,6 +3,11 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:viewModels="clr-namespace:PantryPal.Mobile.ViewModels"
              xmlns:converters="clr-namespace:PantryPal.Mobile.Converters"
+             xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
+             xmlns:const="clr-namespace:PantryPal.Mobile.Constants"
+             xmlns:m="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
+             xmlns:v="clr-namespace:UraniumUI.Validations;assembly=UraniumUI.Validations.DataAnnotations"
+             xmlns:controls="clr-namespace:InputKit.Shared.Controls;assembly=InputKit.Maui"
              x:Class="PantryPal.Mobile.Views.LoginPage"
              x:DataType="viewModels:LoginPageViewModel"
              Title="Login">
@@ -38,52 +43,51 @@
                              HeightRequest="48"
                              AutomationId="LoadingIndicator" />
 
-            <!-- Email Field -->
-            <VerticalStackLayout Margin="0,16,0,0" Spacing="4">
-                <Label Text="Email" FontSize="16" FontAttributes="Bold" />
-                <Entry Text="{Binding Email}"
-                       Placeholder="Enter your email"
-                       Keyboard="Email"
-                       IsEnabled="{Binding IsLoading, Converter={StaticResource InverseBoolConverter}}"
-                       ReturnType="Next"
-                       AutomationId="EmailEntry" />
-            </VerticalStackLayout>
-
-            <!-- Password Field -->
-            <VerticalStackLayout Spacing="4">
-                <Label Text="Password" FontSize="16" FontAttributes="Bold" />
-                <HorizontalStackLayout Spacing="0">
-                    <Entry Text="{Binding Password}"
-                           Placeholder="Enter your password"
-                           IsPassword="{Binding IsPasswordVisible, Converter={StaticResource InverseBoolConverter}}"
-                           IsEnabled="{Binding IsLoading, Converter={StaticResource InverseBoolConverter}}"
-                           ReturnType="Done"
-                           HorizontalOptions="FillAndExpand"
-                           AutomationId="PasswordEntry" />
-                    <Button Text="{Binding IsPasswordVisible, Converter={StaticResource InverseBoolConverter}, ConverterParameter='Hide:Show'}"
-                            Command="{Binding TogglePasswordVisibilityCommand}"
+            <controls:FormView SubmitCommand="{Binding LoginCommand}">
+                <VerticalStackLayout Margin="0,16,0,0" Spacing="15">
+                    <!-- Email Field -->
+                    <material:TextField
+                        Text="{Binding Email}"
+                        Icon="{FontImageSource FontFamily={x:Static const:MaterialFont.Outlined}, Glyph={x:Static m:MaterialOutlined.Mail}}"
+                        Title="Email"
+                        Keyboard="Email"
+                        IsEnabled="{Binding IsLoading, Converter={StaticResource InverseBoolConverter}}"
+                        ReturnType="Next"
+                        AutomationId="EmailEntry">
+                        <material:TextField.Behaviors>
+                            <v:DataAnnotationsBehavior Binding="{Binding Email}" />
+                        </material:TextField.Behaviors>
+                    </material:TextField>
+                    <!-- Password Field -->
+                    <material:TextField
+                        Text="{Binding Password}"
+                        Icon="{FontImageSource FontFamily={x:Static const:MaterialFont.Outlined}, Glyph={x:Static m:MaterialOutlined.Lock}}"
+                        Title="Password"
+                        IsPassword="True"
+                        IsEnabled="{Binding IsLoading, Converter={StaticResource InverseBoolConverter}}"
+                        ReturnType="Done"
+                        AutomationId="PasswordEntry">
+                        <material:TextField.Attachments>
+                            <material:TextFieldPasswordShowHideAttachment />
+                        </material:TextField.Attachments>
+                        <material:TextField.Behaviors>
+                            <v:DataAnnotationsBehavior Binding="{Binding Password}" />
+                        </material:TextField.Behaviors>
+                    </material:TextField>
+                    <!-- Login Button -->
+                    <Button Text="Log In"
+                            controls:FormView.IsSubmitButton="True"
                             IsEnabled="{Binding IsLoading, Converter={StaticResource InverseBoolConverter}}"
-                            BackgroundColor="Transparent"
-                            TextColor="{DynamicResource Gray600}"
-                            FontSize="14"
-                            WidthRequest="60"
-                            Padding="8,0"
-                            AutomationId="TogglePasswordButton" />
-                </HorizontalStackLayout>
-            </VerticalStackLayout>
-
-            <!-- Login Button -->
-            <Button Text="Log In"
-                    Command="{Binding LoginCommand}"
-                    IsEnabled="{Binding IsLoading, Converter={StaticResource InverseBoolConverter}}"
-                    BackgroundColor="{DynamicResource Primary}"
-                    TextColor="White"
-                    FontAttributes="Bold"
-                    HeightRequest="56"
-                    CornerRadius="12"
-                    Margin="0,16,0,0"
-                    HorizontalOptions="Fill"
-                    AutomationId="LoginButton" />
+                            BackgroundColor="{DynamicResource Primary}"
+                            TextColor="White"
+                            FontAttributes="Bold"
+                            HeightRequest="56"
+                            CornerRadius="12"
+                            Margin="0,16,0,0"
+                            HorizontalOptions="Fill"
+                            AutomationId="LoginButton" />
+                </VerticalStackLayout>
+            </controls:FormView>
 
             <!-- Navigation Links -->
             <VerticalStackLayout Spacing="8" Margin="0,16,0,0">

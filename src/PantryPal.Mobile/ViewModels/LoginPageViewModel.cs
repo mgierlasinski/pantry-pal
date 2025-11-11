@@ -24,9 +24,6 @@ public partial class LoginPageViewModel : ObservableValidator
     [ObservableProperty]
     private bool _isLoading;
 
-    [ObservableProperty]
-    private bool _isPasswordVisible;
-
     public LoginPageViewModel(IAuthService authService, IDisplayService displayService, INavigationService navigationService)
     {
         _authService = authService;
@@ -40,12 +37,10 @@ public partial class LoginPageViewModel : ObservableValidator
         if (IsLoading)
             return;
 
-        // Validate input
         ValidateAllProperties();
+
         if (HasErrors)
         {
-            await _displayService.DisplayAlert("Validation Error",
-                string.Join(Environment.NewLine, GetErrors().Select(e => e.ErrorMessage)));
             return;
         }
 
@@ -86,11 +81,5 @@ public partial class LoginPageViewModel : ObservableValidator
     public async Task NavigateToForgotPasswordAsync()
     {
         await _navigationService.GoToAsync(nameof(ForgotPasswordPage));
-    }
-
-    [RelayCommand]
-    public void TogglePasswordVisibility()
-    {
-        IsPasswordVisible = !IsPasswordVisible;
     }
 }
