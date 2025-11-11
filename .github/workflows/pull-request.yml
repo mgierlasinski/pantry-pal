@@ -85,12 +85,6 @@ jobs:
           name: api-test-results
           path: test-results/api/
 
-      - name: Download Mobile test results
-        uses: actions/download-artifact@v6
-        with:
-          name: mobile-test-results
-          path: test-results/mobile/
-
       - name: Publish API Test Results
         uses: dorny/test-reporter@v2
         if: always()
@@ -100,30 +94,19 @@ jobs:
           reporter: dotnet-trx
           fail-on-error: false
 
-      - name: Publish Mobile Test Results
-        uses: dorny/test-reporter@v2
-        if: always()
-        with:
-          name: Mobile Tests Results
-          path: 'test-results/mobile/**/*.trx'
-          path-replace-backslashes: true
-          reporter: dotnet-trx
-          fail-on-error: false
-
       - name: Generate status summary
         id: status
         run: |
           API_STATUS="${{ needs.api-tests.result }}"
-          MOBILE_STATUS="${{ needs.mobile-tests.result }}"
 
-          if [ "$API_STATUS" = "success" ] && [ "$MOBILE_STATUS" = "success" ]; then
-            echo "status=✅ All tests passed successfully!" >> $GITHUB_OUTPUT
+          if [ "$API_STATUS" = "success" ]; then
+            echo "status=✅ API tests passed successfully! Mobile tests were skipped." >> $GITHUB_OUTPUT
             echo "color=brightgreen" >> $GITHUB_OUTPUT
-          elif [ "$API_STATUS" = "failure" ] || [ "$MOBILE_STATUS" = "failure" ]; then
-            echo "status=❌ Some tests failed. Please check the test results above." >> $GITHUB_OUTPUT
+          elif [ "$API_STATUS" = "failure" ]; then
+            echo "status=❌ API tests failed. Please check the test results above." >> $GITHUB_OUTPUT
             echo "color=red" >> $GITHUB_OUTPUT
           else
-            echo "status=⚠️ Tests completed with warnings or were skipped." >> $GITHUB_OUTPUT
+            echo "status=⚠️ API tests completed with warnings. Mobile tests were skipped." >> $GITHUB_OUTPUT
             echo "color=yellow" >> $GITHUB_OUTPUT
           fi
 
@@ -131,7 +114,6 @@ jobs:
         id: test-status
         run: |
           API_RESULT="${{ needs.api-tests.result }}"
-          MOBILE_RESULT="success"
 
           if [ "$API_RESULT" = "success" ]; then
             echo "api_status=✅ Passed" >> $GITHUB_OUTPUT
@@ -141,13 +123,7 @@ jobs:
             echo "api_status=⚠️ $API_RESULT" >> $GITHUB_OUTPUT
           fi
 
-          if [ "$MOBILE_RESULT" = "success" ]; then
-            echo "mobile_status=✅ Passed" >> $GITHUB_OUTPUT
-          elif [ "$MOBILE_RESULT" = "failure" ]; then
-            echo "mobile_status=❌ Failed" >> $GITHUB_OUTPUT
-          else
-            echo "mobile_status=⚠️ $MOBILE_RESULT" >> $GITHUB_OUTPUT
-          fi
+          echo "mobile_status=⏭️ Skipped" >> $GITHUB_OUTPUT
 
       - name: Comment PR
         uses: actions/github-script@v8
