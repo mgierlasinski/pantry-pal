@@ -59,6 +59,7 @@ Authorization: Bearer {{login.response.body.$.access_token}}
 # POST /pantry-items - Create pantry item
 POST {{Api_HostAddress}}/pantry-items
 Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.access_token}}
 
 {
   "name": "Tomato"
@@ -69,6 +70,7 @@ Content-Type: application/json
 # POST /pantry-items - Validation error: empty name
 POST {{Api_HostAddress}}/pantry-items
 Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.access_token}}
 
 {
   "name": ""
@@ -79,6 +81,7 @@ Content-Type: application/json
 # POST /pantry-items - Validation error: name too long
 POST {{Api_HostAddress}}/pantry-items
 Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.access_token}}
 
 {
   "name": "A very long name that exceeds the maximum allowed length of 100 characters for pantry item names which should trigger validation error"
@@ -89,6 +92,7 @@ Content-Type: application/json
 # PATCH /pantry-items/{id} - Update pantry item name
 PATCH {{Api_HostAddress}}/pantry-items/{{ExistingPantryItem}}
 Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.access_token}}
 
 {
   "name": "Cherry Tomato"
@@ -99,6 +103,7 @@ Content-Type: application/json
 # PATCH /pantry-items/{id} - Update pantry item favorite status
 PATCH {{Api_HostAddress}}/pantry-items/{{ExistingPantryItem}}
 Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.access_token}}
 
 {
   "isFavorite": true
@@ -109,6 +114,7 @@ Content-Type: application/json
 # PATCH /pantry-items/{id} - Update both name and favorite status
 PATCH {{Api_HostAddress}}/pantry-items/{{ExistingPantryItem}}
 Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.access_token}}
 
 {
   "name": "Organic Cherry Tomato",
@@ -120,6 +126,7 @@ Content-Type: application/json
 # PATCH /pantry-items/{id} - Validation error: no fields provided
 PATCH {{Api_HostAddress}}/pantry-items/{{ExistingPantryItem}}
 Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.access_token}}
 
 {
 }
@@ -129,6 +136,7 @@ Content-Type: application/json
 # PATCH /pantry-items/{id} - Validation error: empty name
 PATCH {{Api_HostAddress}}/pantry-items/{{ExistingPantryItem}}
 Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.access_token}}
 
 {
   "name": ""
@@ -139,6 +147,7 @@ Content-Type: application/json
 # PATCH /pantry-items/{id} - Validation error: name too long
 PATCH {{Api_HostAddress}}/pantry-items/{{ExistingPantryItem}}
 Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.access_token}}
 
 {
   "name": "A very long name that exceeds the maximum allowed length of 100 characters for pantry item names which should trigger validation error"
@@ -149,6 +158,7 @@ Content-Type: application/json
 # PATCH /pantry-items/{id} - Error: item not found
 PATCH {{Api_HostAddress}}/pantry-items/00000000-0000-0000-0000-999999999999
 Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.access_token}}
 
 {
   "name": "Non-existent Item"
@@ -158,11 +168,13 @@ Content-Type: application/json
 
 # DELETE /pantry-items/{id} - Delete existing pantry item
 DELETE {{Api_HostAddress}}/pantry-items/20064eb6-236c-4eec-90f9-3db822d659be
+Authorization: Bearer {{login.response.body.$.access_token}}
 
 ###
 
 # DELETE /pantry-items/{id} - Error: item not found
 DELETE {{Api_HostAddress}}/pantry-items/00000000-0000-0000-0000-999999999999
+Authorization: Bearer {{login.response.body.$.access_token}}
 
 ###
 
@@ -198,17 +210,20 @@ Authorization: Bearer {{login.response.body.$.access_token}}
 
 # POST /recipes/generate - Generate AI-powered recipe based on pantry items and preferences
 POST {{Api_HostAddress}}/recipes/generate
+Authorization: Bearer {{login.response.body.$.access_token}}
 
 ###
 
 # POST /recipes/{generationId}/accept - Accept a generated recipe and save it to recipes table
 # Note: Replace @ExistingGenerationId with a valid generation ID from POST /recipes/generate response
 POST {{Api_HostAddress}}/recipes/{{ExistingGenerationId}}/accept
+Authorization: Bearer {{login.response.body.$.access_token}}
 
 ###
 
 # POST /recipes/{generationId}/accept - Error: generation not found
 POST {{Api_HostAddress}}/recipes/00000000-0000-0000-0000-999999999999/accept
+Authorization: Bearer {{login.response.body.$.access_token}}
 
 ###
 
@@ -216,6 +231,7 @@ POST {{Api_HostAddress}}/recipes/00000000-0000-0000-0000-999999999999/accept
 # Note: Replace @ExistingGenerationId with a valid generation ID from POST /recipes/generate response
 POST {{Api_HostAddress}}/recipes/{{ExistingGenerationId}}/reject
 Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.access_token}}
 
 {
   "rejectReasonId": 1
@@ -226,6 +242,7 @@ Content-Type: application/json
 # POST /recipes/{generationId}/reject - Error: generation not found
 POST {{Api_HostAddress}}/recipes/00000000-0000-0000-0000-999999999999/reject
 Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.access_token}}
 
 {
   "rejectReasonId": 1
@@ -237,6 +254,7 @@ Content-Type: application/json
 # Note: Replace @ExistingGenerationId with a valid generation ID from POST /recipes/generate response
 POST {{Api_HostAddress}}/recipes/{{ExistingGenerationId}}/reject
 Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.access_token}}
 
 {
   "rejectReasonId": 999
@@ -247,31 +265,32 @@ Content-Type: application/json
 # DELETE /recipes/{id} - Success: delete existing recipe
 # Note: Replace @ExistingRecipeId with a valid recipe ID from POST /recipes/{generationId}/accept response
 DELETE {{Api_HostAddress}}/recipes/{{ExistingRecipeId}}
+Authorization: Bearer {{login.response.body.$.access_token}}
 
 ###
 
 # DELETE /recipes/{id} - Error: invalid recipe ID format
 DELETE {{Api_HostAddress}}/recipes/invalid-id
+Authorization: Bearer {{login.response.body.$.access_token}}
 
 ###
 
 # DELETE /recipes/{id} - Error: recipe not found (404)
 DELETE {{Api_HostAddress}}/recipes/00000000-0000-0000-0000-999999999999
+Authorization: Bearer {{login.response.body.$.access_token}}
 
 ###
 
-# GET /user-preferences - Get user preferences (requires authentication)
-# Note: Authentication not yet fully implemented in http file
-# TODO: Add Authorization header with Supabase JWT when authentication is enabled
+# GET /user-preferences - Get user preferences
 GET {{Api_HostAddress}}/user-preferences
+Authorization: Bearer {{login.response.body.$.access_token}}
 
 ###
 
 # POST /user-preferences - Create or update user preferences (upsert)
-# Note: Authentication not yet fully implemented in http file
-# TODO: Add Authorization header with Supabase JWT when authentication is enabled
 POST {{Api_HostAddress}}/user-preferences
 Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.access_token}}
 
 {
   "dietTypeId": 1,
@@ -284,6 +303,7 @@ Content-Type: application/json
 # POST /user-preferences - Create preferences without disliked ingredients
 POST {{Api_HostAddress}}/user-preferences
 Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.access_token}}
 
 {
   "dietTypeId": 2,
@@ -295,6 +315,7 @@ Content-Type: application/json
 # POST /user-preferences - Update existing preferences with different values
 POST {{Api_HostAddress}}/user-preferences
 Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.access_token}}
 
 {
   "dietTypeId": 3,
@@ -307,6 +328,7 @@ Content-Type: application/json
 # POST /user-preferences - Validation error: missing required dietTypeId
 POST {{Api_HostAddress}}/user-preferences
 Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.access_token}}
 
 {
   "preferredCuisineId": 1,
@@ -318,6 +340,7 @@ Content-Type: application/json
 # POST /user-preferences - Validation error: missing required preferredCuisineId
 POST {{Api_HostAddress}}/user-preferences
 Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.access_token}}
 
 {
   "dietTypeId": 1,
@@ -329,6 +352,7 @@ Content-Type: application/json
 # POST /user-preferences - Validation error: invalid dietTypeId (doesn't exist)
 POST {{Api_HostAddress}}/user-preferences
 Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.access_token}}
 
 {
   "dietTypeId": 999,
@@ -341,6 +365,7 @@ Content-Type: application/json
 # POST /user-preferences - Validation error: invalid preferredCuisineId (doesn't exist)
 POST {{Api_HostAddress}}/user-preferences
 Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.access_token}}
 
 {
   "dietTypeId": 1,
@@ -353,6 +378,7 @@ Content-Type: application/json
 # POST /user-preferences - Validation error: dislikedIngredients too long (>1000 characters)
 POST {{Api_HostAddress}}/user-preferences
 Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.access_token}}
 
 {
   "dietTypeId": 1,
@@ -365,6 +391,7 @@ Content-Type: application/json
 # POST /user-preferences - Validation error: invalid JSON format
 POST {{Api_HostAddress}}/user-preferences
 Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.access_token}}
 
 {
   "dietTypeId": "invalid",
@@ -374,18 +401,17 @@ Content-Type: application/json
 
 ###
 
-# GET /diet-types - Get all available diet types (no authentication required)
+# GET /diet-types - Get all available diet types
 GET {{Api_HostAddress}}/diet-types
 
 ###
 
-# GET /preferred-cuisines - Get all available preferred cuisines (no authentication required)
+# GET /preferred-cuisines - Get all available preferred cuisines
 GET {{Api_HostAddress}}/preferred-cuisines
 
 ###
 
 # GET /recipe-reject-reasons - Get all available recipe reject reasons
 GET {{Api_HostAddress}}/recipe-reject-reasons
-Authorization: Bearer {{login.response.body.$.access_token}}
 
 ###
