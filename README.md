@@ -86,6 +86,38 @@ dotnet maui run -p src/PantryPal.Mobile -t Android
 
 Replace `-t Android` with `-t iOS` as needed.
 
+### Docker (Production)
+
+To build and run the application using Docker, follow these steps from the project root directory.
+
+**1. Build the Docker Image:**
+
+```bash
+docker build -t mgierlasinski/pantry-pal-api -f src/PantryPal.Api/Dockerfile .
+```
+
+- `-t mgierlasinski/pantry-pal-api`: Tags the image with the specified name.
+- `-f src/PantryPal.Api/Dockerfile`: Specifies the path to the Dockerfile.
+- `.`: Sets the build context to the current directory (the project root).
+
+**2. Run the Docker Container:**
+
+This command runs the container and injects the required secrets as environment variables.
+
+```bash
+docker run --rm -p 8080:8080 \
+  -e "Supabase__Url=your_supabase_url" \
+  -e "Supabase__AnonKey=your_supabase_anon_key" \
+  -e "Supabase__Auth__JwtSecret=your_supabase_jwt_secret" \
+  -e "OpenRouter__ApiKey=your_openrouter_api_key" \
+  mgierlasinski/pantry-pal-api
+```
+
+- `--rm`: Automatically removes the container when it exits.
+- `-p 8080:8080`: Maps port 8080 on your local machine to port 8080 in the container.
+- `-e "..."`: Sets the environment variables required by your application. **Replace the placeholder values** with your actual secrets.
+- `mgierlasinski/pantry-pal-api`: The name of the image to run.
+
 ## Available Scripts
 
 From the project root:

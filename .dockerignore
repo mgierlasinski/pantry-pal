@@ -1,0 +1,25 @@
+# Directories
+**/bin
+**/obj
+
+# Projects not needed in the API image
+src/PantryPal.Mobile/
+tests/
+
+# Files
+*.user
+*.dbmdl
+*.jfm
+*~
+*.swp
+.idea/
+.project
+.vscode/
+/README.md
+LICENSE
+.git/
+.gitignore
+.editorconfig
+NuGet.Config
+*.sln
+!PantryPal.sln

@@ -46,6 +46,7 @@ builder.Services.AddAuthentication().AddJwtBearer(options =>
 });
 
 builder.Services.AddOpenApi();
+builder.Services.AddHealthChecks();
 
 // Register repositories
 builder.Services.AddScoped<IPantryRepository, PantryRepository>();
@@ -79,6 +80,7 @@ if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Test"))
 }
 
 app.MapGet("/", () => "Hello World!");
+app.MapHealthChecks("/healthz");
 
 app.RegisterPantryItemsEndpoints();
 app.RegisterRecipesEndpoints();
