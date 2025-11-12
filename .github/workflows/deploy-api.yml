@@ -25,7 +25,7 @@ jobs:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
       - name: Restore dependencies
-        run: dotnet restore PantryPal.sln
+        run: dotnet restore tests/PantryPal.Api.UnitTests/PantryPal.Api.UnitTests.csproj
 
       - name: Run unit tests
         run: dotnet test tests/PantryPal.Api.UnitTests/PantryPal.Api.UnitTests.csproj --configuration Release --no-restore
