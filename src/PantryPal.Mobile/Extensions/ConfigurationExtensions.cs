@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Configuration;
+using PantryPal.Mobile.Properties;
 using System.Reflection;
 
 namespace PantryPal.Mobile.Extensions;
@@ -16,11 +17,8 @@ public static class ConfigurationExtensions
         {
             builder.AddEmbeddedConfiguration(assembly, configuration);
 
-            if (options.Environment != null)
-            {
-                var envResource = $"{Path.GetFileNameWithoutExtension(configuration)}.{options.Environment}.json";
-                builder.AddEmbeddedConfiguration(assembly, envResource);
-            }
+            var envResource = $"{Path.GetFileNameWithoutExtension(configuration)}.{MauiLaunchSettings.Environment}.json";
+            builder.AddEmbeddedConfiguration(assembly, envResource);
         }
 
         if (options.UseSecrets)
@@ -48,15 +46,8 @@ public static class ConfigurationExtensions
 
 public class ConfigurationOptions
 {
-    public string? Environment { get; private set; }
     public List<string> Configurations { get; } = new();
     public bool UseSecrets { get; private set; }
-
-    public ConfigurationOptions SetEnvironment(string name)
-    {
-        Environment = name;
-        return this;
-    }
 
     public ConfigurationOptions AddConfiguration(string configuration)
     {

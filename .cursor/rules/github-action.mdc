@@ -5,6 +5,7 @@ alwaysApply: false
 
 - Check if `*.sln` exists in project root and summarize key scripts
 - Check if `*.csproj` exists in subdirectories
+- Inject variables defined in appsettings.json files
 - Always use `git branch -a | cat` to verify whether we use `main` or `master` branch
 - Extract common steps into composite actions in separate files
 - Once you're done, as a final step conduct the following:

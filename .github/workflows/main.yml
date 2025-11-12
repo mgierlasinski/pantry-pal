@@ -1,4 +1,4 @@
-name: Test and Publish
+name: Build & Test
 
 on:
   #push:
@@ -28,14 +28,14 @@ jobs:
       - name: Run unit tests
         run: dotnet test tests/PantryPal.Api.UnitTests/PantryPal.Api.UnitTests.csproj --configuration Release --no-restore
 
-      - name: Publish API
-        run: dotnet publish src/PantryPal.Api/PantryPal.Api.csproj --configuration Release --output out/api --no-restore
+      #- name: Publish API
+      #  run: dotnet publish src/PantryPal.Api/PantryPal.Api.csproj --configuration Release --output out/api --no-restore
 
-      - name: Upload API artifact
-        uses: actions/upload-artifact@v5
-        with:
-          name: pantry-pal-api
-          path: out/api
+      #- name: Upload API artifact
+      #  uses: actions/upload-artifact@v5
+      #  with:
+      #    name: pantry-pal-api
+      #    path: out/api
 
   android:
     name: Android Pipeline
@@ -60,12 +60,12 @@ jobs:
       - name: Run unit tests
         run: dotnet test tests/PantryPal.Mobile.UnitTests/PantryPal.Mobile.UnitTests.csproj --configuration Release --no-restore
 
-      - name: Publish Android app
-        run: dotnet publish src/PantryPal.Mobile/PantryPal.Mobile.csproj -f ${{ env.MAUI_TARGET_FRAMEWORK }} --configuration Release --output out/android --no-restore
+      #- name: Publish Android app
+      #  run: dotnet publish src/PantryPal.Mobile/PantryPal.Mobile.csproj -f ${{ env.MAUI_TARGET_FRAMEWORK }} --configuration Release --output out/android --no-restore
 
-      - name: Upload Android artifact
-        uses: actions/upload-artifact@v5
-        with:
-          name: pantry-pal-android
-          path: out/android
+      #- name: Upload Android artifact
+      #  uses: actions/upload-artifact@v5
+      #  with:
+      #    name: pantry-pal-android
+      #    path: out/android
 
