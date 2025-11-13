@@ -2,5 +2,5 @@
 
 internal static class MauiLaunchSettings
 {
-    public const string Environment = "Production";
+    public const string Environment = "Development";
 }
