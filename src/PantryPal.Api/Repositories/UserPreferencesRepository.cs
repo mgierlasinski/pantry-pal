@@ -120,7 +120,6 @@ public class UserPreferencesRepository : IUserPreferencesRepository
             };
 
             // Perform upsert using INSERT ... ON CONFLICT DO UPDATE
-            _logger.LogWarning("Attempting upsert for user {UserId}", userId);
             var response = await _supabaseClient
                 .From<UserPreferencesInsert>()
                 .Upsert(insertData, new Supabase.Postgrest.QueryOptions
@@ -155,8 +154,8 @@ public class UserPreferencesRepository : IUserPreferencesRepository
         catch (Exception ex)
         {
             _logger.LogError(ex,
-                "Error upserting user preferences for user {UserId}. Exception Type: {ExceptionType}, Message: {Message}",
-                userId, ex.GetType().Name, ex.Message);
+                "Error upserting user preferences for user {UserId}",
+                userId);
             throw;
         }
     }
