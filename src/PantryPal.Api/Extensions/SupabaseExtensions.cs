@@ -1,4 +1,5 @@
-﻿using Supabase;
+﻿using Microsoft.Extensions.Logging;
+using Supabase;
 
 namespace PantryPal.Api.Extensions;
 
@@ -9,7 +10,8 @@ public static class SupabaseExtensions
         services.AddScoped(provider =>
         {
             var configuration = provider.GetRequiredService<IConfiguration>();
-            var logger = provider.GetRequiredService<ILogger<SupabaseExtensions>>();
+            var loggerFactory = provider.GetRequiredService<ILoggerFactory>();
+            var logger = loggerFactory.CreateLogger("SupabaseExtensions");
             var httpContextAccessor = provider.GetRequiredService<IHttpContextAccessor>();
 
             var url = configuration["Supabase:Url"]!;
