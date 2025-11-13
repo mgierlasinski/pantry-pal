@@ -25,9 +25,11 @@ public partial class ProfileViewModel : ObservableValidator
 
     // Selected items
     [ObservableProperty]
+    [Required(ErrorMessage = "Please select a diet type.")]
     private DietTypeDto? _selectedDietType;
 
     [ObservableProperty]
+    [Required(ErrorMessage = "Please select a preferred cuisine.")]
     private PreferredCuisineDto? _selectedPreferredCuisine;
 
     // Form input with validation
@@ -124,24 +126,10 @@ public partial class ProfileViewModel : ObservableValidator
     [RelayCommand]
     public async Task SavePreferencesAsync()
     {
-        // Validate the model
         ValidateAllProperties();
+
         if (HasErrors)
         {
-            await _displayService.DisplayAlert("Validation Error", string.Join(Environment.NewLine, GetErrors().Select(e => e.ErrorMessage)));
-            return;
-        }
-
-        // Ensure required selections are made
-        if (SelectedDietType == null)
-        {
-            await _displayService.DisplayAlert("Validation Error", "Please select a diet type.");
-            return;
-        }
-
-        if (SelectedPreferredCuisine == null)
-        {
-            await _displayService.DisplayAlert("Validation Error", "Please select a preferred cuisine.");
             return;
         }
 

@@ -189,10 +189,10 @@ public class ProfileViewModelTests
     #region SavePreferencesAsync Tests
 
     [Theory]
-    [InlineData(null, null, "", "Please select a diet type.")]
-    [InlineData(1, null, "", "Please select a preferred cuisine.")]
-    public async Task SavePreferencesAsync_MissingRequiredFields_ShowsValidationAlert(
-        int? dietTypeId, int? cuisineId, string dislikedIngredients, string expectedMessage)
+    [InlineData(null, null, "")]
+    [InlineData(1, null, "")]
+    public async Task SavePreferencesAsync_MissingRequiredFields_PreventsSave(
+        int? dietTypeId, int? cuisineId, string dislikedIngredients)
     {
         // Arrange
         var dietTypesResponse = new DietTypesResponseDto(SampleDietTypes);
@@ -218,12 +218,12 @@ public class ProfileViewModelTests
         await _viewModel.SavePreferencesAsync();
 
         // Assert
-        _mockDisplayService.Verify(s => s.DisplayAlert("Validation Error", expectedMessage, "OK"), Times.Once);
         _mockUserPreferencesService.Verify(s => s.UpsertUserPreferencesAsync(It.IsAny<UserPreferencesCreateDto>()), Times.Never);
+        Assert.True(_viewModel.HasErrors);
     }
 
     [Fact]
-    public async Task SavePreferencesAsync_DislikedIngredientsTooLong_ShowsValidationAlert()
+    public async Task SavePreferencesAsync_DislikedIngredientsTooLong_PreventsSave()
     {
         // Arrange
         var dietTypesResponse = new DietTypesResponseDto(SampleDietTypes);
@@ -244,8 +244,8 @@ public class ProfileViewModelTests
         await _viewModel.SavePreferencesAsync();
 
         // Assert
-        _mockDisplayService.Verify(s => s.DisplayAlert("Validation Error", It.Is<string>(msg => msg.Contains("Disliked ingredients cannot exceed 1000 characters")), "OK"), Times.Once);
         _mockUserPreferencesService.Verify(s => s.UpsertUserPreferencesAsync(It.IsAny<UserPreferencesCreateDto>()), Times.Never);
+        Assert.True(_viewModel.HasErrors);
     }
 
     [Theory]

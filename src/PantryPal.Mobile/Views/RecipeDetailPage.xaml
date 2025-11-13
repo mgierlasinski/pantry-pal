@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:viewModels="clr-namespace:PantryPal.Mobile.ViewModels"
              xmlns:markdown="clr-namespace:Indiko.Maui.Controls.Markdown;assembly=Indiko.Maui.Controls.Markdown"
+             Shell.PresentationMode="Modal"
              x:Class="PantryPal.Mobile.Views.RecipeDetailPage"
              x:DataType="viewModels:RecipeDetailViewModel"
              Title="{Binding RecipeTitle}">
