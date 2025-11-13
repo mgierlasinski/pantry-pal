@@ -23,7 +23,6 @@ public static class MauiProgram
             .UseMarkdownView()
             .ConfigureSettings(options =>
             {
-                options.SetEnvironment("Development");
                 options.AddConfiguration("appsettings.json");
                 options.AddUserSecrets();
             })
