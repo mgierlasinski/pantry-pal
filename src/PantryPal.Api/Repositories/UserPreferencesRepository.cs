@@ -120,7 +120,7 @@ public class UserPreferencesRepository : IUserPreferencesRepository
             };
 
             // Perform upsert using INSERT ... ON CONFLICT DO UPDATE
-            _logger.LogInformation("Attempting upsert for user {UserId}", userId);
+            _logger.LogWarning("Attempting upsert for user {UserId}", userId);
             var response = await _supabaseClient
                 .From<UserPreferencesInsert>()
                 .Upsert(insertData, new Supabase.Postgrest.QueryOptions

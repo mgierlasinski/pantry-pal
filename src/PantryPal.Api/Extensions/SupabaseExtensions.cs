@@ -17,7 +17,7 @@ public static class SupabaseExtensions
             var url = configuration["Supabase:Url"]!;
             var key = configuration["Supabase:AnonKey"]!;
 
-            logger.LogInformation("Supabase Config - URL: {Url}, Key Length: {KeyLength}", url, key?.Length ?? 0);
+            logger.LogWarning("Supabase Config - URL: {Url}, Key Length: {KeyLength}", url, key?.Length ?? 0);
 
             var options = new SupabaseOptions { AutoConnectRealtime = true };
 
@@ -28,7 +28,7 @@ public static class SupabaseExtensions
             if (httpContext?.User?.Identity?.IsAuthenticated == true)
             {
                 var authHeader = httpContext.Request.Headers.Authorization.ToString();
-                logger.LogInformation("Auth Header Present: {HasAuth}, Starts with Bearer: {IsBearer}",
+                logger.LogWarning("Auth Header Present: {HasAuth}, Starts with Bearer: {IsBearer}",
                     !string.IsNullOrEmpty(authHeader), authHeader?.StartsWith("Bearer "));
 
                 if (!string.IsNullOrEmpty(authHeader) && authHeader.StartsWith("Bearer "))
@@ -36,7 +36,7 @@ public static class SupabaseExtensions
                     // Set the authorization header directly on the Postgrest client
                     // This ensures all database requests include the JWT token for RLS
                     client.Postgrest.Options.Headers["Authorization"] = authHeader;
-                    logger.LogInformation("Authorization header set on Supabase client");
+                    logger.LogWarning("Authorization header set on Supabase client");
                 }
             }
             else
