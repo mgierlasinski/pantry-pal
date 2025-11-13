@@ -20,11 +20,12 @@ public static class SupabaseExtensions
             var httpContext = httpContextAccessor.HttpContext;
             if (httpContext?.User?.Identity?.IsAuthenticated == true)
             {
-                var token = httpContext.Request.Headers.Authorization.ToString().Replace("Bearer ", "");
-                if (!string.IsNullOrEmpty(token))
+                var authHeader = httpContext.Request.Headers.Authorization.ToString();
+                if (!string.IsNullOrEmpty(authHeader) && authHeader.StartsWith("Bearer "))
                 {
-                    // Set the auth token directly - this sets the Authorization header for all requests
-                    client.Auth.SetSession(token, string.Empty);
+                    // Set the authorization header directly on the Postgrest client
+                    // This ensures all database requests include the JWT token for RLS
+                    client.Postgrest.Options.Headers["Authorization"] = authHeader;
                 }
             }
 
