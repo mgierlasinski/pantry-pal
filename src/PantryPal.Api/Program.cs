@@ -21,6 +21,7 @@ builder.Services.AddProblemDetails(configure =>
     };
 });
 
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddSupabase();
 builder.Services.AddOpenRouter(builder.Configuration);
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
