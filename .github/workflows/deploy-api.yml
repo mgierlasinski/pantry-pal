@@ -49,6 +49,7 @@ jobs:
     name: Deploy to DigitalOcean
     needs: build
     runs-on: ubuntu-latest
+    environment: production
     steps:
       - name: Deploy to DigitalOcean App Platform
         uses: digitalocean/app_action/deploy@v2
