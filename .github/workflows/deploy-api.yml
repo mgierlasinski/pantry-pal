@@ -43,7 +43,9 @@ jobs:
           context: .
           file: src/PantryPal.Api/Dockerfile
           push: true
-          tags: ghcr.io/${{ env.IMAGE_NAME }}:${{ github.sha }}
+          tags: |
+            ghcr.io/${{ env.IMAGE_NAME }}:${{ github.sha }}
+            ghcr.io/${{ env.IMAGE_NAME }}:latest
 
   deploy:
     name: Deploy to DigitalOcean
