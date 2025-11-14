@@ -52,12 +52,14 @@
             
             <Button Text="Reject"
                     Style="{StaticResource SecondaryButton}"
+                    StyleClass="OutlinedButton"
                     Command="{Binding RejectCommand}"
                     HorizontalOptions="FillAndExpand"
                     AutomationId="RejectRecipeButton" />
 
             <Button Text="Accept"
                     Style="{StaticResource PrimaryButton}"
+                    StyleClass="FilledButton"
                     Command="{Binding AcceptCommand}"
                     HorizontalOptions="FillAndExpand"
                     AutomationId="AcceptRecipeButton" />

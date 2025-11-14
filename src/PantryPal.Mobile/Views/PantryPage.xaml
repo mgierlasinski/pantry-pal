@@ -80,6 +80,8 @@
                                TextColor="{DynamicResource Gray500}" />
                         <Button Text="Add First Item"
                                 Command="{Binding ShowAddDialogCommand}"
+                                Style="{StaticResource PrimaryButton}"
+                                StyleClass="FilledButton"
                                 HorizontalOptions="Center"
                                 Margin="0,20,0,0"
                                 AutomationId="EmptyStateAddButton" />
@@ -170,6 +172,7 @@
             
             <Button Text="Generate Recipe"
                     Style="{StaticResource PrimaryButton}"
+                    StyleClass="FilledButton"
                     Command="{Binding GenerateRecipeCommand}"
                     IsEnabled="{Binding IsNotEmpty}"
                     HorizontalOptions="Fill"

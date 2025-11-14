@@ -9,16 +9,12 @@
         <Setter Property="BackgroundColor" Value="{DynamicResource Primary}" />
         <Setter Property="TextColor" Value="White" />
         <Setter Property="FontAttributes" Value="Bold" />
-        <Setter Property="HeightRequest" Value="56" />
-        <Setter Property="CornerRadius" Value="12" />
     </Style>
 
     <Style TargetType="Button" x:Key="SecondaryButton">
         <Setter Property="BackgroundColor" Value="{DynamicResource Gray200}" />
         <Setter Property="TextColor" Value="{DynamicResource Gray600}" />
         <Setter Property="FontAttributes" Value="Bold" />
-        <Setter Property="HeightRequest" Value="56" />
-        <Setter Property="CornerRadius" Value="12" />
     </Style>
 
     <!-- Default Styles -->

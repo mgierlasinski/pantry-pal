@@ -82,6 +82,7 @@
                     HorizontalOptions="Fill"
                     IsEnabled="{Binding IsLoading, Converter={StaticResource InverseBoolConverter}}"
                     Style="{StaticResource PrimaryButton}"
+                    StyleClass="FilledButton"
                     Text="Save Preferences" />
             </controls:FormView>
 
@@ -129,17 +130,19 @@
                     HorizontalOptions="Fill"
                     IsEnabled="{Binding IsLoading, Converter={StaticResource InverseBoolConverter}}"
                     Style="{StaticResource PrimaryButton}"
+                    StyleClass="FilledButton"
                     Text="Change Password" />
             </controls:FormView>
 
             <!--  Logout Button  -->
             <Button
                 Grid.Row="2"
-                Margin="0,20,0,0"
+                Margin="0,10,0,0"
                 AutomationId="LogoutButton"
                 Command="{Binding LogoutCommand}"
                 HorizontalOptions="Fill"
                 Style="{StaticResource SecondaryButton}"
+                StyleClass="OutlinedButton"
                 Text="Logout"
                 VerticalOptions="End" />
         </Grid>

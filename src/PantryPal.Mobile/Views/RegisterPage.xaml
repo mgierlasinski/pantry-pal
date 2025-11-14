@@ -92,6 +92,7 @@
                     <!-- Register Button -->
                     <Button Text="Sign Up"
                             Style="{StaticResource PrimaryButton}"
+                            StyleClass="FilledButton"
                             controls:FormView.IsSubmitButton="True"
                             IsEnabled="{Binding IsLoading, Converter={StaticResource InverseBoolConverter}}"
                             Margin="0,16,0,0"
