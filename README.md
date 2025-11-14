@@ -58,7 +58,12 @@ The project uses `appsettings.json` for configuration in both the API and Mobile
 
 #### Backend (API)
 
-For local development, create an `appsettings.Development.json` file in the `src/PantryPal.Api` directory. This file is git-ignored and should contain your secrets.
+For local development, the project uses the standard .NET User Secrets mechanism to store sensitive data like API keys and connection strings.
+
+To add your secrets:
+1.  Right-click the `PantryPal.Api` project in Visual Studio.
+2.  Select **Manage User Secrets**.
+3.  This will open a `secrets.json` file. Add your configuration there:
 
 ```json
 {
@@ -73,6 +78,8 @@ For local development, create an `appsettings.Development.json` file in the `src
   }
 }
 ```
+
+The `appsettings.Development.json` file can be used to override non-sensitive configuration for the development environment.
 
 #### Mobile App
 

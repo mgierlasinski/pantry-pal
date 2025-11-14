@@ -1,10 +1,17 @@
 using CommunityToolkit.Mvvm.Messaging;
 using PantryPal.Mobile.Models;
-using Supabase;
 using Supabase.Gotrue;
+using Supabase.Gotrue.Exceptions;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace PantryPal.Mobile.Services;
+
+public record SupabaseError(
+    [property: JsonPropertyName("code")] int Code,
+    [property: JsonPropertyName("error_code")] string ErrorCode,
+    [property: JsonPropertyName("msg")] string Msg
+);
 
 public class SupabaseAuthService : IAuthService
 {
@@ -87,6 +94,11 @@ public class SupabaseAuthService : IAuthService
 
             return AuthResult.Failure("Registration failed");
         }
+        catch (GotrueException ex)
+        {
+            var errorMessage = ExtractErrorMessage(ex.Message);
+            return AuthResult.Failure(errorMessage);
+        }
         catch (Exception ex)
         {
             var errorMessage = MapAuthError(ex);
@@ -118,6 +130,11 @@ public class SupabaseAuthService : IAuthService
         {
             await _supabaseClient.Auth.ResetPasswordForEmail(email);
             return AuthResult.Success();
+        }
+        catch (GotrueException ex)
+        {
+            var errorMessage = ExtractErrorMessage(ex.Message);
+            return AuthResult.Failure(errorMessage);
         }
         catch (Exception ex)
         {
@@ -187,6 +204,24 @@ public class SupabaseAuthService : IAuthService
         }
 
         return Task.CompletedTask;
+    }
+
+    private string ExtractErrorMessage(string rawMessage)
+    {
+        try
+        {
+            var error = JsonSerializer.Deserialize<SupabaseError>(rawMessage);
+            if (error != null && !string.IsNullOrEmpty(error.Msg))
+            {
+                return error.Msg;
+            }
+        }
+        catch
+        {
+            // If deserialization fails, continue to return original message
+        }
+
+        return rawMessage;
     }
 
     private string MapAuthError(Exception ex)
