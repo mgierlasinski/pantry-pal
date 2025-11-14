@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Maui.Core;
 using PantryPal.Mobile.Models;
 using PantryPal.Mobile.Services;
 using PantryPal.Mobile.Views;
@@ -76,11 +77,11 @@ public partial class SavedRecipesViewModel : ObservableObject
         }
         catch (HttpRequestException ex)
         {
-            await _displayService.ShowToast($"Failed to load recipes: {ex.Message}");
+            await _displayService.ShowToast($"Failed to load recipes: {ex.Message}", ToastDuration.Long);
         }
         catch (Exception ex)
         {
-            await _displayService.ShowToast($"An error occurred: {ex.Message}");
+            await _displayService.ShowToast($"An error occurred: {ex.Message}", ToastDuration.Long);
         }
         finally
         {
@@ -124,7 +125,7 @@ public partial class SavedRecipesViewModel : ObservableObject
         {
             // Reset page counter on failure to allow retry
             _currentPage--;
-            await _displayService.ShowToast($"An error occurred: {ex.Message}");
+            await _displayService.ShowToast($"An error occurred: {ex.Message}", ToastDuration.Long);
         }
         finally
         {
@@ -177,11 +178,11 @@ public partial class SavedRecipesViewModel : ObservableObject
         }
         catch (HttpRequestException ex)
         {
-            await _displayService.ShowToast($"Failed to delete recipe: {ex.Message}");
+            await _displayService.ShowToast($"Failed to delete recipe: {ex.Message}", ToastDuration.Long);
         }
         catch (Exception ex)
         {
-            await _displayService.ShowToast($"An error occurred: {ex.Message}");
+            await _displayService.ShowToast($"An error occurred: {ex.Message}", ToastDuration.Long);
         }
         finally
         {

@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Maui.Core;
 using PantryPal.Data;
 using PantryPal.Mobile.Models;
 using PantryPal.Mobile.Services;
@@ -116,7 +117,7 @@ public partial class PantryPageViewModel : ObservableObject
         }
         catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Conflict)
         {
-            await _displayService.DisplayAlert("Duplicate Item", "An item with this name already exists.");
+            await _displayService.ShowToast("An item with this name already exists.");
         }
         catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Unauthorized)
         {
@@ -165,7 +166,7 @@ public partial class PantryPageViewModel : ObservableObject
         catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Conflict)
         {
             existingItem.Name = originalName;
-            await _displayService.DisplayAlert("Duplicate Item", "An item with this name already exists.");
+            await _displayService.ShowToast("An item with this name already exists.");
         }
         catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Unauthorized)
         {
@@ -335,7 +336,7 @@ public partial class PantryPageViewModel : ObservableObject
     {
         if (IsEmpty)
         {
-            await _displayService.DisplayAlert("No Items", "Add items to your pantry before generating a recipe.");
+            await _displayService.ShowToast("Add items to your pantry before generating a recipe.");
             return;
         }
 
@@ -346,13 +347,13 @@ public partial class PantryPageViewModel : ObservableObject
     {
         if (string.IsNullOrWhiteSpace(itemName))
         {
-            await _displayService.DisplayAlert("Validation Error", "Item name is required.");
+            await _displayService.ShowToast("Item name is required.");
             return false;
         }
 
         if (itemName.Length > 100)
         {
-            await _displayService.DisplayAlert("Validation Error", "Item name must be 100 characters or less.");
+            await _displayService.ShowToast("Item name must be 100 characters or less.");
             return false;
         }
 

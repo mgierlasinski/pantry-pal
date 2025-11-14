@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Maui.Core;
 using PantryPal.Data;
 using PantryPal.Mobile.Services;
 using System.Collections.ObjectModel;
@@ -190,12 +191,12 @@ public partial class ProfileViewModel : ObservableValidator
             }
             else
             {
-                await _displayService.DisplayAlert("Logout Error", result.ErrorMessage ?? "An error occurred during logout.");
+                await _displayService.ShowToast(result.ErrorMessage ?? "An error occurred during logout.", ToastDuration.Long);
             }
         }
         catch (Exception ex)
         {
-            await _displayService.DisplayAlert("Error", $"Logout failed: {ex.Message}");
+            await _displayService.ShowToast($"Logout failed: {ex.Message}", ToastDuration.Long);
         }
     }
 
@@ -209,7 +210,7 @@ public partial class ProfileViewModel : ObservableValidator
         // Additional validation for password matching
         if (NewPassword != ConfirmNewPassword)
         {
-            await _displayService.DisplayAlert("Validation Error", "Passwords do not match.");
+            await _displayService.ShowToast("Passwords do not match.");
             return;
         }
 
@@ -234,12 +235,12 @@ public partial class ProfileViewModel : ObservableValidator
             }
             else
             {
-                await _displayService.DisplayAlert("Error", result.ErrorMessage ?? "Failed to change password.");
+                await _displayService.ShowToast(result.ErrorMessage ?? "Failed to change password.", ToastDuration.Long);
             }
         }
         catch (Exception ex)
         {
-            await _displayService.DisplayAlert("Error", $"Failed to change password: {ex.Message}");
+            await _displayService.ShowToast($"Failed to change password: {ex.Message}", ToastDuration.Long);
         }
         finally
         {

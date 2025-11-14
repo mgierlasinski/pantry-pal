@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Maui.Core;
 using PantryPal.Mobile.Services;
 using System.ComponentModel.DataAnnotations;
 
@@ -46,7 +47,7 @@ public partial class RegisterPageViewModel : ObservableValidator
         // Additional validation for password matching
         if (Password != ConfirmPassword)
         {
-            await _displayService.DisplayAlert("Validation Error", "Passwords do not match.");
+            await _displayService.ShowToast("Passwords do not match.");
             return;
         }
 
@@ -69,12 +70,12 @@ public partial class RegisterPageViewModel : ObservableValidator
             }
             else
             {
-                await _displayService.DisplayAlert("Registration Failed", result.ErrorMessage ?? "An unexpected error occurred.");
+                await _displayService.ShowToast(result.ErrorMessage ?? "An unexpected error occurred.", ToastDuration.Long);
             }
         }
         catch (Exception ex)
         {
-            await _displayService.DisplayAlert("Error", $"Registration failed: {ex.Message}");
+            await _displayService.ShowToast($"Registration failed: {ex.Message}", ToastDuration.Long);
         }
         finally
         {

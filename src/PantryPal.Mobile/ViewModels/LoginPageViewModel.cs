@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Maui.Core;
 using PantryPal.Mobile.Services;
 using PantryPal.Mobile.Views;
 using System.ComponentModel.DataAnnotations;
@@ -58,12 +59,12 @@ public partial class LoginPageViewModel : ObservableValidator
             }
             else
             {
-                await _displayService.DisplayAlert("Login Failed", result.ErrorMessage ?? "An unexpected error occurred.");
+                await _displayService.ShowToast(result.ErrorMessage ?? "An unexpected error occurred.", ToastDuration.Long);
             }
         }
         catch (Exception ex)
         {
-            await _displayService.DisplayAlert("Error", $"Login failed: {ex.Message}");
+            await _displayService.ShowToast($"Login failed: {ex.Message}", ToastDuration.Long);
         }
         finally
         {

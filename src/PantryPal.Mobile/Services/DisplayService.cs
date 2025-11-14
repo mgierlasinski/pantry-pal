@@ -1,4 +1,5 @@
 using CommunityToolkit.Maui.Alerts;
+using CommunityToolkit.Maui.Core;
 
 namespace PantryPal.Mobile.Services;
 
@@ -24,8 +25,8 @@ public class DisplayService : IDisplayService
         return await Shell.Current.DisplayActionSheet(title, cancel, destruction, buttons);
     }
 
-    public async Task ShowToast(string message)
+    public async Task ShowToast(string message, ToastDuration duration = ToastDuration.Short)
     {
-        await Toast.Make(message).Show();
+        await Toast.Make(message, duration).Show();
     }
 }
