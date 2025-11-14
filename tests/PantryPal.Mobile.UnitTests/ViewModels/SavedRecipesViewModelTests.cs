@@ -5,6 +5,7 @@ using PantryPal.Mobile.Services;
 using PantryPal.Mobile.ViewModels;
 using PantryPal.Mobile.Views;
 using System.Net;
+using CommunityToolkit.Maui.Core;
 
 namespace PantryPal.Mobile.UnitTests.ViewModels;
 
@@ -113,7 +114,7 @@ public class SavedRecipesViewModelTests
         // Assert
         Assert.Empty(_viewModel.Recipes);
         Assert.False(_viewModel.IsLoading);
-        _mockDisplayService.Verify(s => s.ShowToast("Failed to load recipes: Network error"), Times.Once);
+        _mockDisplayService.Verify(s => s.ShowToast("Failed to load recipes: Network error", It.IsAny<ToastDuration>()), Times.Once);
     }
 
     [Fact]
@@ -226,7 +227,7 @@ public class SavedRecipesViewModelTests
         // Assert
         Assert.Single(_viewModel.Recipes); // Still only has initial recipe
         Assert.False(_viewModel.IsLoadingMore);
-        _mockDisplayService.Verify(s => s.ShowToast("Failed to load more recipes: Network error"), Times.Once);
+        _mockDisplayService.Verify(s => s.ShowToast("Failed to load more recipes: Network error", It.IsAny<ToastDuration>()), Times.Once);
         // Page counter should be reset (verified by no additional recipes being added)
     }
 
@@ -346,7 +347,7 @@ public class SavedRecipesViewModelTests
         // Assert
         Assert.Empty(_viewModel.Recipes); // Recipe removed from UI
         Assert.False(_viewModel.IsLoading);
-        _mockDisplayService.Verify(s => s.ShowToast("Recipe was already deleted."), Times.Once);
+        _mockDisplayService.Verify(s => s.ShowToast("Recipe was already deleted.", It.IsAny<ToastDuration>()), Times.Once);
     }
 
     [Fact]
@@ -407,7 +408,7 @@ public class SavedRecipesViewModelTests
         // Assert
         Assert.Single(_viewModel.Recipes); // Recipe still in UI
         Assert.False(_viewModel.IsLoading);
-        _mockDisplayService.Verify(s => s.ShowToast("Failed to delete recipe: Network error"), Times.Once);
+        _mockDisplayService.Verify(s => s.ShowToast("Failed to delete recipe: Network error", It.IsAny<ToastDuration>()), Times.Once);
     }
 
     [Fact]

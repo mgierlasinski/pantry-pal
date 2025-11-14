@@ -3,6 +3,7 @@ using PantryPal.Data;
 using PantryPal.Mobile.Services;
 using PantryPal.Mobile.ViewModels;
 using System.Net;
+using CommunityToolkit.Maui.Core;
 
 namespace PantryPal.Mobile.UnitTests.ViewModels;
 
@@ -162,7 +163,7 @@ public class ProfileViewModelTests
         await _viewModel.LoadPreferencesAsync();
 
         // Assert
-        _mockDisplayService.Verify(s => s.ShowToast("Network error: Network error"), Times.Once);
+        _mockDisplayService.Verify(s => s.ShowToast("Network error: Network error", It.IsAny<ToastDuration>()), Times.Once);
         Assert.False(_viewModel.IsLoading);
     }
 
@@ -179,7 +180,7 @@ public class ProfileViewModelTests
         await _viewModel.LoadPreferencesAsync();
 
         // Assert
-        _mockDisplayService.Verify(s => s.ShowToast("Failed to load preferences: Unexpected error"), Times.Once);
+        _mockDisplayService.Verify(s => s.ShowToast("Failed to load preferences: Unexpected error", It.IsAny<ToastDuration>()), Times.Once);
         Assert.False(_viewModel.IsLoading);
     }
 
@@ -281,7 +282,7 @@ public class ProfileViewModelTests
                 dto.DietTypeId == expectedDto.DietTypeId &&
                 dto.PreferredCuisineId == expectedDto.PreferredCuisineId &&
                 dto.DislikedIngredients == expectedDto.DislikedIngredients)), Times.Once);
-        _mockDisplayService.Verify(s => s.ShowToast("Preferences saved successfully!"), Times.Once);
+        _mockDisplayService.Verify(s => s.ShowToast("Preferences saved successfully!", It.IsAny<ToastDuration>()), Times.Once);
     }
 
     [Fact]
@@ -335,7 +336,7 @@ public class ProfileViewModelTests
         await _viewModel.SavePreferencesAsync();
 
         // Assert
-        _mockDisplayService.Verify(s => s.ShowToast("Network error: Network error"), Times.Once);
+        _mockDisplayService.Verify(s => s.ShowToast("Network error: Network error", It.IsAny<ToastDuration>()), Times.Once);
     }
 
     [Fact]
@@ -362,7 +363,7 @@ public class ProfileViewModelTests
         await _viewModel.SavePreferencesAsync();
 
         // Assert
-        _mockDisplayService.Verify(s => s.ShowToast("Failed to save preferences: Unexpected error"), Times.Once);
+        _mockDisplayService.Verify(s => s.ShowToast("Failed to save preferences: Unexpected error", It.IsAny<ToastDuration>()), Times.Once);
     }
 
 
@@ -379,7 +380,7 @@ public class ProfileViewModelTests
 
         // Assert
         _mockAuthService.Verify(s => s.LogoutAsync(), Times.Once);
-        _mockDisplayService.Verify(s => s.ShowToast("Logged out successfully"), Times.Once);
+        _mockDisplayService.Verify(s => s.ShowToast("Logged out successfully", It.IsAny<ToastDuration>()), Times.Once);
     }
 
     [Fact]
@@ -396,7 +397,7 @@ public class ProfileViewModelTests
 
         // Assert
         _mockAuthService.Verify(s => s.LogoutAsync(), Times.Once);
-        _mockDisplayService.Verify(s => s.DisplayAlert("Logout Error", errorMessage, "OK"), Times.Once);
+        _mockDisplayService.Verify(s => s.ShowToast(errorMessage, ToastDuration.Long), Times.Once);
     }
 
     [Fact]
@@ -412,7 +413,7 @@ public class ProfileViewModelTests
 
         // Assert
         _mockAuthService.Verify(s => s.LogoutAsync(), Times.Once);
-        _mockDisplayService.Verify(s => s.DisplayAlert("Error", "Logout failed: Service unavailable", It.IsAny<string>()), Times.Once);
+        _mockDisplayService.Verify(s => s.ShowToast("Logout failed: Service unavailable", ToastDuration.Long), Times.Once);
     }
 
 
@@ -428,7 +429,7 @@ public class ProfileViewModelTests
 
         // Assert
         _mockAuthService.Verify(s => s.ChangePasswordAsync(It.IsAny<string>()), Times.Never);
-        _mockDisplayService.Verify(s => s.DisplayAlert("Validation Error", "Passwords do not match.", "OK"), Times.Once);
+        _mockDisplayService.Verify(s => s.ShowToast("Passwords do not match.", ToastDuration.Short), Times.Once);
         Assert.False(_viewModel.IsLoading);
     }
 
@@ -497,7 +498,7 @@ public class ProfileViewModelTests
 
         // Assert
         _mockAuthService.Verify(s => s.ChangePasswordAsync(newPassword), Times.Once);
-        _mockDisplayService.Verify(s => s.ShowToast("Password changed successfully!"), Times.Once);
+        _mockDisplayService.Verify(s => s.ShowToast("Password changed successfully!", It.IsAny<ToastDuration>()), Times.Once);
         Assert.Null(_viewModel.NewPassword);
         Assert.Null(_viewModel.ConfirmNewPassword);
         Assert.False(_viewModel.IsLoading);
@@ -521,7 +522,7 @@ public class ProfileViewModelTests
 
         // Assert
         _mockAuthService.Verify(s => s.ChangePasswordAsync(newPassword), Times.Once);
-        _mockDisplayService.Verify(s => s.DisplayAlert("Error", errorMessage, "OK"), Times.Once);
+        _mockDisplayService.Verify(s => s.ShowToast(errorMessage, ToastDuration.Long), Times.Once);
         Assert.Equal(newPassword, _viewModel.NewPassword); // Fields should not be cleared on failure
         Assert.Equal(newPassword, _viewModel.ConfirmNewPassword);
         Assert.False(_viewModel.IsLoading);
@@ -543,7 +544,7 @@ public class ProfileViewModelTests
         await _viewModel.ChangePasswordAsync();
 
         // Assert
-        _mockDisplayService.Verify(s => s.DisplayAlert("Error", "Failed to change password.", "OK"), Times.Once);
+        _mockDisplayService.Verify(s => s.ShowToast("Failed to change password.", ToastDuration.Long), Times.Once);
         Assert.False(_viewModel.IsLoading);
     }
 
@@ -565,7 +566,7 @@ public class ProfileViewModelTests
 
         // Assert
         _mockAuthService.Verify(s => s.ChangePasswordAsync(newPassword), Times.Once);
-        _mockDisplayService.Verify(s => s.DisplayAlert("Error", $"Failed to change password: {exceptionMessage}", "OK"), Times.Once);
+        _mockDisplayService.Verify(s => s.ShowToast($"Failed to change password: {exceptionMessage}", ToastDuration.Long), Times.Once);
         Assert.Equal(newPassword, _viewModel.NewPassword); // Fields should not be cleared on exception
         Assert.Equal(newPassword, _viewModel.ConfirmNewPassword);
         Assert.False(_viewModel.IsLoading);

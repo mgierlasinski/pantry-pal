@@ -1,3 +1,4 @@
+using CommunityToolkit.Maui.Core;
 using Moq;
 using PantryPal.Mobile.Services;
 using PantryPal.Mobile.ViewModels;
@@ -90,7 +91,7 @@ public class ForgotPasswordPageViewModelTests
 
         // Assert
         _mockAuthService.Verify(s => s.SendPasswordResetEmailAsync("test@example.com"), Times.Once);
-        _mockDisplayService.Verify(s => s.ShowToast("If an account with this email exists, a password reset link has been sent."), Times.Once);
+        _mockDisplayService.Verify(s => s.ShowToast("If an account with this email exists, a password reset link has been sent.", It.IsAny<ToastDuration>()), Times.Once);
         _mockNavigationService.Verify(s => s.GoToAsync(AppShell.LoginRoute, It.IsAny<bool>()), Times.Once);
         Assert.False(_viewModel.IsLoading);
     }
@@ -111,7 +112,7 @@ public class ForgotPasswordPageViewModelTests
 
         // Assert
         _mockAuthService.Verify(s => s.SendPasswordResetEmailAsync("test@example.com"), Times.Once);
-        _mockDisplayService.Verify(s => s.DisplayAlert("Error", errorMessage, "OK"), Times.Once);
+        _mockDisplayService.Verify(s => s.ShowToast(errorMessage, ToastDuration.Long), Times.Once);
         _mockNavigationService.Verify(s => s.GoToAsync(It.IsAny<string>(), It.IsAny<bool>()), Times.Never);
         Assert.False(_viewModel.IsLoading);
     }
@@ -131,7 +132,7 @@ public class ForgotPasswordPageViewModelTests
 
         // Assert
         _mockAuthService.Verify(s => s.SendPasswordResetEmailAsync("test@example.com"), Times.Once);
-        _mockDisplayService.Verify(s => s.DisplayAlert("Error", "An unexpected error occurred.", "OK"), Times.Once);
+        _mockDisplayService.Verify(s => s.ShowToast("An unexpected error occurred.", ToastDuration.Long), Times.Once);
         _mockNavigationService.Verify(s => s.GoToAsync(It.IsAny<string>(), It.IsAny<bool>()), Times.Never);
         Assert.False(_viewModel.IsLoading);
     }
@@ -151,7 +152,7 @@ public class ForgotPasswordPageViewModelTests
 
         // Assert
         _mockAuthService.Verify(s => s.SendPasswordResetEmailAsync("test@example.com"), Times.Once);
-        _mockDisplayService.Verify(s => s.DisplayAlert("Error", $"Failed to send reset email: {exception.Message}", "OK"), Times.Once);
+        _mockDisplayService.Verify(s => s.ShowToast($"Failed to send reset email: {exception.Message}", ToastDuration.Long), Times.Once);
         _mockNavigationService.Verify(s => s.GoToAsync(It.IsAny<string>(), It.IsAny<bool>()), Times.Never);
         Assert.False(_viewModel.IsLoading);
     }
@@ -171,7 +172,7 @@ public class ForgotPasswordPageViewModelTests
 
         // Assert
         _mockAuthService.Verify(s => s.SendPasswordResetEmailAsync("test@example.com"), Times.Once);
-        _mockDisplayService.Verify(s => s.ShowToast("If an account with this email exists, a password reset link has been sent."), Times.Once);
+        _mockDisplayService.Verify(s => s.ShowToast("If an account with this email exists, a password reset link has been sent.", It.IsAny<ToastDuration>()), Times.Once);
         _mockNavigationService.Verify(s => s.GoToAsync(AppShell.LoginRoute, It.IsAny<bool>()), Times.Once);
         Assert.False(_viewModel.IsLoading);
     }

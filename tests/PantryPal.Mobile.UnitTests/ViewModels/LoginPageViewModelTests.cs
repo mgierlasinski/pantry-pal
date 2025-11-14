@@ -1,3 +1,4 @@
+using CommunityToolkit.Maui.Core;
 using Moq;
 using PantryPal.Mobile.Services;
 using PantryPal.Mobile.ViewModels;
@@ -102,7 +103,7 @@ public class LoginPageViewModelTests
 
         // Assert
         _mockAuthService.Verify(s => s.LoginAsync("test@example.com", "password123"), Times.Once);
-        _mockDisplayService.Verify(s => s.ShowToast("Login successful!"), Times.Once);
+        _mockDisplayService.Verify(s => s.ShowToast("Login successful!", It.IsAny<ToastDuration>()), Times.Once);
         _mockNavigationService.Verify(s => s.GoToAsync(AppShell.DefaultRoute, It.IsAny<bool>()), Times.Once);
         Assert.False(_viewModel.IsLoading);
     }
@@ -124,7 +125,7 @@ public class LoginPageViewModelTests
 
         // Assert
         _mockAuthService.Verify(s => s.LoginAsync("test@example.com", "password123"), Times.Once);
-        _mockDisplayService.Verify(s => s.DisplayAlert("Login Failed", errorMessage, "OK"), Times.Once);
+        _mockDisplayService.Verify(s => s.ShowToast(errorMessage, ToastDuration.Long), Times.Once);
         _mockNavigationService.Verify(s => s.GoToAsync(It.IsAny<string>(), It.IsAny<bool>()), Times.Never);
         Assert.False(_viewModel.IsLoading);
     }
@@ -145,7 +146,7 @@ public class LoginPageViewModelTests
 
         // Assert
         _mockAuthService.Verify(s => s.LoginAsync("test@example.com", "password123"), Times.Once);
-        _mockDisplayService.Verify(s => s.DisplayAlert("Login Failed", "An unexpected error occurred.", "OK"), Times.Once);
+        _mockDisplayService.Verify(s => s.ShowToast("An unexpected error occurred.", ToastDuration.Long), Times.Once);
         _mockNavigationService.Verify(s => s.GoToAsync(It.IsAny<string>(), It.IsAny<bool>()), Times.Never);
         Assert.False(_viewModel.IsLoading);
     }
@@ -166,7 +167,7 @@ public class LoginPageViewModelTests
 
         // Assert
         _mockAuthService.Verify(s => s.LoginAsync("test@example.com", "password123"), Times.Once);
-        _mockDisplayService.Verify(s => s.DisplayAlert("Error", "Login failed: Network error", "OK"), Times.Once);
+        _mockDisplayService.Verify(s => s.ShowToast("Login failed: Network error", ToastDuration.Long), Times.Once);
         _mockNavigationService.Verify(s => s.GoToAsync(It.IsAny<string>(), It.IsAny<bool>()), Times.Never);
         Assert.False(_viewModel.IsLoading);
     }
@@ -187,7 +188,7 @@ public class LoginPageViewModelTests
 
         // Assert
         _mockAuthService.Verify(s => s.LoginAsync("test@example.com", "password123"), Times.Once);
-        _mockDisplayService.Verify(s => s.ShowToast("Login successful!"), Times.Once);
+        _mockDisplayService.Verify(s => s.ShowToast("Login successful!", It.IsAny<ToastDuration>()), Times.Once);
         _mockNavigationService.Verify(s => s.GoToAsync(AppShell.DefaultRoute, It.IsAny<bool>()), Times.Once);
         Assert.False(_viewModel.IsLoading);
     }

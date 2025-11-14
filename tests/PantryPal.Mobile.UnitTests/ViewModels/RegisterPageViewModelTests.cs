@@ -1,3 +1,4 @@
+using CommunityToolkit.Maui.Core;
 using Moq;
 using PantryPal.Mobile.Services;
 using PantryPal.Mobile.ViewModels;
@@ -126,7 +127,7 @@ public class RegisterPageViewModelTests
         await _viewModel.RegisterAsync();
 
         // Assert
-        _mockDisplayService.Verify(s => s.DisplayAlert("Validation Error", "Passwords do not match.", "OK"), Times.Once);
+        _mockDisplayService.Verify(s => s.ShowToast("Passwords do not match.", ToastDuration.Short), Times.Once);
         _mockAuthService.Verify(s => s.RegisterAsync(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
         Assert.False(_viewModel.IsLoading);
     }
@@ -148,7 +149,7 @@ public class RegisterPageViewModelTests
 
         // Assert
         _mockAuthService.Verify(s => s.RegisterAsync("test@example.com", "password123"), Times.Once);
-        _mockDisplayService.Verify(s => s.ShowToast("Registration successful! Please check your email for verification."), Times.Once);
+        _mockDisplayService.Verify(s => s.ShowToast("Registration successful! Please check your email for verification.", It.IsAny<ToastDuration>()), Times.Once);
         _mockNavigationService.Verify(s => s.GoToAsync(AppShell.LoginRoute, It.IsAny<bool>()), Times.Once);
         Assert.False(_viewModel.IsLoading);
     }
@@ -171,7 +172,7 @@ public class RegisterPageViewModelTests
 
         // Assert
         _mockAuthService.Verify(s => s.RegisterAsync("test@example.com", "password123"), Times.Once);
-        _mockDisplayService.Verify(s => s.DisplayAlert("Registration Failed", errorMessage, "OK"), Times.Once);
+        _mockDisplayService.Verify(s => s.ShowToast(errorMessage, ToastDuration.Long), Times.Once);
         _mockNavigationService.Verify(s => s.GoToAsync(It.IsAny<string>(), It.IsAny<bool>()), Times.Never);
         Assert.False(_viewModel.IsLoading);
     }
@@ -193,7 +194,7 @@ public class RegisterPageViewModelTests
 
         // Assert
         _mockAuthService.Verify(s => s.RegisterAsync("test@example.com", "password123"), Times.Once);
-        _mockDisplayService.Verify(s => s.DisplayAlert("Registration Failed", "An unexpected error occurred.", "OK"), Times.Once);
+        _mockDisplayService.Verify(s => s.ShowToast("An unexpected error occurred.", ToastDuration.Long), Times.Once);
         _mockNavigationService.Verify(s => s.GoToAsync(It.IsAny<string>(), It.IsAny<bool>()), Times.Never);
         Assert.False(_viewModel.IsLoading);
     }
@@ -215,7 +216,7 @@ public class RegisterPageViewModelTests
 
         // Assert
         _mockAuthService.Verify(s => s.RegisterAsync("test@example.com", "password123"), Times.Once);
-        _mockDisplayService.Verify(s => s.DisplayAlert("Error", "Registration failed: Network error", "OK"), Times.Once);
+        _mockDisplayService.Verify(s => s.ShowToast("Registration failed: Network error", ToastDuration.Long), Times.Once);
         _mockNavigationService.Verify(s => s.GoToAsync(It.IsAny<string>(), It.IsAny<bool>()), Times.Never);
         Assert.False(_viewModel.IsLoading);
     }
@@ -237,7 +238,7 @@ public class RegisterPageViewModelTests
 
         // Assert
         _mockAuthService.Verify(s => s.RegisterAsync("test@example.com", "password123"), Times.Once);
-        _mockDisplayService.Verify(s => s.ShowToast("Registration successful! Please check your email for verification."), Times.Once);
+        _mockDisplayService.Verify(s => s.ShowToast("Registration successful! Please check your email for verification.", It.IsAny<ToastDuration>()), Times.Once);
         _mockNavigationService.Verify(s => s.GoToAsync(AppShell.LoginRoute, It.IsAny<bool>()), Times.Once);
         Assert.False(_viewModel.IsLoading);
     }

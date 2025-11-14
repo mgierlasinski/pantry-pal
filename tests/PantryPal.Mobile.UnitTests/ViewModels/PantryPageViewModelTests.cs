@@ -1,3 +1,4 @@
+using CommunityToolkit.Maui.Core;
 using Moq;
 using PantryPal.Data;
 using PantryPal.Mobile.Services;
@@ -103,7 +104,7 @@ public class PantryPageViewModelTests
         // Assert
         Assert.Empty(_viewModel.Items);
         _mockPantryService.Verify(s => s.CreatePantryItemAsync(It.IsAny<PantryItemCreateDto>()), Times.Never);
-        _mockDisplayService.Verify(s => s.DisplayAlert("Validation Error", "Item name is required.", "OK"), Times.Once);
+        _mockDisplayService.Verify(s => s.ShowToast("Item name is required.", ToastDuration.Short), Times.Once);
     }
 
     [Fact]
@@ -118,7 +119,7 @@ public class PantryPageViewModelTests
         // Assert
         Assert.Empty(_viewModel.Items);
         _mockPantryService.Verify(s => s.CreatePantryItemAsync(It.IsAny<PantryItemCreateDto>()), Times.Never);
-        _mockDisplayService.Verify(s => s.DisplayAlert("Validation Error", "Item name must be 100 characters or less.", "OK"), Times.Once);
+        _mockDisplayService.Verify(s => s.ShowToast("Item name must be 100 characters or less.", ToastDuration.Short), Times.Once);
     }
 
     [Fact]
@@ -238,7 +239,7 @@ public class PantryPageViewModelTests
         await _viewModel.GenerateRecipeAsync();
 
         // Assert - Should show alert when empty
-        _mockDisplayService.Verify(s => s.DisplayAlert("No Items", "Add items to your pantry before generating a recipe.", "OK"), Times.Once);
+        _mockDisplayService.Verify(s => s.ShowToast("Add items to your pantry before generating a recipe.", ToastDuration.Short), Times.Once);
         // Navigation testing would require integration tests with Shell mocking
     }
 
@@ -283,7 +284,7 @@ public class PantryPageViewModelTests
 
         // Assert - Service was called and alert was shown
         _mockPantryService.Verify(s => s.CreatePantryItemAsync(It.IsAny<PantryItemCreateDto>()), Times.Once);
-        _mockDisplayService.Verify(s => s.DisplayAlert("Duplicate Item", "An item with this name already exists.", "OK"), Times.Once);
+        _mockDisplayService.Verify(s => s.ShowToast("An item with this name already exists.", ToastDuration.Short), Times.Once);
     }
 
     [Fact]
@@ -308,7 +309,7 @@ public class PantryPageViewModelTests
 
         // Assert - Service was called and alert was shown
         _mockPantryService.Verify(s => s.UpdatePantryItemAsync("1", It.IsAny<PantryItemUpdateDto>()), Times.Once);
-        _mockDisplayService.Verify(s => s.DisplayAlert("Duplicate Item", "An item with this name already exists.", "OK"), Times.Once);
+        _mockDisplayService.Verify(s => s.ShowToast("An item with this name already exists.", ToastDuration.Short), Times.Once);
     }
 
     [Fact]
