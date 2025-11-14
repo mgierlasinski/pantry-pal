@@ -9,6 +9,7 @@ public partial class AppShell : Shell, IRecipient<AuthStateChangedMessage>
 {
     public const string DefaultRoute = $"//{nameof(PantryPage)}";
     public const string LoginRoute = $"//{nameof(LoginPage)}";
+    public const string ProfileRoute = $"//{nameof(ProfilePage)}";
 
     private readonly IAuthService _authService;
 

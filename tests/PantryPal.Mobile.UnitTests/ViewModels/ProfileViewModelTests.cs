@@ -60,7 +60,6 @@ public class ProfileViewModelTests
         UpdatedAt: "2024-01-01T00:00:00Z"
     );
 
-    #region LoadPreferencesAsync Tests
 
     [Fact]
     public async Task LoadPreferencesAsync_ExistingUser_Success_PopulatesCollectionsAndPreferences()
@@ -184,9 +183,6 @@ public class ProfileViewModelTests
         Assert.False(_viewModel.IsLoading);
     }
 
-    #endregion
-
-    #region SavePreferencesAsync Tests
 
     [Theory]
     [InlineData(null, null, "")]
@@ -369,9 +365,6 @@ public class ProfileViewModelTests
         _mockDisplayService.Verify(s => s.ShowToast("Failed to save preferences: Unexpected error"), Times.Once);
     }
 
-    #endregion
-
-    #region LogoutAsync Tests
 
     [Fact]
     public async Task LogoutAsync_Success_ShowsToast()
@@ -422,5 +415,179 @@ public class ProfileViewModelTests
         _mockDisplayService.Verify(s => s.DisplayAlert("Error", "Logout failed: Service unavailable", It.IsAny<string>()), Times.Once);
     }
 
-    #endregion
+
+    [Fact]
+    public async Task ChangePasswordAsync_PasswordsDoNotMatch_ShowsAlert()
+    {
+        // Arrange
+        _viewModel.NewPassword = "password123";
+        _viewModel.ConfirmNewPassword = "different123";
+
+        // Act
+        await _viewModel.ChangePasswordAsync();
+
+        // Assert
+        _mockAuthService.Verify(s => s.ChangePasswordAsync(It.IsAny<string>()), Times.Never);
+        _mockDisplayService.Verify(s => s.DisplayAlert("Validation Error", "Passwords do not match.", "OK"), Times.Once);
+        Assert.False(_viewModel.IsLoading);
+    }
+
+    [Fact]
+    public async Task ChangePasswordAsync_NewPasswordTooShort_ShowsValidationError()
+    {
+        // Arrange
+        _viewModel.NewPassword = "123"; // Less than 6 characters
+        _viewModel.ConfirmNewPassword = "123";
+
+        // Act
+        await _viewModel.ChangePasswordAsync();
+
+        // Assert
+        _mockAuthService.Verify(s => s.ChangePasswordAsync(It.IsAny<string>()), Times.Never);
+        Assert.True(_viewModel.HasErrors);
+        Assert.False(_viewModel.IsLoading);
+    }
+
+    [Fact]
+    public async Task ChangePasswordAsync_NewPasswordNull_ShowsValidationError()
+    {
+        // Arrange
+        _viewModel.NewPassword = null;
+        _viewModel.ConfirmNewPassword = "password123";
+
+        // Act
+        await _viewModel.ChangePasswordAsync();
+
+        // Assert
+        _mockAuthService.Verify(s => s.ChangePasswordAsync(It.IsAny<string>()), Times.Never);
+        Assert.True(_viewModel.HasErrors);
+        Assert.False(_viewModel.IsLoading);
+    }
+
+    [Fact]
+    public async Task ChangePasswordAsync_ConfirmNewPasswordNull_ShowsValidationError()
+    {
+        // Arrange
+        _viewModel.NewPassword = "password123";
+        _viewModel.ConfirmNewPassword = null;
+
+        // Act
+        await _viewModel.ChangePasswordAsync();
+
+        // Assert
+        _mockAuthService.Verify(s => s.ChangePasswordAsync(It.IsAny<string>()), Times.Never);
+        Assert.True(_viewModel.HasErrors);
+        Assert.False(_viewModel.IsLoading);
+    }
+
+    [Fact]
+    public async Task ChangePasswordAsync_ValidData_Success_ChangesPasswordAndClearsFields()
+    {
+        // Arrange
+        var newPassword = "newpassword123";
+        _viewModel.NewPassword = newPassword;
+        _viewModel.ConfirmNewPassword = newPassword;
+
+        var authResult = new PantryPal.Mobile.Models.AuthResult { IsSuccess = true };
+        _mockAuthService.Setup(s => s.ChangePasswordAsync(newPassword))
+            .ReturnsAsync(authResult);
+
+        // Act
+        await _viewModel.ChangePasswordAsync();
+
+        // Assert
+        _mockAuthService.Verify(s => s.ChangePasswordAsync(newPassword), Times.Once);
+        _mockDisplayService.Verify(s => s.ShowToast("Password changed successfully!"), Times.Once);
+        Assert.Null(_viewModel.NewPassword);
+        Assert.Null(_viewModel.ConfirmNewPassword);
+        Assert.False(_viewModel.IsLoading);
+    }
+
+    [Fact]
+    public async Task ChangePasswordAsync_AuthServiceFailure_ShowsAlert()
+    {
+        // Arrange
+        var newPassword = "newpassword123";
+        var errorMessage = "Password change failed";
+        _viewModel.NewPassword = newPassword;
+        _viewModel.ConfirmNewPassword = newPassword;
+
+        var authResult = new PantryPal.Mobile.Models.AuthResult { IsSuccess = false, ErrorMessage = errorMessage };
+        _mockAuthService.Setup(s => s.ChangePasswordAsync(newPassword))
+            .ReturnsAsync(authResult);
+
+        // Act
+        await _viewModel.ChangePasswordAsync();
+
+        // Assert
+        _mockAuthService.Verify(s => s.ChangePasswordAsync(newPassword), Times.Once);
+        _mockDisplayService.Verify(s => s.DisplayAlert("Error", errorMessage, "OK"), Times.Once);
+        Assert.Equal(newPassword, _viewModel.NewPassword); // Fields should not be cleared on failure
+        Assert.Equal(newPassword, _viewModel.ConfirmNewPassword);
+        Assert.False(_viewModel.IsLoading);
+    }
+
+    [Fact]
+    public async Task ChangePasswordAsync_AuthServiceFailure_NullErrorMessage_ShowsDefaultMessage()
+    {
+        // Arrange
+        var newPassword = "newpassword123";
+        _viewModel.NewPassword = newPassword;
+        _viewModel.ConfirmNewPassword = newPassword;
+
+        var authResult = new PantryPal.Mobile.Models.AuthResult { IsSuccess = false, ErrorMessage = null };
+        _mockAuthService.Setup(s => s.ChangePasswordAsync(newPassword))
+            .ReturnsAsync(authResult);
+
+        // Act
+        await _viewModel.ChangePasswordAsync();
+
+        // Assert
+        _mockDisplayService.Verify(s => s.DisplayAlert("Error", "Failed to change password.", "OK"), Times.Once);
+        Assert.False(_viewModel.IsLoading);
+    }
+
+    [Fact]
+    public async Task ChangePasswordAsync_Exception_ShowsAlert()
+    {
+        // Arrange
+        var newPassword = "newpassword123";
+        var exceptionMessage = "Network error";
+        _viewModel.NewPassword = newPassword;
+        _viewModel.ConfirmNewPassword = newPassword;
+
+        var exception = new HttpRequestException(exceptionMessage);
+        _mockAuthService.Setup(s => s.ChangePasswordAsync(newPassword))
+            .ThrowsAsync(exception);
+
+        // Act
+        await _viewModel.ChangePasswordAsync();
+
+        // Assert
+        _mockAuthService.Verify(s => s.ChangePasswordAsync(newPassword), Times.Once);
+        _mockDisplayService.Verify(s => s.DisplayAlert("Error", $"Failed to change password: {exceptionMessage}", "OK"), Times.Once);
+        Assert.Equal(newPassword, _viewModel.NewPassword); // Fields should not be cleared on exception
+        Assert.Equal(newPassword, _viewModel.ConfirmNewPassword);
+        Assert.False(_viewModel.IsLoading);
+    }
+
+    [Fact]
+    public async Task ChangePasswordAsync_SetsLoadingStateCorrectly()
+    {
+        // Arrange
+        var newPassword = "newpassword123";
+        _viewModel.NewPassword = newPassword;
+        _viewModel.ConfirmNewPassword = newPassword;
+
+        var authResult = new PantryPal.Mobile.Models.AuthResult { IsSuccess = true };
+        _mockAuthService.Setup(s => s.ChangePasswordAsync(newPassword))
+            .ReturnsAsync(authResult);
+
+        // Act
+        await _viewModel.ChangePasswordAsync();
+
+        // Assert - Loading state should be cleared after operation completes
+        Assert.False(_viewModel.IsLoading);
+    }
+
 }

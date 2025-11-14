@@ -143,6 +143,25 @@ public class SupabaseAuthService : IAuthService
         }
     }
 
+    public async Task<AuthResult> ChangePasswordAsync(string newPassword)
+    {
+        try
+        {
+            await _supabaseClient.Auth.Update(new Supabase.Gotrue.UserAttributes { Password = newPassword });
+            return AuthResult.Success();
+        }
+        catch (GotrueException ex)
+        {
+            var errorMessage = ExtractErrorMessage(ex.Message);
+            return AuthResult.Failure(errorMessage);
+        }
+        catch (Exception ex)
+        {
+            var errorMessage = MapAuthError(ex);
+            return AuthResult.Failure(errorMessage);
+        }
+    }
+
     public async Task<string?> GetAccessTokenAsync()
     {
         try

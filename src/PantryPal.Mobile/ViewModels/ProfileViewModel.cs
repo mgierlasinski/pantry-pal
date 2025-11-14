@@ -37,6 +37,16 @@ public partial class ProfileViewModel : ObservableValidator
     [MaxLength(1000, ErrorMessage = "Disliked ingredients cannot exceed 1000 characters.")]
     private string _dislikedIngredients = string.Empty;
 
+    // Password change fields
+    [ObservableProperty]
+    [Required(ErrorMessage = "New password is required.")]
+    [MinLength(6, ErrorMessage = "Password must be at least 6 characters long.")]
+    private string? _newPassword;
+
+    [ObservableProperty]
+    [Required(ErrorMessage = "Please confirm your new password.")]
+    private string? _confirmNewPassword;
+
     // State properties
     [ObservableProperty]
     private bool _isLoading;
@@ -123,12 +133,21 @@ public partial class ProfileViewModel : ObservableValidator
         }
     }
 
+    private bool HasValidationErrors(params string[] propertyNames)
+    {
+        return propertyNames.Any(propertyName => GetErrors(propertyName).Any());
+    }
+
     [RelayCommand]
     public async Task SavePreferencesAsync()
     {
-        ValidateAllProperties();
+        // Validate only preferences-related properties
+        ValidateProperty(SelectedDietType, nameof(SelectedDietType));
+        ValidateProperty(SelectedPreferredCuisine, nameof(SelectedPreferredCuisine));
+        ValidateProperty(DislikedIngredients, nameof(DislikedIngredients));
 
-        if (HasErrors)
+        // Check if preferences properties have errors
+        if (HasValidationErrors(nameof(SelectedDietType), nameof(SelectedPreferredCuisine), nameof(DislikedIngredients)))
         {
             return;
         }
@@ -177,6 +196,54 @@ public partial class ProfileViewModel : ObservableValidator
         catch (Exception ex)
         {
             await _displayService.DisplayAlert("Error", $"Logout failed: {ex.Message}");
+        }
+    }
+
+    [RelayCommand]
+    public async Task ChangePasswordAsync()
+    {
+        // Validate only password-related properties
+        ValidateProperty(NewPassword, nameof(NewPassword));
+        ValidateProperty(ConfirmNewPassword, nameof(ConfirmNewPassword));
+
+        // Additional validation for password matching
+        if (NewPassword != ConfirmNewPassword)
+        {
+            await _displayService.DisplayAlert("Validation Error", "Passwords do not match.");
+            return;
+        }
+
+        // Check if password properties have errors
+        if (HasValidationErrors(nameof(NewPassword), nameof(ConfirmNewPassword)))
+        {
+            return;
+        }
+
+        try
+        {
+            IsLoading = true;
+
+            var result = await _authService.ChangePasswordAsync(NewPassword!);
+
+            if (result.IsSuccess)
+            {
+                await _displayService.ShowToast("Password changed successfully!");
+                // Clear the password fields
+                NewPassword = null;
+                ConfirmNewPassword = null;
+            }
+            else
+            {
+                await _displayService.DisplayAlert("Error", result.ErrorMessage ?? "Failed to change password.");
+            }
+        }
+        catch (Exception ex)
+        {
+            await _displayService.DisplayAlert("Error", $"Failed to change password: {ex.Message}");
+        }
+        finally
+        {
+            IsLoading = false;
         }
     }
 }
