@@ -91,13 +91,9 @@
 
                     <!-- Register Button -->
                     <Button Text="Sign Up"
+                            Style="{StaticResource PrimaryButton}"
                             controls:FormView.IsSubmitButton="True"
                             IsEnabled="{Binding IsLoading, Converter={StaticResource InverseBoolConverter}}"
-                            BackgroundColor="{DynamicResource Primary}"
-                            TextColor="White"
-                            FontAttributes="Bold"
-                            HeightRequest="56"
-                            CornerRadius="12"
                             Margin="0,16,0,0"
                             HorizontalOptions="Fill" />
                 </VerticalStackLayout>

@@ -28,7 +28,7 @@ Key features include:
 ## Tech Stack
 
 - **Language & Runtime**: .NET 9  
-- **Mobile**: .NET MAUI (Android, iOS) with XAML  
+- **Mobile**: .NET MAUI (Android, iOS) with XAML and UraniumUI
 - **Backend**: ASP.NET Core Minimal API  
 - **Database & Auth**: Supabase (PostgreSQL, SDK, Auth)  
 - **AI Integration**: Openrouter.ai (OpenAI, Anthropic, Google models)  
@@ -54,13 +54,45 @@ cd PantryPal
 
 ### Configuration
 
-Create a `.env` file in the project root (or configure environment variables):
+The project uses `appsettings.json` for configuration in both the API and Mobile projects, supplemented by environment-specific files (`appsettings.Development.json`) and user secrets for local development.
 
-```bash
-SUPABASE_URL=https://your-project.supabase.co
-SUPABASE_KEY=your_supabase_api_key
-OPENROUTER_API_KEY=your_openrouter_api_key
+#### Backend (API)
+
+For local development, create an `appsettings.Development.json` file in the `src/PantryPal.Api` directory. This file is git-ignored and should contain your secrets.
+
+```json
+{
+  "Supabase": {
+    "AnonKey": "your_supabase_api_key",
+    "Auth": {
+      "JwtSecret": "your_supabase_jwt_secret"
+    }
+  },
+  "OpenRouter": {
+    "ApiKey": "your_openrouter_api_key"
+  }
+}
 ```
+
+#### Mobile App
+
+The mobile app loads configuration from embedded `appsettings.json` files. For local development, it supports the standard .NET User Secrets mechanism.
+
+To add your secrets:
+1.  Right-click the `PantryPal.Mobile` project in Visual Studio.
+2.  Select **Manage User Secrets**.
+3.  This will open a `secrets.json` file where you can add your keys. The project is configured to automatically embed this file during the build process.
+
+`secrets.json`:
+```json
+{
+  "Supabase": {
+    "AnonKey": "your_supabase_anon_key"
+  }
+}
+```
+
+The mobile app's environment is determined by `src/PantryPal.Mobile/Properties/MauiLaunchSettings.cs`. By default, it's set to `Development`, which loads `appsettings.Development.json`.
 
 ### Backend (API)
 
@@ -85,6 +117,17 @@ dotnet maui run -p src/PantryPal.Mobile -t Android
 ```
 
 Replace `-t Android` with `-t iOS` as needed.
+
+### Installing the Android App
+
+To install the pre-built application package on an Android device:
+
+1.  Open the web browser on your phone and navigate to the releases page:  
+    [https://github.com/mgierlasinski/pantry-pal/releases](https://github.com/mgierlasinski/pantry-pal/releases)
+2.  Find the latest release and download the `com.pantrypal.mobile.apk` file.
+3.  Once downloaded, open the file to begin installation.
+4.  You may need to allow your browser to "install unknown apps". Enable this permission when prompted.
+5.  Follow the on-screen instructions to complete the installation.
 
 ### Docker (Production)
 
@@ -118,6 +161,12 @@ docker run --rm -p 8080:8080 \
 - `-e "..."`: Sets the environment variables required by your application. **Replace the placeholder values** with your actual secrets.
 - `mgierlasinski/pantry-pal-api`: The name of the image to run.
 
+### Testing the API
+
+The project includes a `src/PantryPal.Api/PantryPal.Api.http` file for testing all API endpoints. You can use it with the built-in editor in Visual Studio or the [REST Client](https://marketplace.visualstudio.com/items?itemName=humao.rest-client) extension in VS Code.
+
+The requests use variables defined in `src/PantryPal.Api/http-client.env.json` for three environments: `dev`, `test`, and `prod`. You'll need to fill in your credentials (like `Auth_ApiKey`, `UserEmail`, and `UserPassword`) in this file to run the requests successfully.
+
 ## Available Scripts
 
 From the project root:
@@ -126,7 +175,11 @@ From the project root:
 - `dotnet build src/PantryPal.Mobile`  
 - `dotnet maui run -p src/PantryPal.Mobile -t <target>`  
 
-Continuous integration is configured via GitHub Actions (see `.github/workflows/ci.yml`).
+Continuous integration and deployment are configured via GitHub Actions. See the `.github/workflows` directory for details on the following workflows:
+- `main.yml`: Checks the health of the main branch by compiling the code and running tests.
+- `pull-request.yml`: Runs tests on every pull request.
+- `deploy-api.yml`: Deploys the API to DigitalOcean.
+- `release-mobile.yml`: Creates a GitHub release for the mobile app.
 
 ## Project Scope
 

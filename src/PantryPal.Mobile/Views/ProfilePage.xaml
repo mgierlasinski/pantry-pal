@@ -1,101 +1,97 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:v="clr-namespace:UraniumUI.Validations;assembly=UraniumUI.Validations.DataAnnotations"
-             xmlns:viewModels="clr-namespace:PantryPal.Mobile.ViewModels"
-             xmlns:converters="clr-namespace:PantryPal.Mobile.Converters"
-             xmlns:data="clr-namespace:PantryPal.Data;assembly=PantryPal.Data"
-             xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
-             xmlns:controls="clr-namespace:InputKit.Shared.Controls;assembly=InputKit.Maui"
-             x:Class="PantryPal.Mobile.Views.ProfilePage"
-             x:DataType="viewModels:ProfileViewModel"
-             Title="Profile Settings">
+<ContentPage
+    x:Class="PantryPal.Mobile.Views.ProfilePage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:controls="clr-namespace:InputKit.Shared.Controls;assembly=InputKit.Maui"
+    xmlns:converters="clr-namespace:PantryPal.Mobile.Converters"
+    xmlns:data="clr-namespace:PantryPal.Data;assembly=PantryPal.Data"
+    xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
+    xmlns:v="clr-namespace:UraniumUI.Validations;assembly=UraniumUI.Validations.DataAnnotations"
+    xmlns:viewModels="clr-namespace:PantryPal.Mobile.ViewModels"
+    Title="Profile Settings"
+    x:DataType="viewModels:ProfileViewModel">
 
     <ContentPage.Resources>
         <converters:InverseBoolConverter x:Key="InverseBoolConverter" />
     </ContentPage.Resources>
 
-    <ScrollView>
-        <VerticalStackLayout Padding="24" Spacing="0">
+    <Grid
+        Padding="20"
+        RowDefinitions="*,Auto"
+        VerticalOptions="Fill">
 
-            <!-- Loading Indicator -->
-            <ActivityIndicator IsRunning="{Binding IsLoading}"
-                             IsVisible="{Binding IsLoading}"
-                             Color="{DynamicResource Primary}"
-                             HorizontalOptions="Center"
-                             VerticalOptions="Center"
-                             Margin="0,20,0,20"
-                             WidthRequest="48"
-                             HeightRequest="48"
-                             AutomationId="ProfileLoadingIndicator" />
+        <!--  Loading Indicator  -->
+        <ActivityIndicator
+            Margin="0,60,0,20"
+            AutomationId="ProfileLoadingIndicator"
+            HeightRequest="48"
+            HorizontalOptions="Center"
+            IsRunning="{Binding IsLoading}"
+            IsVisible="{Binding IsLoading}"
+            VerticalOptions="Start"
+            WidthRequest="48"
+            Color="{DynamicResource Primary}" />
 
-            <!-- Diet Type Picker -->
-            <controls:FormView SubmitCommand="{Binding SavePreferencesCommand}">
-                <VerticalStackLayout Margin="0,16" Spacing="20">
-                    <!-- Diet Type Picker -->
-                    <material:PickerField
-                        Title="Diet Type"
-                        ItemsSource="{Binding DietTypes}"
-                        SelectedItem="{Binding SelectedDietType}"
-                        ItemDisplayBinding="{Binding Name, x:DataType=data:DietTypeDto}"
-                        IsEnabled="{Binding IsLoading, Converter={StaticResource InverseBoolConverter}}"
-                        AllowClear="False"
-                        AutomationId="DietTypePicker">
-                        <material:PickerField.Behaviors>
-                            <v:DataAnnotationsBehavior Binding="{Binding SelectedDietType}" />
-                        </material:PickerField.Behaviors>
-                    </material:PickerField>
-                    <!-- Preferred Cuisine Picker -->
-                    <material:PickerField
-                        Title="Preferred Cuisine"
-                        ItemsSource="{Binding PreferredCuisines}"
-                        SelectedItem="{Binding SelectedPreferredCuisine}"
-                        ItemDisplayBinding="{Binding Name, x:DataType=data:PreferredCuisineDto}"
-                        IsEnabled="{Binding IsLoading, Converter={StaticResource InverseBoolConverter}}"
-                        AllowClear="False"
-                        AutomationId="PreferredCuisinePicker">
-                        <material:PickerField.Behaviors>
-                            <v:DataAnnotationsBehavior Binding="{Binding SelectedPreferredCuisine}" />
-                        </material:PickerField.Behaviors>
-                    </material:PickerField>
-                    <!-- Disliked Ingredients Editor -->
-                    <material:EditorField
-                        Text="{Binding DislikedIngredients}"
-                        Title="List any ingredients you dislike (optional)"
-                        IsEnabled="{Binding IsLoading, Converter={StaticResource InverseBoolConverter}}"
-                        AutomationId="DislikedIngredientsEditor">
-                        <material:EditorField.Behaviors>
-                            <v:DataAnnotationsBehavior Binding="{Binding DislikedIngredients}" />
-                        </material:EditorField.Behaviors>
-                    </material:EditorField>
-                    <!-- Save Button -->
-                    <Button Text="Save Preferences"
-                            controls:FormView.IsSubmitButton="True"
-                            IsEnabled="{Binding IsLoading, Converter={StaticResource InverseBoolConverter}}"
-                            BackgroundColor="{DynamicResource Primary}"
-                            TextColor="White"
-                            FontAttributes="Bold"
-                            HeightRequest="56"
-                            CornerRadius="12"
-                            Margin="0,10,0,0"
-                            HorizontalOptions="Fill"
-                            AutomationId="SavePreferencesButton" />
-                </VerticalStackLayout>
-            </controls:FormView>
+        <controls:FormView
+            Spacing="20"
+            SubmitCommand="{Binding SavePreferencesCommand}"
+            VerticalOptions="Fill">
+            <!--  Diet Type Picker  -->
+            <material:PickerField
+                Title="Diet Type"
+                AllowClear="False"
+                AutomationId="DietTypePicker"
+                IsEnabled="{Binding IsLoading, Converter={StaticResource InverseBoolConverter}}"
+                ItemDisplayBinding="{Binding Name, x:DataType=data:DietTypeDto}"
+                ItemsSource="{Binding DietTypes}"
+                SelectedItem="{Binding SelectedDietType}">
+                <material:PickerField.Behaviors>
+                    <v:DataAnnotationsBehavior Binding="{Binding SelectedDietType}" />
+                </material:PickerField.Behaviors>
+            </material:PickerField>
+            <!--  Preferred Cuisine Picker  -->
+            <material:PickerField
+                Title="Preferred Cuisine"
+                AllowClear="False"
+                AutomationId="PreferredCuisinePicker"
+                IsEnabled="{Binding IsLoading, Converter={StaticResource InverseBoolConverter}}"
+                ItemDisplayBinding="{Binding Name, x:DataType=data:PreferredCuisineDto}"
+                ItemsSource="{Binding PreferredCuisines}"
+                SelectedItem="{Binding SelectedPreferredCuisine}">
+                <material:PickerField.Behaviors>
+                    <v:DataAnnotationsBehavior Binding="{Binding SelectedPreferredCuisine}" />
+                </material:PickerField.Behaviors>
+            </material:PickerField>
+            <!--  Disliked Ingredients Editor  -->
+            <material:EditorField
+                Title="List any ingredients you dislike (optional)"
+                AutomationId="DislikedIngredientsEditor"
+                IsEnabled="{Binding IsLoading, Converter={StaticResource InverseBoolConverter}}"
+                Text="{Binding DislikedIngredients}">
+                <material:EditorField.Behaviors>
+                    <v:DataAnnotationsBehavior Binding="{Binding DislikedIngredients}" />
+                </material:EditorField.Behaviors>
+            </material:EditorField>
+            <!--  Save Button  -->
+            <Button
+                Margin="0,8,0,0"
+                controls:FormView.IsSubmitButton="True"
+                AutomationId="SavePreferencesButton"
+                HorizontalOptions="Fill"
+                IsEnabled="{Binding IsLoading, Converter={StaticResource InverseBoolConverter}}"
+                Style="{StaticResource PrimaryButton}"
+                Text="Save Preferences" />
+        </controls:FormView>
 
-            <!-- Logout Button -->
-            <Button Text="Logout"
-                    Command="{Binding LogoutCommand}"
-                    BackgroundColor="{DynamicResource Gray200}"
-                    TextColor="{DynamicResource Gray600}"
-                    FontAttributes="Bold"
-                    HeightRequest="56"
-                    CornerRadius="12"
-                    Margin="0,16,0,0"
-                    HorizontalOptions="Fill"
-                    AutomationId="LogoutButton" />
-
-        </VerticalStackLayout>
-    </ScrollView>
+        <!--  Logout Button  -->
+        <Button
+            Grid.Row="1"
+            AutomationId="LogoutButton"
+            Command="{Binding LogoutCommand}"
+            HorizontalOptions="Fill"
+            Style="{StaticResource SecondaryButton}"
+            Text="Logout" />
+    </Grid>
 
 </ContentPage>

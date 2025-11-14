@@ -51,22 +51,14 @@
                              HorizontalOptions="Fill">
             
             <Button Text="Reject"
+                    Style="{StaticResource SecondaryButton}"
                     Command="{Binding RejectCommand}"
-                    BackgroundColor="{DynamicResource Gray200}"
-                    TextColor="{DynamicResource Gray900}"
-                    FontAttributes="Bold"
-                    HeightRequest="56"
-                    CornerRadius="12"
                     HorizontalOptions="FillAndExpand"
                     AutomationId="RejectRecipeButton" />
 
             <Button Text="Accept"
+                    Style="{StaticResource PrimaryButton}"
                     Command="{Binding AcceptCommand}"
-                    BackgroundColor="{DynamicResource Primary}"
-                    TextColor="White"
-                    FontAttributes="Bold"
-                    HeightRequest="56"
-                    CornerRadius="12"
                     HorizontalOptions="FillAndExpand"
                     AutomationId="AcceptRecipeButton" />
             

@@ -169,13 +169,10 @@
             </Border.Shadow>
             
             <Button Text="Generate Recipe"
+                    Style="{StaticResource PrimaryButton}"
                     Command="{Binding GenerateRecipeCommand}"
                     IsEnabled="{Binding IsNotEmpty}"
-                    BackgroundColor="{DynamicResource Primary}"
-                    TextColor="White"
-                    FontAttributes="Bold"
-                    HeightRequest="56"
-                    CornerRadius="12"
+                    HorizontalOptions="Fill"
                     AutomationId="GenerateRecipeButton">
                 <Button.ImageSource>
                     <FontImageSource FontFamily="{x:Static const:MaterialFont.Outlined}"
