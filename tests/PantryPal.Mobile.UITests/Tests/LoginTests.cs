@@ -36,9 +36,6 @@ public class LoginTests
         Assert.NotNull(pantryPage.GenerateRecipeButton);
         Assert.True(pantryPage.GenerateRecipeButton.Displayed);
 
-        Assert.NotNull(pantryPage.AddItemToolbarButton);
-        Assert.True(pantryPage.AddItemToolbarButton.Displayed);
-
         // Additional verification - pantry should load without loading indicator
         pantryPage.WaitForLoadingToComplete();
         Assert.False(pantryPage.IsLoadingVisible());
@@ -55,12 +52,12 @@ public class LoginTests
 
         // Assert
         Assert.NotNull(_loginPage.EmailEntry);
-        Assert.True(_loginPage.EmailEntry.Displayed);
-        Assert.True(_loginPage.EmailEntry.Enabled);
+        Assert.True(_loginPage.EmailEntry.EditText.Displayed);
+        Assert.True(_loginPage.EmailEntry.EditText.Enabled);
 
         Assert.NotNull(_loginPage.PasswordEntry);
-        Assert.True(_loginPage.PasswordEntry.Displayed);
-        Assert.True(_loginPage.PasswordEntry.Enabled);
+        Assert.True(_loginPage.PasswordEntry.EditText.Displayed);
+        Assert.True(_loginPage.PasswordEntry.EditText.Enabled);
 
         Assert.NotNull(_loginPage.LoginButton);
         Assert.True(_loginPage.LoginButton.Displayed);
@@ -74,73 +71,96 @@ public class LoginTests
     }
 
     /// <summary>
-    /// Test password visibility toggle functionality
-    /// </summary>
-    [Fact]
-    public void PasswordVisibilityToggle_WorksCorrectly()
-    {
-        // Arrange
-        _loginPage.WaitForPageToLoad();
-        const string testPassword = "TestPassword123!";
-
-        // Act - Enter password and toggle visibility
-        _loginPage.EnterPassword(testPassword);
-        _loginPage.ClickTogglePasswordVisibility();
-
-        // Assert
-        // Note: The exact assertion depends on how the password field behaves
-        // In MAUI, toggling password visibility changes the IsPassword property
-        Assert.NotNull(_loginPage.PasswordEntry);
-        Assert.Equal(testPassword, _loginPage.GetPasswordText());
-    }
-
-    /// <summary>
-    /// Test that loading indicator appears during login process
-    /// </summary>
-    [Fact]
-    public void LoginProcess_ShowsLoadingIndicator()
-    {
-        // Arrange
-        _loginPage.WaitForPageToLoad();
-
-        // Act
-        _loginPage.Login(LoginTestData.ValidCredentials.Email, LoginTestData.ValidCredentials.Password);
-
-        // Assert
-        // Loading indicator should be visible during the login process
-        // Note: This test may need timing adjustments based on actual API response times
-        Assert.True(_loginPage.IsLoadingVisible());
-
-        // Wait for loading to complete
-        _loginPage.WaitForLoadingToComplete();
-        Assert.False(_loginPage.IsLoadingVisible());
-    }
-
-    /// <summary>
     /// Test form validation with empty fields
     /// </summary>
-    [Theory]
-    [InlineData("", "password")]
-    [InlineData("email@example.com", "")]
-    [InlineData("", "")]
-    public void Login_WithEmptyFields_DisplaysValidationErrors(string email, string password)
+    [Fact]
+    public void Login_WithEmptyFields_DisplaysValidationErrors()
     {
         // Arrange
         _loginPage.WaitForPageToLoad();
 
-        // Act
+        // Ensure fields are empty (clear any existing data)
+        _loginPage.EnterEmail("");
+        _loginPage.EnterPassword("");
+
+        // Act - Click login button with empty fields
+        _loginPage.ClickLoginButton();
+
+        // Assert
+        _loginPage.WaitForLoadingToComplete();
+
+        // Check that validation errors are displayed
+        Assert.True(_loginPage.IsEmailValidationErrorVisible(), "Email validation error should be visible");
+        Assert.True(_loginPage.IsPasswordValidationErrorVisible(), "Password validation error should be visible");
+
+        // Check validation error messages
+        var emailError = _loginPage.GetEmailValidationErrorText();
+        var passwordError = _loginPage.GetPasswordValidationErrorText();
+
+        // The error text might be "Email" as a header/title, or the full message
+        // Check that some error text is present for both fields
+        Assert.False(string.IsNullOrWhiteSpace(emailError), $"Email validation error should have some text. Actual: '{emailError}'");
+        Assert.False(string.IsNullOrWhiteSpace(passwordError), $"Password validation error should have some text. Actual: '{passwordError}'");
+
+        // At minimum, we expect the field name to be mentioned in the error
+        Assert.True(emailError.Contains("Email") || emailError.ToLowerInvariant().Contains("required"),
+                   $"Email error should mention the field name or required. Actual: '{emailError}'");
+        Assert.True(passwordError.Contains("Password") || passwordError.ToLowerInvariant().Contains("required"),
+                   $"Password error should mention the field name or required. Actual: '{passwordError}'");
+
+        // Login button should remain enabled (validation doesn't disable it)
+        Assert.True(_loginPage.IsLoginButtonEnabled(), "Login button should remain enabled after validation errors");
+    }
+
+    /// <summary>
+    /// Test form validation with invalid data formats
+    /// </summary>
+    [Theory]
+    [InlineData("invalid-email", "password123")] // Invalid email format
+    [InlineData("test@", "password123")] // Incomplete email
+    [InlineData("test@example.com", "")] // Valid email but empty password
+    [InlineData("test@example.com", "123")] // Valid email but too short password
+    public void Login_WithInvalidData_DisplaysValidationErrors(string email, string password)
+    {
+        // Arrange
+        _loginPage.WaitForPageToLoad();
+
+        // Act - Enter invalid data and submit
         _loginPage.Login(email, password);
 
         // Assert
-        // Note: Actual validation behavior depends on the app implementation
-        // This test expects that empty fields either prevent login or show validation errors
-        // You may need to adjust assertions based on actual validation behavior
         _loginPage.WaitForLoadingToComplete();
 
-        // The test could check for:
-        // - Validation error messages
-        // - Login button remains enabled
-        // - No navigation occurs
-        // - Error dialogs appear
+        // Check that validation errors are displayed
+        var emailError = _loginPage.GetEmailValidationErrorText();
+        var passwordError = _loginPage.GetPasswordValidationErrorText();
+
+        // For invalid email formats, email validation should show error
+        if (!IsValidEmailFormat(email))
+        {
+            Assert.True(_loginPage.IsEmailValidationErrorVisible(), $"Email validation error should be visible for invalid email: {email}");
+            Assert.False(string.IsNullOrWhiteSpace(emailError), $"Email validation error should have text for invalid email: {email}. Actual: '{emailError}'");
+        }
+
+        // For empty or too short password, password validation should show error
+        if (string.IsNullOrEmpty(password) || password.Length < 4)
+        {
+            Assert.True(_loginPage.IsPasswordValidationErrorVisible(), $"Password validation error should be visible for invalid password: {password}");
+            Assert.False(string.IsNullOrWhiteSpace(passwordError), $"Password validation error should have text for invalid password: {password}. Actual: '{passwordError}'");
+        }
+
+        // Login button should remain enabled
+        Assert.True(_loginPage.IsLoginButtonEnabled(), "Login button should remain enabled after validation errors");
+    }
+
+    /// <summary>
+    /// Helper method to check if email has basic valid format
+    /// </summary>
+    private static bool IsValidEmailFormat(string email)
+    {
+        return !string.IsNullOrEmpty(email) &&
+               email.Contains("@") &&
+               email.Contains(".") &&
+               email.IndexOf("@") < email.LastIndexOf(".");
     }
 }

@@ -1,5 +1,6 @@
 using OpenQA.Selenium.Appium;
 using PantryPal.Mobile.UITests.Extensions;
+using PantryPal.Mobile.UITests.Pages.Components;
 
 namespace PantryPal.Mobile.UITests.Pages;
 
@@ -14,16 +15,15 @@ public class LoginPage
     // Element identifiers (AutomationId values)
     private const string EmailEntryId = "EmailEntry";
     private const string PasswordEntryId = "PasswordEntry";
-    private const string TogglePasswordButtonId = "TogglePasswordButton";
     private const string LoginButtonId = "LoginButton";
     private const string SignUpButtonId = "SignUpButton";
     private const string ForgotPasswordButtonId = "ForgotPasswordButton";
     private const string LoadingIndicatorId = "LoadingIndicator";
 
     // UI Element Properties
-    public AppiumElement EmailEntry => _driver.FindElementById(EmailEntryId);
-    public AppiumElement PasswordEntry => _driver.FindElementById(PasswordEntryId);
-    public AppiumElement TogglePasswordButton => _driver.FindElementById(TogglePasswordButtonId);
+    public MaterialTextField EmailEntry => new(_driver.FindElementById(EmailEntryId));
+    public MaterialTextField PasswordEntry => new(_driver.FindElementById(PasswordEntryId));
+
     public AppiumElement LoginButton => _driver.FindElementById(LoginButtonId);
     public AppiumElement SignUpButton => _driver.FindElementById(SignUpButtonId);
     public AppiumElement ForgotPasswordButton => _driver.FindElementById(ForgotPasswordButtonId);
@@ -44,8 +44,18 @@ public class LoginPage
     /// </summary>
     public void EnterEmail(string email)
     {
-        EmailEntry.Clear();
-        EmailEntry.SendKeys(email);
+        // Click the actual EditText element within the TextField
+        EmailEntry.EditText.Click();
+
+        // Small delay to ensure focus
+        System.Threading.Thread.Sleep(200);
+
+        // Clear and enter text
+        EmailEntry.EditText.Clear();
+        if (!string.IsNullOrEmpty(email))
+        {
+            EmailEntry.EditText.SendKeys(email);
+        }
     }
 
     /// <summary>
@@ -53,8 +63,18 @@ public class LoginPage
     /// </summary>
     public void EnterPassword(string password)
     {
-        PasswordEntry.Clear();
-        PasswordEntry.SendKeys(password);
+        // Click the actual EditText element within the TextField
+        PasswordEntry.EditText.Click();
+
+        // Small delay to ensure focus
+        Thread.Sleep(200);
+
+        // Clear and enter text
+        PasswordEntry.EditText.Clear();
+        if (!string.IsNullOrEmpty(password))
+        {
+            PasswordEntry.EditText.SendKeys(password);
+        }
     }
 
     /// <summary>
@@ -65,13 +85,6 @@ public class LoginPage
         LoginButton.Click();
     }
 
-    /// <summary>
-    /// Clicks the toggle password visibility button
-    /// </summary>
-    public void ClickTogglePasswordVisibility()
-    {
-        TogglePasswordButton.Click();
-    }
 
     /// <summary>
     /// Clicks the sign up button to navigate to registration
@@ -136,7 +149,7 @@ public class LoginPage
     /// </summary>
     public string GetEmailText()
     {
-        return EmailEntry.Text;
+        return EmailEntry.EditText.Text;
     }
 
     /// <summary>
@@ -144,6 +157,66 @@ public class LoginPage
     /// </summary>
     public string GetPasswordText()
     {
-        return PasswordEntry.Text;
+        return PasswordEntry.EditText.Text;
+    }
+
+    /// <summary>
+    /// Checks if email validation error is visible
+    /// </summary>
+    public bool IsEmailValidationErrorVisible()
+    {
+        try
+        {
+            return EmailEntry.ValidationError.Displayed;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Checks if password validation error is visible
+    /// </summary>
+    public bool IsPasswordValidationErrorVisible()
+    {
+        try
+        {
+            return PasswordEntry.ValidationError.Displayed;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Gets the email validation error text
+    /// </summary>
+    public string GetEmailValidationErrorText()
+    {
+        try
+        {
+            return EmailEntry.ValidationError.Text;
+        }
+        catch
+        {
+            return string.Empty;
+        }
+    }
+
+    /// <summary>
+    /// Gets the password validation error text
+    /// </summary>
+    public string GetPasswordValidationErrorText()
+    {
+        try
+        {
+            return PasswordEntry.ValidationError.Text;
+        }
+        catch
+        {
+            return string.Empty;
+        }
     }
 }

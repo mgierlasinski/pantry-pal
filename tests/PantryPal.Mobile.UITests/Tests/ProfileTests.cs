@@ -40,9 +40,9 @@ public class ProfileTests
 
         // Assert that we are back on the login screen
         Assert.NotNull(_loginPage.EmailEntry);
-        Assert.True(_loginPage.EmailEntry.Displayed);
+        Assert.True(_loginPage.EmailEntry.EditText.Displayed);
         Assert.NotNull(_loginPage.PasswordEntry);
-        Assert.True(_loginPage.PasswordEntry.Displayed);
+        Assert.True(_loginPage.PasswordEntry.EditText.Displayed);
         Assert.NotNull(_loginPage.LoginButton);
         Assert.True(_loginPage.IsLoginButtonEnabled());
 
@@ -83,33 +83,6 @@ public class ProfileTests
 
         // Verify loading indicator is not visible when page is loaded
         Assert.False(_profilePage.IsLoadingVisible());
-    }
-
-    /// <summary>
-    /// Test editing and saving profile preferences
-    /// </summary>
-    [Fact]
-    public void ProfilePreferences_CanEditAndSavePreferences()
-    {
-        // Setup: Login and navigate to profile
-        PerformLoginAndNavigateToProfile();
-
-        // Act: Modify preferences
-        const string testIngredients = "Test disliked ingredients";
-        _profilePage.EnterDislikedIngredients(testIngredients);
-
-        // Note: Selecting from pickers would require more complex implementation
-        // depending on how the picker UI works in the app
-
-        // Click save
-        _profilePage.ClickSavePreferencesButton();
-
-        // Assert: Verify changes were attempted to be saved
-        // Note: Actual verification would depend on app behavior (success message, navigation, etc.)
-        _profilePage.WaitForLoadingToComplete();
-
-        // The save operation should complete without errors
-        // Additional assertions could check for success messages or updated data
     }
 
     /// <summary>
