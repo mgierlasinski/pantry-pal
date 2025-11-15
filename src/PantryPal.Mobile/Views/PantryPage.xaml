@@ -180,8 +180,8 @@
                 <Button.ImageSource>
                     <FontImageSource FontFamily="{x:Static const:MaterialFont.Outlined}"
                                     Glyph="{x:Static m:MaterialOutlined.Restaurant}"
-                                    Color="White"
-                                    Size="24" />
+                                    Size="24"
+                                    Color="{Binding Path=TextColor, Source={RelativeSource AncestorType={x:Type Button}}}" />
                 </Button.ImageSource>
             </Button>
         </Border>

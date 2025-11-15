@@ -47,12 +47,9 @@
                         <Label FontFamily="{x:Static const:MaterialFont.Outlined}"
                                FontSize="64"
                                HorizontalOptions="Center"
-                               TextColor="{DynamicResource Gray400}">
-                            <Label.Text>
-                                <x:Static Member="m:MaterialOutlined.Restaurant_menu" />
-                            </Label.Text>
-                        </Label>
-                        <Label Text="You haven't saved any recipes yet"
+                               TextColor="{DynamicResource Gray400}"
+                               Text="{x:Static m:MaterialOutlined.No_meals}" />
+                        <Label Text="No saved recipes yet"
                                FontSize="20"
                                FontAttributes="Bold"
                                HorizontalOptions="Center"

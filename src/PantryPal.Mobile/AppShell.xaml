@@ -31,7 +31,7 @@
             ContentTemplate="{DataTemplate views:SavedRecipesPage}"
             Route="SavedRecipesPage">
             <ShellContent.Icon>
-                <FontImageSource FontFamily="{x:Static const:MaterialFont.Outlined}" Glyph="{x:Static m:MaterialOutlined.Restaurant_menu}" />
+                <FontImageSource FontFamily="{x:Static const:MaterialFont.Outlined}" Glyph="{x:Static m:MaterialOutlined.Menu_book}" />
             </ShellContent.Icon>
         </ShellContent>
 
