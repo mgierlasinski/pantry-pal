@@ -74,13 +74,12 @@ app.UseExceptionHandler();
 app.UseAuthentication();
 app.UseAuthorization();
 
-if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Test"))
+if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
     app.MapScalarApiReference();
 }
 
-app.MapGet("/", () => "Hello World!");
 app.MapHealthChecks("/healthz");
 
 app.RegisterPantryItemsEndpoints();
