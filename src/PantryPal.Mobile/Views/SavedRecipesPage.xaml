@@ -77,8 +77,8 @@
                             </SwipeView.RightItems>
 
                             <Border StrokeThickness="0"
-                                   BackgroundColor="{DynamicResource White}"
-                                   Margin="8,4">
+                                    BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource OffBlack}}"
+                                    Margin="8,4">
                                 <Border.Shadow>
                                     <Shadow Brush="Black" Opacity="0.05" Radius="4" Offset="0,2" />
                                 </Border.Shadow>
@@ -93,7 +93,6 @@
                                     <Label Text="{Binding Title}"
                                            FontSize="16"
                                            FontAttributes="Bold"
-                                           TextColor="{DynamicResource Gray900}"
                                            LineBreakMode="TailTruncation"
                                            MaxLines="2"
                                            AutomationId="{Binding Id, StringFormat='RecipeTitle_{0}'}" />

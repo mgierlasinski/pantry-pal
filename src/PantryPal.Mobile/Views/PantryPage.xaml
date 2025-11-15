@@ -103,8 +103,8 @@
                             </SwipeView.RightItems>
 
                             <Border StrokeThickness="0"
-                                   BackgroundColor="{DynamicResource White}"
-                                   Margin="8,4">
+                                    BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource OffBlack}}"
+                                    Margin="8,4">
                                 <Border.Shadow>
                                     <Shadow Brush="Black" Opacity="0.05" Radius="4" Offset="0,2" />
                                 </Border.Shadow>

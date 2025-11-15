@@ -86,7 +86,7 @@ public partial class SavedRecipeItemViewModel : ObservableObject
                 }
                 else if (diff.TotalDays < 7)
                 {
-                    return dateTime.ToString("ddd");
+                    return dateTime.ToString("dddd");
                 }
                 else if (diff.TotalDays < 365)
                 {
