@@ -12,7 +12,7 @@
              Title="My Pantry">
 
     <ContentPage.Resources>
-        <converters:FavoriteIconConverter x:Key="FavoriteIconConverter" />
+        <converters:InverseBoolConverter x:Key="InverseBoolConverter" />
     </ContentPage.Resources>
 
     <ContentPage.ToolbarItems>
@@ -125,23 +125,39 @@
                                            VerticalOptions="Center"
                                            AutomationId="{Binding Id, StringFormat='PantryItemName_{0}'}" />
 
-                                <!-- Favorite Icon -->
-                                <ImageButton Grid.Column="1"
-                                            Command="{Binding ToggleFavoriteCommand}"
-                                            CommandParameter="{Binding Id}"
-                                            BackgroundColor="Transparent"
-                                            WidthRequest="40"
-                                            HeightRequest="40"
-                                            VerticalOptions="Center"
-                                            AutomationId="{Binding Id, StringFormat='FavoriteToggle_{0}'}">
-                                    <ImageButton.Source>
-                                        <FontImageSource FontFamily="{x:Static const:MaterialFont.Outlined}"
-                                                         Size="24"
-                                                         Color="{DynamicResource Primary}"
-                                                         Glyph="{Binding IsFavorite, Converter={StaticResource FavoriteIconConverter}}"/>
-                                    </ImageButton.Source>
-                                </ImageButton>
+                                    <!-- Favorite Icon -->
+                                    <Grid Grid.Column="1"
+                                          WidthRequest="40"
+                                          HeightRequest="40">
+                                        <Grid.GestureRecognizers>
+                                            <TapGestureRecognizer Command="{Binding ToggleFavoriteCommand}"
+                                                                  CommandParameter="{Binding Id}" />
+                                        </Grid.GestureRecognizers>
 
+                                        <!-- Star outline (when not favorite) -->
+                                        <Path Data="M12,2 L15.09,8.26 L22,9.27 L17,14.14 L18.18,21.02 L12,17.77 L5.82,21.02 L7,14.14 L2,9.27 L8.91,8.26 Z"
+                                              Fill="Transparent"
+                                              Stroke="{DynamicResource Gray400}"
+                                              StrokeThickness="2"
+                                              HorizontalOptions="Center"
+                                              VerticalOptions="Center"
+                                              InputTransparent="True"
+                                              IsVisible="{Binding IsFavorite, Converter={StaticResource InverseBoolConverter}}"
+                                              WidthRequest="24"
+                                              HeightRequest="24" />
+
+                                        <!-- Star fill (when favorite) -->
+                                        <Path Data="M12,2 L15.09,8.26 L22,9.27 L17,14.14 L18.18,21.02 L12,17.77 L5.82,21.02 L7,14.14 L2,9.27 L8.91,8.26 Z"
+                                              Fill="{DynamicResource Primary}"
+                                              Stroke="{DynamicResource Primary}"
+                                              HorizontalOptions="Center"
+                                              VerticalOptions="Center"
+                                              InputTransparent="True"
+                                              IsVisible="{Binding IsFavorite}"
+                                              WidthRequest="24"
+                                              HeightRequest="24" />
+                                    </Grid>
+                                    
                                     <!-- Chevron Icon -->
                                     <Label Grid.Column="2"
                                            FontFamily="{x:Static const:MaterialFont.Outlined}"
