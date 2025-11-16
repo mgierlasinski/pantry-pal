@@ -4,10 +4,10 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:controls="clr-namespace:InputKit.Shared.Controls;assembly=InputKit.Maui"
+    xmlns:validations="clr-namespace:InputKit.Shared.Validations;assembly=InputKit.Maui"
     xmlns:converters="clr-namespace:PantryPal.Mobile.Converters"
     xmlns:data="clr-namespace:PantryPal.Data;assembly=PantryPal.Data"
     xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
-    xmlns:v="clr-namespace:UraniumUI.Validations;assembly=UraniumUI.Validations.DataAnnotations"
     xmlns:viewModels="clr-namespace:PantryPal.Mobile.ViewModels"
     Title="Profile Settings"
     x:DataType="viewModels:ProfileViewModel">
@@ -47,9 +47,7 @@
                     ItemDisplayBinding="{Binding Name, x:DataType=data:DietTypeDto}"
                     ItemsSource="{Binding DietTypes}"
                     SelectedItem="{Binding SelectedDietType}">
-                    <material:PickerField.Behaviors>
-                        <v:DataAnnotationsBehavior Binding="{Binding SelectedDietType}" />
-                    </material:PickerField.Behaviors>
+                    <validations:RequiredValidation Message="Please select a diet type." />
                 </material:PickerField>
                 <!--  Preferred Cuisine Picker  -->
                 <material:PickerField
@@ -60,9 +58,7 @@
                     ItemDisplayBinding="{Binding Name, x:DataType=data:PreferredCuisineDto}"
                     ItemsSource="{Binding PreferredCuisines}"
                     SelectedItem="{Binding SelectedPreferredCuisine}">
-                    <material:PickerField.Behaviors>
-                        <v:DataAnnotationsBehavior Binding="{Binding SelectedPreferredCuisine}" />
-                    </material:PickerField.Behaviors>
+                    <validations:RequiredValidation Message="Please select a preferred cuisine." />
                 </material:PickerField>
                 <!--  Disliked Ingredients Editor  -->
                 <material:EditorField
@@ -70,9 +66,6 @@
                     AutomationId="DislikedIngredientsEditor"
                     IsEnabled="{Binding IsLoading, Converter={StaticResource InverseBoolConverter}}"
                     Text="{Binding DislikedIngredients}">
-                    <material:EditorField.Behaviors>
-                        <v:DataAnnotationsBehavior Binding="{Binding DislikedIngredients}" />
-                    </material:EditorField.Behaviors>
                 </material:EditorField>
                 <!--  Save Button  -->
                 <Button
@@ -106,9 +99,8 @@
                     IsEnabled="{Binding IsLoading, Converter={StaticResource InverseBoolConverter}}"
                     IsPassword="True"
                     Text="{Binding NewPassword}">
-                    <material:TextField.Behaviors>
-                        <v:DataAnnotationsBehavior Binding="{Binding NewPassword}" />
-                    </material:TextField.Behaviors>
+                    <validations:RequiredValidation Message="New password is required." />
+                    <validations:MinLengthValidation MinLength="6" Message="Password must be at least 6 characters long." />
                 </material:TextField>
 
                 <!--  Confirm New Password Field  -->
@@ -118,9 +110,7 @@
                     IsEnabled="{Binding IsLoading, Converter={StaticResource InverseBoolConverter}}"
                     IsPassword="True"
                     Text="{Binding ConfirmNewPassword}">
-                    <material:TextField.Behaviors>
-                        <v:DataAnnotationsBehavior Binding="{Binding ConfirmNewPassword}" />
-                    </material:TextField.Behaviors>
+                    <validations:RequiredValidation Message="Please confirm your new password." />
                 </material:TextField>
 
                 <!--  Change Password Button  -->

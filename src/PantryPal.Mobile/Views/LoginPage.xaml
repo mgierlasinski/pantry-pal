@@ -6,8 +6,8 @@
              xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
              xmlns:const="clr-namespace:PantryPal.Mobile.Constants"
              xmlns:m="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
-             xmlns:v="clr-namespace:UraniumUI.Validations;assembly=UraniumUI.Validations.DataAnnotations"
              xmlns:controls="clr-namespace:InputKit.Shared.Controls;assembly=InputKit.Maui"
+             xmlns:validations="clr-namespace:InputKit.Shared.Validations;assembly=InputKit.Maui"
              x:Class="PantryPal.Mobile.Views.LoginPage"
              x:DataType="viewModels:LoginPageViewModel"
              Title="Login">
@@ -54,9 +54,8 @@
                         IsEnabled="{Binding IsLoading, Converter={StaticResource InverseBoolConverter}}"
                         ReturnType="Next"
                         AutomationId="EmailEntry">
-                        <material:TextField.Behaviors>
-                            <v:DataAnnotationsBehavior Binding="{Binding Email}" />
-                        </material:TextField.Behaviors>
+                        <validations:RequiredValidation Message="Email is required." />
+                        <validations:RegexValidation Message="Please enter a valid email address." Pattern="{x:Static controls:AdvancedEntry.REGEX_EMAIL}" />
                     </material:TextField>
                     <!-- Password Field -->
                     <material:TextField
@@ -70,9 +69,7 @@
                         <material:TextField.Attachments>
                             <material:TextFieldPasswordShowHideAttachment />
                         </material:TextField.Attachments>
-                        <material:TextField.Behaviors>
-                            <v:DataAnnotationsBehavior Binding="{Binding Password}" />
-                        </material:TextField.Behaviors>
+                        <validations:RequiredValidation Message="Password is required." />
                     </material:TextField>
                     <!-- Login Button -->
                     <Button Text="Log In"

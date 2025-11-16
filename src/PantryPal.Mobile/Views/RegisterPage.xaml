@@ -6,8 +6,8 @@
              xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
              xmlns:const="clr-namespace:PantryPal.Mobile.Constants"
              xmlns:m="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
-             xmlns:v="clr-namespace:UraniumUI.Validations;assembly=UraniumUI.Validations.DataAnnotations"
              xmlns:controls="clr-namespace:InputKit.Shared.Controls;assembly=InputKit.Maui"
+             xmlns:validations="clr-namespace:InputKit.Shared.Validations;assembly=InputKit.Maui"
              x:Class="PantryPal.Mobile.Views.RegisterPage"
              x:DataType="viewModels:RegisterPageViewModel"
              Title="Register">
@@ -52,9 +52,8 @@
                         Keyboard="Email"
                         IsEnabled="{Binding IsLoading, Converter={StaticResource InverseBoolConverter}}"
                         ReturnType="Next">
-                        <material:TextField.Behaviors>
-                            <v:DataAnnotationsBehavior Binding="{Binding Email}" />
-                        </material:TextField.Behaviors>
+                        <validations:RequiredValidation Message="Email is required." />
+                        <validations:RegexValidation Message="Please enter a valid email address." Pattern="{x:Static controls:AdvancedEntry.REGEX_EMAIL}" />
                     </material:TextField>
 
                     <!-- Password Field -->
@@ -68,9 +67,8 @@
                         <material:TextField.Attachments>
                             <material:TextFieldPasswordShowHideAttachment />
                         </material:TextField.Attachments>
-                        <material:TextField.Behaviors>
-                            <v:DataAnnotationsBehavior Binding="{Binding Password}" />
-                        </material:TextField.Behaviors>
+                        <validations:RequiredValidation Message="Password is required." />
+                        <validations:MinLengthValidation MinLength="6" Message="Password must be at least 6 characters long." />
                     </material:TextField>
 
                     <!-- Confirm Password Field -->
@@ -84,9 +82,7 @@
                         <material:TextField.Attachments>
                             <material:TextFieldPasswordShowHideAttachment />
                         </material:TextField.Attachments>
-                        <material:TextField.Behaviors>
-                            <v:DataAnnotationsBehavior Binding="{Binding ConfirmPassword}" />
-                        </material:TextField.Behaviors>
+                        <validations:RequiredValidation Message="Please confirm your password." />
                     </material:TextField>
 
                     <!-- Register Button -->
