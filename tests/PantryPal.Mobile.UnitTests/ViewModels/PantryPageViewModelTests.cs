@@ -4,6 +4,7 @@ using PantryPal.Data;
 using PantryPal.Mobile.Services;
 using PantryPal.Mobile.ViewModels;
 using System.Net;
+using System.Threading.Tasks;
 
 namespace PantryPal.Mobile.UnitTests.ViewModels;
 
@@ -12,6 +13,7 @@ public class PantryPageViewModelTests
     private readonly Mock<IPantryService> _mockPantryService;
     private readonly Mock<IDisplayService> _mockDisplayService;
     private readonly Mock<INavigationService> _mockNavigationService;
+    private readonly Mock<IUserPreferencesService> _mockUserPreferencesService;
     private readonly PantryPageViewModel _viewModel;
 
     public PantryPageViewModelTests()
@@ -19,7 +21,8 @@ public class PantryPageViewModelTests
         _mockPantryService = new Mock<IPantryService>();
         _mockDisplayService = new Mock<IDisplayService>();
         _mockNavigationService = new Mock<INavigationService>();
-        _viewModel = new PantryPageViewModel(_mockPantryService.Object, _mockDisplayService.Object, _mockNavigationService.Object);
+        _mockUserPreferencesService = new Mock<IUserPreferencesService>();
+        _viewModel = new PantryPageViewModel(_mockPantryService.Object, _mockDisplayService.Object, _mockNavigationService.Object, _mockUserPreferencesService.Object);
     }
 
     [Fact]
@@ -395,6 +398,124 @@ public class PantryPageViewModelTests
         Assert.Single(_viewModel.Items);
         Assert.False(_viewModel.Items[0].IsFavorite); // Should revert to original state
         _mockPantryService.Verify(s => s.UpdatePantryItemAsync("1", It.IsAny<PantryItemUpdateDto>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task LoadItemsAsync_WhenUserHasIncompletePreferences_ShouldShowPreferencesBanner()
+    {
+        // Arrange
+        var mockItems = new List<PantryItemDto>
+        {
+            new("1", "Tomatoes", false, DateTime.UtcNow.ToString(), DateTime.UtcNow.ToString())
+        };
+        var response = new PantryItemsPaginatedResponseDto(mockItems, 1, 20, 1);
+        _mockPantryService.Setup(s => s.GetPantryItemsAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>()))
+            .ReturnsAsync(response);
+
+        // User has no preferences set (null preferences)
+        _mockUserPreferencesService.Setup(s => s.GetUserPreferencesAsync())
+            .ReturnsAsync((UserPreferencesDto?)null);
+
+        // Act
+        await _viewModel.LoadItemsAsync();
+
+        // Assert
+        Assert.True(_viewModel.ShouldShowPreferencesBanner);
+    }
+
+    [Fact]
+    public async Task LoadItemsAsync_WhenUserHasNoDietType_ShouldShowPreferencesBanner()
+    {
+        // Arrange
+        var mockItems = new List<PantryItemDto>
+        {
+            new("1", "Tomatoes", false, DateTime.UtcNow.ToString(), DateTime.UtcNow.ToString())
+        };
+        var response = new PantryItemsPaginatedResponseDto(mockItems, 1, 20, 1);
+        _mockPantryService.Setup(s => s.GetPantryItemsAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>()))
+            .ReturnsAsync(response);
+
+        // User has preferences but DietType is not set (0 = default)
+        var preferences = new UserPreferencesDto("user1", 0, "Standard", 1, "Polish", null, DateTime.UtcNow.ToString(), DateTime.UtcNow.ToString());
+        _mockUserPreferencesService.Setup(s => s.GetUserPreferencesAsync())
+            .ReturnsAsync(preferences);
+
+        // Act
+        await _viewModel.LoadItemsAsync();
+
+        // Assert
+        Assert.True(_viewModel.ShouldShowPreferencesBanner);
+    }
+
+    [Fact]
+    public async Task LoadItemsAsync_WhenUserHasNoPreferredCuisine_ShouldShowPreferencesBanner()
+    {
+        // Arrange
+        var mockItems = new List<PantryItemDto>
+        {
+            new("1", "Tomatoes", false, DateTime.UtcNow.ToString(), DateTime.UtcNow.ToString())
+        };
+        var response = new PantryItemsPaginatedResponseDto(mockItems, 1, 20, 1);
+        _mockPantryService.Setup(s => s.GetPantryItemsAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>()))
+            .ReturnsAsync(response);
+
+        // User has preferences but PreferredCuisine is not set (0 = default)
+        var preferences = new UserPreferencesDto("user1", 1, "Vegetarian", 0, "None", null, DateTime.UtcNow.ToString(), DateTime.UtcNow.ToString());
+        _mockUserPreferencesService.Setup(s => s.GetUserPreferencesAsync())
+            .ReturnsAsync(preferences);
+
+        // Act
+        await _viewModel.LoadItemsAsync();
+
+        // Assert
+        Assert.True(_viewModel.ShouldShowPreferencesBanner);
+    }
+
+    [Fact]
+    public async Task LoadItemsAsync_WhenUserHasCompletePreferences_ShouldHidePreferencesBanner()
+    {
+        // Arrange
+        var mockItems = new List<PantryItemDto>
+        {
+            new("1", "Tomatoes", false, DateTime.UtcNow.ToString(), DateTime.UtcNow.ToString())
+        };
+        var response = new PantryItemsPaginatedResponseDto(mockItems, 1, 20, 1);
+        _mockPantryService.Setup(s => s.GetPantryItemsAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>()))
+            .ReturnsAsync(response);
+
+        // User has complete preferences set
+        var preferences = new UserPreferencesDto("user1", 1, "Vegetarian", 2, "Italian", "nuts", DateTime.UtcNow.ToString(), DateTime.UtcNow.ToString());
+        _mockUserPreferencesService.Setup(s => s.GetUserPreferencesAsync())
+            .ReturnsAsync(preferences);
+
+        // Act
+        await _viewModel.LoadItemsAsync();
+
+        // Assert
+        Assert.False(_viewModel.ShouldShowPreferencesBanner);
+    }
+
+    [Fact]
+    public async Task LoadItemsAsync_WhenPreferencesServiceThrowsException_ShouldShowPreferencesBanner()
+    {
+        // Arrange
+        var mockItems = new List<PantryItemDto>
+        {
+            new("1", "Tomatoes", false, DateTime.UtcNow.ToString(), DateTime.UtcNow.ToString())
+        };
+        var response = new PantryItemsPaginatedResponseDto(mockItems, 1, 20, 1);
+        _mockPantryService.Setup(s => s.GetPantryItemsAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>()))
+            .ReturnsAsync(response);
+
+        // Preferences service throws exception
+        _mockUserPreferencesService.Setup(s => s.GetUserPreferencesAsync())
+            .ThrowsAsync(new Exception("Service unavailable"));
+
+        // Act
+        await _viewModel.LoadItemsAsync();
+
+        // Assert
+        Assert.True(_viewModel.ShouldShowPreferencesBanner);
     }
 }
 

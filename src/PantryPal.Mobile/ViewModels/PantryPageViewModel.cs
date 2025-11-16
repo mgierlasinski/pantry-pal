@@ -13,6 +13,7 @@ public partial class PantryPageViewModel : ObservableObject
     private readonly IPantryService _pantryService;
     private readonly IDisplayService _displayService;
     private readonly INavigationService _navigationService;
+    private readonly IUserPreferencesService _userPreferencesService;
 
     // Pagination properties
     [ObservableProperty]
@@ -38,17 +39,21 @@ public partial class PantryPageViewModel : ObservableObject
     [NotifyPropertyChangedFor(nameof(IsNotEmpty))]
     private bool _isEmpty = true;
 
+    [ObservableProperty]
+    private bool _shouldShowPreferencesBanner = false;
+
     // Collection
     [ObservableProperty]
     private ObservableCollection<PantryItemViewModel> _items = new();
 
     public bool IsNotEmpty => !IsEmpty;
 
-    public PantryPageViewModel(IPantryService pantryService, IDisplayService displayService, INavigationService navigationService)
+    public PantryPageViewModel(IPantryService pantryService, IDisplayService displayService, INavigationService navigationService, IUserPreferencesService userPreferencesService)
     {
         _pantryService = pantryService;
         _displayService = displayService;
         _navigationService = navigationService;
+        _userPreferencesService = userPreferencesService;
     }
 
     [RelayCommand]
@@ -92,6 +97,9 @@ public partial class PantryPageViewModel : ObservableObject
             IsLoading = false;
             IsRefreshing = false;
         }
+
+        // Check user preferences after loading items
+        await CheckUserPreferencesAsync();
     }
 
     public async Task AddItemAsync(string itemName)
@@ -341,6 +349,27 @@ public partial class PantryPageViewModel : ObservableObject
         }
 
         await _navigationService.GoToAsync(nameof(Views.RecipeGenerationPage), true);
+    }
+
+    [RelayCommand]
+    public async Task NavigateToProfileAsync()
+    {
+        await _navigationService.GoToAsync(AppShell.ProfileRoute);
+    }
+
+    private async Task CheckUserPreferencesAsync()
+    {
+        try
+        {
+            var preferences = await _userPreferencesService.GetUserPreferencesAsync();
+            // Show banner if preferences are not set (null) or DietType/PreferredCuisine are not selected (0 = default)
+            ShouldShowPreferencesBanner = preferences == null || preferences.DietTypeId == 0 || preferences.PreferredCuisineId == 0;
+        }
+        catch
+        {
+            // If we can't load preferences, assume they need to be set
+            ShouldShowPreferencesBanner = true;
+        }
     }
 
     private async Task<bool> ValidateItemName(string itemName)

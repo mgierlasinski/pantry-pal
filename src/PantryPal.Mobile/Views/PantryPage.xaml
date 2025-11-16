@@ -2,7 +2,6 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:m="clr-namespace:UraniumUI.Icons.MaterialSymbols;assembly=UraniumUI.Icons.MaterialSymbols"
-             xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
              xmlns:viewModels="clr-namespace:PantryPal.Mobile.ViewModels"
              xmlns:const="clr-namespace:PantryPal.Mobile.Constants"
              xmlns:models="clr-namespace:PantryPal.Mobile.Models"
@@ -22,10 +21,10 @@
                      AutomationId="AddItemToolbarButton" />
     </ContentPage.ToolbarItems>
 
-    <Grid RowDefinitions="*,Auto" Padding="0">
+    <Grid RowDefinitions="Auto,*,Auto" Padding="0">
         
         <!-- Loading Overlay -->
-        <Grid Grid.RowSpan="2"
+        <Grid Grid.RowSpan="3"
               IsVisible="{Binding IsLoading}"
               BackgroundColor="#80000000"
               ZIndex="1000">
@@ -43,9 +42,59 @@
                        HorizontalOptions="Center" />
             </VerticalStackLayout>
         </Grid>
-        
+
+        <!-- Preferences Banner -->
+        <Border Grid.Row="0"
+                Margin="16,8,16,0"
+                BackgroundColor="{StaticResource Primary}"
+                StrokeThickness="0"
+                IsVisible="{Binding ShouldShowPreferencesBanner}"
+                AutomationId="PreferencesBanner">
+            <Border.StrokeShape>
+                <RoundRectangle CornerRadius="8" />
+            </Border.StrokeShape>
+            <Grid Padding="16" ColumnDefinitions="*,Auto">
+                <Grid.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding NavigateToProfileCommand}" />
+                </Grid.GestureRecognizers>
+
+                <!-- Content -->
+                <Grid ColumnDefinitions="Auto,*,Auto">
+                    <!-- Icon -->
+                    <Label Grid.Column="0"
+                           FontFamily="{x:Static const:MaterialFont.Outlined}"
+                           FontSize="24"
+                           TextColor="White"
+                           VerticalOptions="Center"
+                           Margin="0,0,12,0"
+                           Text="{x:Static m:MaterialOutlined.Settings}" />
+
+                    <!-- Text -->
+                    <VerticalStackLayout Grid.Column="1"
+                                         VerticalOptions="Center"
+                                         Spacing="4">
+                        <Label Text="Complete your profile"
+                               FontSize="16"
+                               FontAttributes="Bold"
+                               TextColor="White" />
+                        <Label Text="Set diet type and preferred cuisine for better recipes"
+                               FontSize="14"
+                               TextColor="{StaticResource SecondaryDarkText}" />
+                    </VerticalStackLayout>
+
+                    <!-- Chevron Icon -->
+                    <Label Grid.Column="2"
+                           FontFamily="{x:Static const:MaterialFont.Outlined}"
+                           FontSize="20"
+                           TextColor="White"
+                           VerticalOptions="Center"
+                           Text="{x:Static m:MaterialOutlined.Chevron_right}" />
+                </Grid>
+            </Grid>
+        </Border>
+
         <!-- Main Content -->
-        <RefreshView Grid.Row="0"
+        <RefreshView Grid.Row="1"
                      IsRefreshing="{Binding IsRefreshing}"
                      Command="{Binding LoadItemsCommand}"
                      RefreshColor="{DynamicResource Primary}">
@@ -178,7 +227,7 @@
         </RefreshView>
 
         <!-- Generate Recipe Button -->
-        <Border Grid.Row="1"
+        <Border Grid.Row="2"
                 Margin="16"
                 StrokeThickness="0"
                 BackgroundColor="Transparent">
